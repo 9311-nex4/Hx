@@ -334,24 +334,24 @@ end
 
 local function bienHinhNhanVat(nhanVat, partGoc)
 	if not partDuocChon or not partDuocChon.Parent then
-		guiThongBao("Loi!", "Chua chon doi tuong de bien hinh.", 3)
+		guiThongBao("Lỗi!", "Chưa chọn đối tượng để biến.", 3)
 		return false
 	end
 
 	local modelMucTieu = partDuocChon:FindFirstAncestorWhichIsA("Model")
 	if not modelMucTieu or not modelMucTieu:FindFirstChildWhichIsA("Humanoid") then
-		guiThongBao("Loi!", "Doi tuong da chon khong phai la nhan vat hop le.", 3)
+		guiThongBao("Lỗi!", "Đối tượng đã chọn không phải nhân vật hợp lệ.", 3)
 		return false
 	end
 
 	if modelMucTieu == nhanVat then
-		guiThongBao("Loi!", "Ban khong the bien hinh thanh chinh minh.", 3)
+		guiThongBao("Lỗi!", "Bạn không thể biến thành chính mình.", 3)
 		return false
 	end
 
 	local humanoidNguoiChoi = nhanVat:FindFirstChildWhichIsA("Humanoid")
 	if not humanoidNguoiChoi then
-		guiThongBao("Loi!", "Khong tim thay Humanoid cua nguoi choi.", 3)
+		guiThongBao("Lỗi!", "Không tìm thấy Humanoid của người chơi.", 3)
 		return false
 	end
 
