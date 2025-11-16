@@ -334,24 +334,24 @@ end
 
 local function bienHinhNhanVat(nhanVat, partGoc)
 	if not partDuocChon or not partDuocChon.Parent then
-		guiThongBao("Lỗi!", "Chưa chọn đối tượng để biến.", 3)
+		guiThongBao("Loi!", "Chua chon doi tuong de bien hinh.", 3)
 		return false
 	end
 
 	local modelMucTieu = partDuocChon:FindFirstAncestorWhichIsA("Model")
 	if not modelMucTieu or not modelMucTieu:FindFirstChildWhichIsA("Humanoid") then
-		guiThongBao("Lỗi!", "Đối tượng đã chọn không phải nhân vật hợp lệ.", 3)
+		guiThongBao("Loi!", "Doi tuong da chon khong phai la nhan vat hop le.", 3)
 		return false
 	end
 
 	if modelMucTieu == nhanVat then
-		guiThongBao("Lỗi!", "Bạn không thể biến thành chính mình.", 3)
+		guiThongBao("Loi!", "Ban khong the bien hinh thanh chinh minh.", 3)
 		return false
 	end
 
 	local humanoidNguoiChoi = nhanVat:FindFirstChildWhichIsA("Humanoid")
 	if not humanoidNguoiChoi then
-		guiThongBao("Lỗi!", "Không tìm thấy Humanoid của người chơi.", 3)
+		guiThongBao("Loi!", "Khong tim thay Humanoid cua nguoi choi.", 3)
 		return false
 	end
 
@@ -651,7 +651,7 @@ local function taoDongBoPhan(parent, tenBoPhanLogic, data)
 	textLabel.Size = UDim2.new(0.4, -5, 1, 0)
 	textLabel.BackgroundTransparency = 1
 	textLabel.Font = THEME.FONTS.Main
-	textLabel.Text = "[ + ]   " .. tenHienThi 
+	textLabel.Text = "[ + ]   " .. tenHienThi 
 	textLabel.TextColor3 = THEME.COLORS.Text
 	textLabel.TextSize = 20
 	textLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -1018,27 +1018,26 @@ UserInputService.InputBegan:Connect(function(input, daXuLyGame)
 	end
 
 	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+
 		if daXuLyGame or dangBienHinh or not cauHinh.chucNangBat then
 			return
 		end
 
-		local uiObjects = playerGui:GetGuiObjectsAtPosition(input.Position.X, input.Position.Y)
-		local daNhanUi = false
-		for _, object in ipairs(uiObjects) do
-			if object:IsDescendantOf(playerGui) then
-				daNhanUi = true
-				break
-			end
-		end
-
-		if daNhanUi then return end 
+		local character = playerLocal.Character
+		if not character then return end
 
 		local ray = camera:ScreenPointToRay(input.Position.X, input.Position.Y)
 		local raycastParams = RaycastParams.new()
 		raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
-		raycastParams.FilterDescendantsInstances = {hopChon}
+
+		local filterList = {character}
+		if hopChon then
+			table.insert(filterList, hopChon)
+		end
+		raycastParams.FilterDescendantsInstances = filterList
 
 		local raycastResult = workspace:Raycast(ray.Origin, ray.Direction * 1000, raycastParams)
+
 		if raycastResult and raycastResult.Instance then
 			local partChonDuoc = raycastResult.Instance
 			if partChonDuoc:IsA("BasePart") and not partChonDuoc:IsA("Terrain") then
