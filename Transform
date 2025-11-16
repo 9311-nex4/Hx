@@ -1,0 +1,828 @@
+local DichVuNguoiDung = game:GetService("UserInputService")
+local GiaoDienKhoiDong = game:GetService("StarterGui")
+local NguoiChoi = game:GetService("Players")
+local ManhVo = game:GetService("Debris")
+
+local nguoiChoiLocal = NguoiChoi.LocalPlayer
+local giaoDienNguoiChoi = nguoiChoiLocal:WaitForChild("PlayerGui")
+local camera = workspace.CurrentCamera
+
+local partDaChon = nil
+local daBienHinh = false
+local doTrongSuotGoc = {}
+local hopChonHienTai = nil
+
+local bienHinhHienTai = {}
+local luuTruBoPhan = {}
+
+local nutBienHinh = nil
+local nutBatTatChon = nil
+local khungNutBatTat = nil
+local nutMoiDiChuyen = nil
+local uiTuChinh = nil
+local nutToggleChinhTrongUi = nil
+local nutToggleNutNgoaiTrongUi = nil
+local nutDropdownCoTheTrongUi = nil
+local frameDongBoPhan = nil
+
+local ANH_HAT = "rbxassetid://2130129598"
+local ANH_ICON_MO = "rbxassetid://117118515787811"
+
+local PART_MAP = {
+	Head = { "Head" },
+	Torso = { "Torso", "UpperTorso", "LowerTorso" },
+	RightArm = { "Right Arm", "RightUpperArm", "RightLowerArm", "RightHand" },
+	LeftArm = { "Left Arm", "LeftUpperArm", "LeftLowerArm", "LeftHand" },
+	RightLeg = { "Right Leg", "RightUpperLeg", "RightLowerLeg", "RightFoot" },
+	LeftLeg = { "Left Leg", "LeftUpperLeg", "LeftLowerLeg", "LeftFoot" }
+}
+
+local BO_PHAN_LOGIC_ORDER = {"Head", "Torso", "LeftArm", "RightArm", "LeftLeg", "RightLeg"}
+
+local trangThaiUI = {
+	chucNangBat = true,
+	hienNutBenNgoai = true,
+	bienHinhToanThan = true,
+	boPhan = {
+		Head = { Bat = true, LuuGiu = false, TenHienThi = "Phần đầu" },
+		Torso = { Bat = true, LuuGiu = false, TenHienThi = "Phần thân" },
+		RightArm = { Bat = true, LuuGiu = false, TenHienThi = "Tay phải" },
+		LeftArm = { Bat = true, LuuGiu = false, TenHienThi = "Tay trái" },
+		RightLeg = { Bat = true, LuuGiu = false, TenHienThi = "Chân phải" },
+		LeftLeg = { Bat = true, LuuGiu = false, TenHienThi = "Chân trái" },
+	}
+}
+
+local function phatHieuUng(partGoc)
+	if partGoc then
+		local tepDinhKem = Instance.new("Attachment")
+		tepDinhKem.Parent = partGoc
+		local hat = Instance.new("ParticleEmitter")
+		hat.Texture = ANH_HAT
+		hat.Color = ColorSequence.new(Color3.fromRGB(0, 255, 255), Color3.fromRGB(0, 85, 255))
+		hat.Size = NumberSequence.new(0.1, 0.5, 0.1)
+		hat.Transparency = NumberSequence.new(0, 1)
+		hat.Lifetime = NumberRange.new(0.5, 1)
+		hat.Rate = 0
+		hat.Speed = NumberRange.new(2, 5)
+		hat.SpreadAngle = Vector2.new(360, 360)
+		hat.Parent = tepDinhKem
+		hat:Emit(50)
+		ManhVo:AddItem(tepDinhKem, 2)
+	end
+end
+
+local function hienThongBao(tieuDe, noiDung, thoiGian)
+	local thoiGianHienThi = thoiGian or 3
+	pcall(function()
+		GiaoDienKhoiDong:SetCore("SendNotification", {
+			Title = tieuDe,
+			Text = noiDung,
+			Duration = thoiGianHienThi,
+			Button1 = "OK",
+		})
+	end)
+end
+
+local function capNhatHopChon(part)
+	if hopChonHienTai then
+		hopChonHienTai:Destroy()
+		hopChonHienTai = nil
+	end
+	if part then
+		hopChonHienTai = Instance.new("SelectionBox")
+		hopChonHienTai.Color3 = Color3.fromRGB(0, 255, 0)
+		hopChonHienTai.LineThickness = 0.05
+		hopChonHienTai.Adornee = part
+		hopChonHienTai.Parent = giaoDienNguoiChoi
+	end
+end
+
+local function luuDoTrongSuotGoc(nhanVat)
+	doTrongSuotGoc = {}
+	for _, part in ipairs(nhanVat:GetDescendants()) do
+		if part:IsA("BasePart") or part:IsA("Decal") or part:IsA("Texture") then
+			doTrongSuotGoc[part] = part.Transparency
+		end
+	end
+end
+
+local function khoiPhucDoTrongSuotGoc(nhanVat)
+	for part, doTrongSuot in pairs(doTrongSuotGoc) do
+		if part and part.Parent then
+			pcall(function() part.Transparency = doTrongSuot end)
+		end
+	end
+	doTrongSuotGoc = {}
+end
+
+local function hoanTacBienHinh(nhanVatNguon)
+	if not daBienHinh then return end
+	daBienHinh = false
+
+	local nhanVat = nhanVatNguon or nguoiChoiLocal.Character
+	if nhanVat then
+		khoiPhucDoTrongSuotGoc(nhanVat)
+		local goc = nhanVat:FindFirstChild("HumanoidRootPart")
+		if goc then
+			phatHieuUng(goc)
+		end
+	end
+
+	for partName, instance in pairs(bienHinhHienTai) do
+		if instance then
+			instance:Destroy()
+		end
+	end
+	bienHinhHienTai = {}
+
+	if nutBienHinh then
+		nutBienHinh.Text = "Biến"
+	end
+
+	capNhatHopChon(nil)
+	if partDaChon and trangThaiUI.chucNangBat then
+		capNhatHopChon(partDaChon)
+	end
+end
+
+local function bienHinhToanThan(nhanVat, partGoc)
+	if not partDaChon or not partDaChon.Parent then
+		hienThongBao("Lỗi!", "Chưa chọn part để biến hình toàn thân.", 3)
+		return false
+	end
+
+	for _, part in ipairs(nhanVat:GetDescendants()) do
+		if (part:IsA("BasePart") and part.Name ~= "HumanoidRootPart") or part:IsA("Decal") or part:IsA("Texture") then
+			part.Transparency = 1
+		end
+	end
+
+	local clone = partDaChon:Clone()
+	clone.Name = "MorphPart_Full"
+	clone.Anchored = false
+	clone.CanCollide = false
+	clone.Massless = true
+
+	local orientationGoc = partDaChon.CFrame - partDaChon.CFrame.Position
+	clone.CFrame = CFrame.new(partGoc.CFrame.Position) * orientationGoc
+
+	local weld = Instance.new("WeldConstraint")
+	weld.Part0 = partGoc
+	weld.Part1 = clone
+	weld.Parent = partGoc
+	clone.Parent = nhanVat
+
+	bienHinhHienTai["ToanThan"] = clone
+	return true
+end
+
+local function bienHinhTungPhan(nhanVat)
+	local daBienHinhItNhatMotPhan = false
+	for logicalPartName, data in pairs(trangThaiUI.boPhan) do
+		if data.Bat then
+			local partDeBienHinh = luuTruBoPhan[logicalPartName] 
+			if not partDeBienHinh then
+				partDeBienHinh = partDaChon
+			end
+
+			if not partDeBienHinh then
+				continue
+			end
+
+			local actualPartNames = PART_MAP[logicalPartName]
+			if actualPartNames then
+				local partMucTieuChinh = nil
+				for _, actualPartName in ipairs(actualPartNames) do
+					local part = nhanVat:FindFirstChild(actualPartName)
+					if part and part:IsA("BasePart") then
+						partMucTieuChinh = part
+						break
+					end
+				end
+
+				if partMucTieuChinh then
+					daBienHinhItNhatMotPhan = true
+
+					local clone = partDeBienHinh:Clone()
+					clone.Name = "MorphPart_" .. logicalPartName
+					clone.Anchored = false
+					clone.CanCollide = false
+					clone.Massless = true
+
+					local orientationGoc = partDaChon.CFrame - partDaChon.CFrame.Position
+					clone.CFrame = CFrame.new(partMucTieuChinh.CFrame.Position) * orientationGoc
+
+					local weld = Instance.new("WeldConstraint")
+					weld.Part0 = partMucTieuChinh
+					weld.Part1 = clone
+					weld.Parent = partMucTieuChinh
+					clone.Parent = nhanVat
+
+					bienHinhHienTai[logicalPartName] = clone
+
+					for _, actualPartName in ipairs(actualPartNames) do
+						local partDeAn = nhanVat:FindFirstChild(actualPartName)
+						if partDeAn then
+							for _, p in ipairs(partDeAn:GetDescendants()) do
+								if p:IsA("BasePart") or p:IsA("Decal") or p:IsA("Texture") then p.Transparency = 1 end
+							end
+							partDeAn.Transparency = 1
+						end
+					end
+				end
+			end
+		end
+	end
+
+	if not daBienHinhItNhatMotPhan then
+		hienThongBao("Thông báo", "Không có bộ phận nào được bật hoặc có part để biến hình.", 3)
+		return false
+	end
+	return true
+end
+
+local function bienHinh()
+	if not trangThaiUI.chucNangBat then return end
+
+	if daBienHinh then
+		hoanTacBienHinh()
+		return
+	end
+
+	local nhanVat = nguoiChoiLocal.Character
+	if not nhanVat then return end
+	local partGoc = nhanVat:FindFirstChild("HumanoidRootPart")
+	if not partGoc then return end
+
+	if not partDaChon and not trangThaiUI.bienHinhToanThan then
+		local coPartLuuTru = false
+		for logicalPartName, data in pairs(trangThaiUI.boPhan) do
+			if data.Bat and luuTruBoPhan[logicalPartName] then
+				coPartLuuTru = true
+				break
+			end
+		end
+		if not coPartLuuTru then
+			hienThongBao("Lỗi!", "Bạn phải chọn một part trước!", 3)
+			return
+		end
+	elseif not partDaChon and trangThaiUI.bienHinhToanThan then
+		hienThongBao("Lỗi!", "Bạn phải chọn một part trước!", 3)
+		return
+	end
+
+	luuDoTrongSuotGoc(nhanVat)
+	daBienHinh = true
+	capNhatHopChon(nil)
+	if nutBienHinh then nutBienHinh.Text = "Hoàn tác" end
+	phatHieuUng(partGoc)
+
+	bienHinhHienTai = {}
+	local success = false
+
+	if trangThaiUI.bienHinhToanThan then
+		success = bienHinhToanThan(nhanVat, partGoc)
+	else
+		success = bienHinhTungPhan(nhanVat)
+	end
+
+	if not success then
+		hoanTacBienHinh()
+	end
+end
+
+local function capNhatTrangThaiChucNang(state)
+	trangThaiUI.chucNangBat = state
+
+	if nutBatTatChon then
+		if state then
+			nutBatTatChon.Text = "Bật"
+			nutBatTatChon.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+		else
+			nutBatTatChon.Text = "Tắt"
+			nutBatTatChon.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+		end
+	end
+	if nutToggleChinhTrongUi then
+		if state then
+			nutToggleChinhTrongUi.Text = "Bật"
+			nutToggleChinhTrongUi.TextColor3 = Color3.fromRGB(255, 255, 255)
+			nutToggleChinhTrongUi.BackgroundColor3 = Color3.fromRGB(0, 175, 0)
+		else
+			nutToggleChinhTrongUi.Text = "Tắt"
+			nutToggleChinhTrongUi.TextColor3 = Color3.fromRGB(255, 255, 255)
+			nutToggleChinhTrongUi.BackgroundColor3 = Color3.fromRGB(175, 0, 0)
+		end
+	end
+	if nutBienHinh then
+		nutBienHinh.Parent.Visible = state
+	end
+	if nutToggleNutNgoaiTrongUi then
+		nutToggleNutNgoaiTrongUi.Parent.Visible = state
+	end
+	if nutDropdownCoTheTrongUi then
+		nutDropdownCoTheTrongUi.Parent.Visible = state
+	end
+	if frameDongBoPhan then
+		frameDongBoPhan.Visible = state and (not trangThaiUI.bienHinhToanThan)
+	end
+
+	if not state then
+		hoanTacBienHinh()
+		if partDaChon then
+			partDaChon = nil
+			capNhatHopChon(nil)
+		end
+	end
+end
+
+local function toggleChucNang()
+	capNhatTrangThaiChucNang(not trangThaiUI.chucNangBat)
+end
+
+local function taoDongToggle(parent, tenHienThi, trangThaiBanDau)
+	local frame = Instance.new("Frame")
+	frame.Name = "ToggleRow"
+	frame.Size = UDim2.new(1, 0, 0, 30)
+	frame.BackgroundTransparency = 1
+	frame.Parent = parent
+
+	local textLabel = Instance.new("TextLabel")
+	textLabel.Name = "Label"
+	textLabel.Size = UDim2.new(0.7, -5, 1, 0)
+	textLabel.BackgroundTransparency = 1
+	textLabel.Font = Enum.Font.SourceSans
+	textLabel.Text = tenHienThi
+	textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	textLabel.TextSize = 16
+	textLabel.TextXAlignment = Enum.TextXAlignment.Left
+	textLabel.Parent = frame
+
+	local nutToggle = Instance.new("TextButton")
+	nutToggle.Name = "Button"
+	nutToggle.Size = UDim2.new(0.25, 0, 0.8, 0)
+	nutToggle.Position = UDim2.new(0.75, 0, 0.1, 0)
+	nutToggle.Font = Enum.Font.SourceSansBold
+	nutToggle.TextScaled = true
+	nutToggle.BackgroundTransparency = 0
+	nutToggle.BorderSizePixel = 0
+	nutToggle.Parent = frame
+
+	local gocNut = Instance.new("UICorner")
+	gocNut.CornerRadius = UDim.new(0, 4)
+	gocNut.Parent = nutToggle
+
+	if trangThaiBanDau then
+		nutToggle.Text = "Bật"
+		nutToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+		nutToggle.BackgroundColor3 = Color3.fromRGB(0, 175, 0)
+	else
+		nutToggle.Text = "Tắt"
+		nutToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+		nutToggle.BackgroundColor3 = Color3.fromRGB(175, 0, 0)
+	end
+	return frame, nutToggle
+end
+
+local function taoDongDropdown(parent, tenHienThi, textBat, textTat, trangThaiBanDau)
+	local frame = Instance.new("Frame")
+	frame.Name = "DropdownRow"
+	frame.Size = UDim2.new(1, 0, 0, 30)
+	frame.BackgroundTransparency = 1
+	frame.Parent = parent
+
+	local textLabel = Instance.new("TextLabel")
+	textLabel.Name = "Label"
+	textLabel.Size = UDim2.new(0.55, -5, 1, 0)
+	textLabel.BackgroundTransparency = 1
+	textLabel.Font = Enum.Font.SourceSans
+	textLabel.Text = tenHienThi
+	textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	textLabel.TextSize = 20
+	textLabel.TextXAlignment = Enum.TextXAlignment.Left
+	textLabel.Parent = frame
+
+	local nutToggle = Instance.new("TextButton")
+	nutToggle.Name = "Button"
+	nutToggle.Size = UDim2.new(0.45, 0, 0.8, 0)
+	nutToggle.Position = UDim2.new(0.55, 0, 0.1, 0)
+	nutToggle.Font = Enum.Font.SourceSansBold
+	nutToggle.TextScaled = true
+	nutToggle.TextColor3 = Color3.fromRGB(230, 230, 230)
+	nutToggle.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+	nutToggle.BorderSizePixel = 0
+	nutToggle.Parent = frame
+
+	local gocNut = Instance.new("UICorner")
+	gocNut.CornerRadius = UDim.new(0, 4)
+	gocNut.Parent = nutToggle
+
+	if trangThaiBanDau then
+		nutToggle.Text = textBat
+	else
+		nutToggle.Text = textTat
+	end
+	return frame, nutToggle
+end
+
+local function taoDongBoPhan(parent, logicalPartName, data)
+	local tenHienThi = data.TenHienThi
+
+	local frame = Instance.new("Frame")
+	frame.Name = logicalPartName .. "Row"
+	frame.Size = UDim2.new(1, 0, 0, 25)
+	frame.BackgroundTransparency = 1
+	frame.Parent = parent
+
+	local textLabel = Instance.new("TextLabel")
+	textLabel.Name = "Label"
+	textLabel.Size = UDim2.new(0.4, -5, 1, 0)
+	textLabel.BackgroundTransparency = 1
+	textLabel.Font = Enum.Font.SourceSans
+	textLabel.Text = "[ + ]   " .. tenHienThi
+	textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	textLabel.TextSize = 20
+	textLabel.TextXAlignment = Enum.TextXAlignment.Left
+	textLabel.Parent = frame
+
+	local nutCo = Instance.new("TextButton")
+	nutCo.Name = "BatTat"
+	nutCo.Size = UDim2.new(0.2, 0, 0.9, 0)
+	nutCo.Position = UDim2.new(0.4, 0, 0.05, 0)
+	nutCo.TextScaled = true
+	nutCo.BackgroundTransparency = 0
+	nutCo.BorderSizePixel = 0
+	nutCo.Font = Enum.Font.SourceSansBold
+	nutCo.Parent = frame
+	local gocCo = Instance.new("UICorner")
+	gocCo.CornerRadius = UDim.new(0, 3)
+	gocCo.Parent = nutCo
+
+	local nutLuuGiu = Instance.new("TextButton")
+	nutLuuGiu.Name = "LuuGiu"
+	nutLuuGiu.Size = UDim2.new(0.35, 0, 0.9, 0)
+	nutLuuGiu.Position = UDim2.new(0.6, 5, 0.05, 0)
+	nutLuuGiu.Text = "Lưu trữ"
+	nutLuuGiu.TextScaled = true
+	nutLuuGiu.TextColor3 = Color3.fromRGB(255, 255, 255)
+	nutLuuGiu.BackgroundColor3 = Color3.fromRGB(60, 150, 255)
+	nutLuuGiu.BorderSizePixel = 0
+	nutLuuGiu.Font = Enum.Font.SourceSans
+	nutLuuGiu.Parent = frame
+	local gocLuu = Instance.new("UICorner")
+	gocLuu.CornerRadius = UDim.new(0, 3)
+	gocLuu.Parent = nutLuuGiu
+
+	local nutXoaLuu = Instance.new("TextButton")
+	nutXoaLuu.Name = "XoaLuu"
+	nutXoaLuu.Size = UDim2.new(0.35, 0, 0.9, 0)
+	nutXoaLuu.Position = UDim2.new(0.6, 5, 0.05, 0)
+	nutXoaLuu.Text = "Xóa lưu"
+	nutXoaLuu.TextScaled = true
+	nutXoaLuu.TextColor3 = Color3.fromRGB(255, 255, 255)
+	nutXoaLuu.BackgroundColor3 = Color3.fromRGB(175, 0, 0)
+	nutXoaLuu.BorderSizePixel = 0
+	nutXoaLuu.Font = Enum.Font.SourceSans
+	nutXoaLuu.Parent = frame
+	local gocXoa = Instance.new("UICorner")
+	gocXoa.CornerRadius = UDim.new(0, 3)
+	gocXoa.Parent = nutXoaLuu
+
+	local function capNhatNut()
+		if trangThaiUI.boPhan[logicalPartName].Bat then
+			nutCo.Text = "Có"
+			nutCo.TextColor3 = Color3.fromRGB(255, 255, 255)
+			nutCo.BackgroundColor3 = Color3.fromRGB(0, 175, 0)
+		else
+			nutCo.Text = "Không"
+			nutCo.TextColor3 = Color3.fromRGB(255, 255, 255)
+			nutCo.BackgroundColor3 = Color3.fromRGB(175, 0, 0)
+		end
+
+		if trangThaiUI.boPhan[logicalPartName].LuuGiu then
+			nutLuuGiu.Visible = false
+			nutXoaLuu.Visible = true
+		else
+			nutLuuGiu.Visible = true
+			nutXoaLuu.Visible = false
+		end
+	end
+
+	nutCo.MouseButton1Click:Connect(function()
+		trangThaiUI.boPhan[logicalPartName].Bat = not trangThaiUI.boPhan[logicalPartName].Bat
+		capNhatNut()
+	end)
+
+	nutLuuGiu.MouseButton1Click:Connect(function()
+		if partDaChon then
+			luuTruBoPhan[logicalPartName] = partDaChon:Clone()
+			trangThaiUI.boPhan[logicalPartName].LuuGiu = true
+			hienThongBao("Đã lưu", "Đã lưu " .. partDaChon.Name .. " cho " .. tenHienThi, 2)
+			capNhatNut()
+		else
+			hienThongBao("Lỗi", "Bạn phải chọn một part trước khi lưu!", 3)
+		end
+	end)
+
+	nutXoaLuu.MouseButton1Click:Connect(function()
+		luuTruBoPhan[logicalPartName] = nil
+		trangThaiUI.boPhan[logicalPartName].LuuGiu = false
+		hienThongBao("Đã xóa", "Đã xóa lưu cho " .. tenHienThi, 2)
+		capNhatNut()
+	end)
+
+	capNhatNut()
+	return frame
+end
+
+local function taoGiaoDienNut()
+	local giaoDienManHinh = Instance.new("ScreenGui")
+	giaoDienManHinh.Name = "TransformScreenGui"
+	giaoDienManHinh.ResetOnSpawn = false
+	giaoDienManHinh.Parent = giaoDienNguoiChoi
+
+	uiTuChinh = Instance.new("Frame")
+	uiTuChinh.Name = "UiTuChinh"
+	uiTuChinh.Size = UDim2.new(0, 300, 0, 400)
+	uiTuChinh.Position = UDim2.new(0.5, 0, 0.5, 0)
+	uiTuChinh.AnchorPoint = Vector2.new(0.5, 0.5)
+	uiTuChinh.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	uiTuChinh.BorderColor3 = Color3.fromRGB(255, 255, 255)
+	uiTuChinh.Visible = false
+	uiTuChinh.Draggable = true
+	uiTuChinh.Active = true
+	uiTuChinh.Parent = giaoDienManHinh
+
+	local gocUi = Instance.new("UICorner")
+	gocUi.CornerRadius = UDim.new(0, 8)
+	gocUi.Parent = uiTuChinh
+
+	local titleFrame = Instance.new("Frame")
+	titleFrame.Name = "TitleFrame"
+	titleFrame.Size = UDim2.new(1, 0, 0, 40)
+	titleFrame.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	titleFrame.Draggable = false
+	titleFrame.Active = false
+	titleFrame.Parent = uiTuChinh
+
+	local gocTieuDe = Instance.new("UICorner")
+	gocTieuDe.CornerRadius = UDim.new(0, 8)
+	gocTieuDe.Parent = titleFrame
+
+	local anhdaidien = Instance.new("ImageLabel")
+	anhdaidien.Size = UDim2.new(0, 30, 0, 30)
+	anhdaidien.Position = UDim2.new(0, 5, 0.5, -15)
+	anhdaidien.BackgroundTransparency = 1
+	anhdaidien.Image = ANH_ICON_MO
+	anhdaidien.Parent = titleFrame
+
+	local tieuDeUi = Instance.new("TextLabel")
+	tieuDeUi.Text = "Transform"
+	tieuDeUi.Size = UDim2.new(1, -80, 1, 0)
+	tieuDeUi.Position = UDim2.new(0, 40, 0, 0)
+	tieuDeUi.BackgroundTransparency = 1
+	tieuDeUi.TextColor3 = Color3.fromRGB(255, 255, 255)
+	tieuDeUi.Font = Enum.Font.SourceSans
+	tieuDeUi.TextSize = 20
+	tieuDeUi.TextXAlignment = Enum.TextXAlignment.Left
+	tieuDeUi.Parent = titleFrame
+
+	local nutDong = Instance.new("TextButton")
+	nutDong.Name = "CloseButton"
+	nutDong.Size = UDim2.new(0, 30, 0, 30)
+	nutDong.Position = UDim2.new(1, -35, 0.5, -15)
+	nutDong.Text = "x"
+	nutDong.TextScaled = true
+	nutDong.Font = Enum.Font.SourceSansBold
+	nutDong.TextColor3 = Color3.fromRGB(255, 255, 255)
+	nutDong.BackgroundColor3 = Color3.fromRGB(175, 0, 0)
+	nutDong.Parent = titleFrame
+	local gocDong = Instance.new("UICorner")
+	gocDong.CornerRadius = UDim.new(0, 4)
+	gocDong.Parent = nutDong
+	nutDong.MouseButton1Click:Connect(function()
+		uiTuChinh.Visible = false
+	end)
+	local paddingnutDong = Instance.new("UIPadding")
+	paddingnutDong.PaddingBottom = UDim.new(0, 5)
+	paddingnutDong.Parent = nutDong
+
+	local controlsFrame = Instance.new("Frame")
+	controlsFrame.Name = "ControlsFrame"
+	controlsFrame.Size = UDim2.new(1, 0, 1, -40)
+	controlsFrame.Position = UDim2.new(0, 0, 0, 40)
+	controlsFrame.BackgroundTransparency = 1
+	controlsFrame.Parent = uiTuChinh
+
+	local paddingChinh = Instance.new("UIPadding")
+	paddingChinh.PaddingLeft = UDim.new(0, 10)
+	paddingChinh.PaddingRight = UDim.new(0, 10)
+	paddingChinh.PaddingTop = UDim.new(0, 10)
+	paddingChinh.PaddingBottom = UDim.new(0, 10)
+	paddingChinh.Parent = controlsFrame
+
+	local layoutList = Instance.new("UIListLayout")
+	layoutList.Padding = UDim.new(0, 5)
+	layoutList.SortOrder = Enum.SortOrder.LayoutOrder
+	layoutList.Parent = controlsFrame
+
+	frameDongBoPhan = Instance.new("Frame")
+	frameDongBoPhan.Name = "FrameDongBoPhan"
+	frameDongBoPhan.Size = UDim2.new(1, 0, 1, 0)
+	frameDongBoPhan.BackgroundTransparency = 1
+	frameDongBoPhan.ClipsDescendants = true
+	frameDongBoPhan.Visible = false
+	frameDongBoPhan.LayoutOrder = 4
+	frameDongBoPhan.Parent = controlsFrame
+
+	local layoutBoPhan = Instance.new("UIListLayout")
+	layoutBoPhan.Padding = UDim.new(0, 5)
+	layoutBoPhan.Parent = frameDongBoPhan
+	
+	local paddingBoPhan = Instance.new("UIPadding")
+	paddingBoPhan.PaddingLeft = UDim.new(0, 10)
+	paddingBoPhan.Parent = frameDongBoPhan
+
+	for _, logicalPartName in ipairs(BO_PHAN_LOGIC_ORDER) do
+		local data = trangThaiUI.boPhan[logicalPartName]
+		if data then
+			taoDongBoPhan(frameDongBoPhan, logicalPartName, data)
+		end
+	end
+
+	local dongToggleChinh, nut1 = taoDongToggle(controlsFrame, "Chức năng biến hình", trangThaiUI.chucNangBat)
+	dongToggleChinh.LayoutOrder = 1
+	nutToggleChinhTrongUi = nut1
+	nut1.MouseButton1Click:Connect(toggleChucNang)
+
+	local dongToggleNutNgoai, nut2 = taoDongToggle(controlsFrame, "Hiện Nút bật tắt bên ngoài", trangThaiUI.hienNutBenNgoai)
+	dongToggleNutNgoai.LayoutOrder = 2
+	nutToggleNutNgoaiTrongUi = nut2
+	nut2.MouseButton1Click:Connect(function()
+		trangThaiUI.hienNutBenNgoai = not trangThaiUI.hienNutBenNgoai
+		if khungNutBatTat then
+			khungNutBatTat.Visible = trangThaiUI.hienNutBenNgoai
+		end
+		if trangThaiUI.hienNutBenNgoai then
+			nut2.Text = "Bật"
+			nut2.TextColor3 = Color3.fromRGB(255, 255, 255)
+			nut2.BackgroundColor3 = Color3.fromRGB(0, 175, 0)
+		else
+			nut2.Text = "Tắt"
+			nut2.TextColor3 = Color3.fromRGB(255, 255, 255)
+			nut2.BackgroundColor3 = Color3.fromRGB(175, 0, 0)
+		end
+	end)
+
+	local dongDropdownCoThe, nut3 = taoDongDropdown(controlsFrame, "Thành phần", "Toàn thân", "Từng phần", trangThaiUI.bienHinhToanThan)
+	dongDropdownCoThe.LayoutOrder = 3
+	nutDropdownCoTheTrongUi = nut3
+	nut3.MouseButton1Click:Connect(function()
+		hoanTacBienHinh()
+
+		trangThaiUI.bienHinhToanThan = not trangThaiUI.bienHinhToanThan
+		if trangThaiUI.bienHinhToanThan then
+			nut3.Text = "Toàn thân"
+		else
+			nut3.Text = "Từng phần"
+		end
+		frameDongBoPhan.Visible = trangThaiUI.chucNangBat and (not trangThaiUI.bienHinhToanThan)
+	end)
+
+	nutMoiDiChuyen = Instance.new("ImageButton")
+	nutMoiDiChuyen.Name = "NutMoiDiChuyen"
+	nutMoiDiChuyen.Size = UDim2.new(0, 50, 0, 50)
+	nutMoiDiChuyen.Position = UDim2.new(0, 10, 0.5, 0)
+	nutMoiDiChuyen.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+	nutMoiDiChuyen.Image = ANH_ICON_MO
+	nutMoiDiChuyen.BackgroundTransparency = 0.2
+	nutMoiDiChuyen.ScaleType = Enum.ScaleType.Crop
+	nutMoiDiChuyen.Active = true
+	nutMoiDiChuyen.Draggable = true
+	nutMoiDiChuyen.Parent = giaoDienManHinh
+	local gocNutMoi = Instance.new("UICorner")
+	gocNutMoi.CornerRadius = UDim.new(0, 8)
+	gocNutMoi.Parent = nutMoiDiChuyen
+	nutMoiDiChuyen.MouseButton1Click:Connect(function()
+		uiTuChinh.Visible = not uiTuChinh.Visible
+	end)
+
+	khungNutBatTat = Instance.new("Frame")
+	khungNutBatTat.Name = "ToggleSelectButtonContainer"
+	khungNutBatTat.Size = UDim2.new(0, 50, 0, 50)
+	khungNutBatTat.Position = UDim2.new(1, -70, 0.6, 0) 
+	khungNutBatTat.AnchorPoint = Vector2.new(1, 1)
+	khungNutBatTat.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	khungNutBatTat.BackgroundTransparency = 0.8
+	khungNutBatTat.Parent = giaoDienManHinh
+	khungNutBatTat.Visible = trangThaiUI.hienNutBenNgoai
+	local gocBenNgoaiBatTat = Instance.new("UICorner")
+	gocBenNgoaiBatTat.CornerRadius = UDim.new(1, 0)
+	gocBenNgoaiBatTat.Parent = khungNutBatTat
+	nutBatTatChon = Instance.new("TextButton")
+	nutBatTatChon.Name = "ToggleSelectButton"
+	nutBatTatChon.Size = UDim2.new(0.85, 0, 0.85, 0)
+	nutBatTatChon.Position = UDim2.new(0.05, 1, 0.05, 1)
+	nutBatTatChon.TextColor3 = Color3.fromRGB(255, 255, 255)
+	nutBatTatChon.Font = Enum.Font.SpecialElite
+	nutBatTatChon.TextScaled = true
+	nutBatTatChon.BackgroundTransparency = 0.15
+	nutBatTatChon.BorderSizePixel = 0
+	nutBatTatChon.Parent = khungNutBatTat
+	local gocBenTrongBatTat = Instance.new("UICorner")
+	gocBenTrongBatTat.CornerRadius = UDim.new(1, 0)
+	gocBenTrongBatTat.Parent = nutBatTatChon
+	nutBatTatChon.MouseButton1Click:Connect(toggleChucNang)
+
+	if DichVuNguoiDung.TouchEnabled then
+		khungNutBatTat.Position = UDim2.new(1, -10, 0.6, -60)
+		local khungNutBienHinh = Instance.new("Frame")
+		khungNutBienHinh.Name = "TransformButtonContainer"
+		khungNutBienHinh.Size = UDim2.new(0, 50, 0, 50)
+		khungNutBienHinh.Position = UDim2.new(1, -70, 0.6, 0) 
+		khungNutBienHinh.AnchorPoint = Vector2.new(1, 1)
+		khungNutBienHinh.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		khungNutBienHinh.BackgroundTransparency = 0.8
+		khungNutBienHinh.Parent = giaoDienManHinh
+		khungNutBienHinh.Visible = trangThaiUI.chucNangBat
+		local gocBenNgoaiBienHinh = Instance.new("UICorner")
+		gocBenNgoaiBienHinh.CornerRadius = UDim.new(1, 0)
+		gocBenNgoaiBienHinh.Parent = khungNutBienHinh
+		nutBienHinh = Instance.new("TextButton")
+		nutBienHinh.Name = "TransformButton"
+		nutBienHinh.Size = UDim2.new(0.85, 0, 0.85, 0)
+		nutBienHinh.Position = UDim2.new(0.05, 1, 0.05, 1)
+		nutBienHinh.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+		nutBienHinh.TextColor3 = Color3.fromRGB(255, 255, 255)
+		nutBienHinh.Text = "Biến"
+		nutBienHinh.Font = Enum.Font.SpecialElite
+		nutBienHinh.TextScaled = true
+		nutBienHinh.BackgroundTransparency = 0.15
+		nutBienHinh.BorderSizePixel = 0
+		nutBienHinh.Parent = khungNutBienHinh
+		local gocBenTrongBienHinh = Instance.new("UICorner")
+		gocBenTrongBienHinh.CornerRadius = UDim.new(1, 0)
+		gocBenTrongBienHinh.Parent = nutBienHinh
+		nutBienHinh.MouseButton1Click:Connect(bienHinh)
+	end
+
+	capNhatTrangThaiChucNang(trangThaiUI.chucNangBat)
+end
+
+DichVuNguoiDung.InputBegan:Connect(function(dauVao, suKienDaXuLy)
+	if dauVao.KeyCode == Enum.KeyCode.R then
+		if not suKienDaXuLy then
+			bienHinh()
+		end
+	end
+	if dauVao.UserInputType == Enum.UserInputType.MouseButton1 or dauVao.UserInputType == Enum.UserInputType.Touch then
+		if suKienDaXuLy or daBienHinh or not trangThaiUI.chucNangBat then
+			return 
+		end
+
+		local uiObjects = giaoDienNguoiChoi:GetGuiObjectsAtPosition(dauVao.Position.X, dauVao.Position.Y)
+		local clickedOnUi = false
+		for _, object in ipairs(uiObjects) do
+			if object:IsDescendantOf(giaoDienNguoiChoi) then
+				clickedOnUi = true
+				break
+			end
+		end
+
+		if clickedOnUi then return end
+
+		local tia = camera:ScreenPointToRay(dauVao.Position.X, dauVao.Position.Y)
+		local thongSo = RaycastParams.new()
+		thongSo.FilterType = Enum.RaycastFilterType.Blacklist
+		thongSo.FilterDescendantsInstances = {nguoiChoiLocal.Character, hopChonHienTai}
+		local ketQua = workspace:Raycast(tia.Origin, tia.Direction * 1000, thongSo)
+		if ketQua and ketQua.Instance then
+			local partMucTieu = ketQua.Instance
+			if partMucTieu:IsA("BasePart") and not partMucTieu:IsA("Terrain") then
+				partDaChon = partMucTieu
+				capNhatHopChon(partDaChon)
+				hienThongBao(
+					"Đã chọn Part!",
+					"Nhấn [R] (PC) hoặc nút [Biến] (Mobile) để biến hình.",
+					4
+				)
+			end
+		end
+	end
+end)
+
+local function khiNhanVatDuocThem(nhanVat)
+	hoanTacBienHinh(nhanVat)
+	local humanoid = nhanVat:WaitForChild("Humanoid")
+	humanoid.Died:Connect(function()
+		hoanTacBienHinh(nhanVat)
+	end)
+end
+
+nguoiChoiLocal.CharacterAdded:Connect(khiNhanVatDuocThem)
+if nguoiChoiLocal.Character then
+	khiNhanVatDuocThem(nguoiChoiLocal.Character)
+end
+
+taoGiaoDienNut()
