@@ -105,7 +105,7 @@ local function taoGiaoDien()
 		        loadstring(game:HttpGet(nut.maLenh))()
 		        giaoDienChinh:Destroy()
 		    end
-		end
+		end)
 	end
 
 	local cornerKhung = Instance.new("UICorner")
