@@ -73,7 +73,7 @@ local function taoGiaoDien()
 	khungCuon.BorderSizePixel = 0
 	khungCuon.BackgroundColor3 = Color3.fromRGB(40, 40, 40) 
 	khungCuon.Parent = khung
-	
+
 	local cornerkhungCuon = Instance.new("UICorner")
 	cornerkhungCuon.CornerRadius = UDim.new(0, 8)
 	cornerkhungCuon.Parent = khungCuon
@@ -101,10 +101,10 @@ local function taoGiaoDien()
 		end)
 
 		nutChon.MouseButton1Click:Connect(function()
-		    if nut.maLenh ~= "" then
-		        loadstring(game:HttpGet(nut.maLenh))()
-		        giaoDienChinh:Destroy()
-		    end
+			if nut.maLenh ~= "" then
+				loadstring(game:HttpGet(nut.maLenh))()
+				giaoDienChinh:Destroy()
+			end
 		end)
 	end
 
