@@ -3,11 +3,11 @@ local nguoiChoiCucBo = nguoiChoi.LocalPlayer
 local giaoDienNguoiChoi = nguoiChoiCucBo:WaitForChild("PlayerGui")
 
 local danhSachNut = {
-	{ vanBan = "Transform", maLenh = [['https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform']] },
-	{ vanBan = "2", maLenh = [[]] },
-	{ vanBan = "3", maLenh = [[]] },
-	{ vanBan = "4", maLenh = [[]] },
-	{ vanBan = "5", maLenh = [[]] }
+	{ vanBan = "Transform", maLenh = "https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform" },
+	{ vanBan = "2", maLenh = "" },
+	{ vanBan = "3", maLenh = "" },
+	{ vanBan = "4", maLenh = "" },
+	{ vanBan = "5", maLenh = "" }
 }
 
 local soNut = #danhSachNut
@@ -101,9 +101,11 @@ local function taoGiaoDien()
 		end)
 
 		nutChon.MouseButton1Click:Connect(function()
-			loadstring(game:HttpGet(nut.maLenh))()
-			giaoDienChinh:Destroy()
-		end)
+		    if nut.maLenh ~= "" then
+		        loadstring(game:HttpGet(nut.maLenh))()
+		        giaoDienChinh:Destroy()
+		    end
+		end
 	end
 
 	local cornerKhung = Instance.new("UICorner")
