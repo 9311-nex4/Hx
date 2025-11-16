@@ -3,7 +3,7 @@ local nguoiChoiCucBo = nguoiChoi.LocalPlayer
 local giaoDienNguoiChoi = nguoiChoiCucBo:WaitForChild("PlayerGui")
 
 local danhSachNut = {
-	{ vanBan = "Transform", maLenh = [[game:HttpGet('https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform')]] },
+	{ vanBan = "Transform", maLenh = [['https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform']] },
 	{ vanBan = "2", maLenh = [[]] },
 	{ vanBan = "3", maLenh = [[]] },
 	{ vanBan = "4", maLenh = [[]] },
@@ -101,7 +101,7 @@ local function taoGiaoDien()
 		end)
 
 		nutChon.MouseButton1Click:Connect(function()
-			loadstring(nut.maLenh)()
+			loadstring(game:HttpGet(nut.maLenh))()
 			giaoDienChinh:Destroy()
 		end)
 	end
