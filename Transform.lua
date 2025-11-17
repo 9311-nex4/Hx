@@ -113,17 +113,24 @@ local function taoHieuUng(partGoc)
 	end
 end
 
-local function guiThongBao(tieuDe, noiDung, thoiGian)
-	local thoiGianHienThi = thoiGian or 3
+local success, externalNotify = pcall(function()
+    return loadstring(game:HttpGet('https://raw.githubusercontent.com/9311-nex4/Hx/main/Notify.lua'))()
+end)
 
-	pcall(function()
-		StarterGui:SetCore("SendNotification", {
-			Title = tieuDe,
-			Text = noiDung,
-			Duration = thoiGianHienThi,
-			Button1 = "OK",
-		})
-	end)
+local function guiThongBao(tieuDe, noiDung, thoiGian)
+    local thoiGianHienThi = thoiGian or 3
+    
+    if success and typeof(externalNotify) == "function" then
+        externalNotify(tieuDe, noiDung, thoiGianHienThi)
+    else
+        pcall(function()
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = tieuDe,
+                Text = noiDung,
+                Duration = thoiGianHienThi,
+            })
+        end)
+    end
 end
 
 local function updateCloneAnimation()
