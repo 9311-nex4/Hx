@@ -49,7 +49,7 @@ local function TaoGiaoDien()
 	ScreenGui.Parent = PlayerGui
 
 	local MobileCheck = (UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled)
-	local ChieuRong = MobileCheck and 380 or 340
+	local ChieuRong = MobileCheck and 380 or 240
 	local TyLeChieuCao = 0.55 
 	
 	
