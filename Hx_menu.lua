@@ -11,7 +11,7 @@ local ThongBao = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311
 
 _G.DaKichHoat = _G.DaKichHoat or {}
 
-local DanhSachScript = {
+local DanhSachKichBan = {
 	{ Ten = "Transform", Link = "https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform.lua" },
 	{ Ten = "Example 2", Link = "" },
 	{ Ten = "Example 3", Link = "" },
@@ -24,18 +24,18 @@ local CauHinh = {
 		Nen = Color3.fromRGB(18, 18, 18),
 		NenList = Color3.fromRGB(35, 35, 35),
 		Nut = Color3.fromRGB(60, 60, 60),
-		NutHover = Color3.fromRGB(90, 90, 90),
-		NutTat = Color3.fromRGB(80, 80, 80),
-		NutTatHover = Color3.fromRGB(200, 0, 0),
+		NutLuot = Color3.fromRGB(90, 90, 90),
+		NutDong = Color3.fromRGB(80, 80, 80),
+		NutDongLuot = Color3.fromRGB(200, 0, 0),
 		Chu = Color3.fromRGB(240, 240, 240),
 		Vien = Color3.fromRGB(255, 255, 255)
 	},
 	KichThuoc = {
-		NutH = 38,
-		Gap = 6,
-		IconTo = UDim2.new(0, 80, 0, 80),
+		Cao = 38,
+		Cach = 6,
+		IconLon = UDim2.new(0, 80, 0, 80),
 		IconNho = UDim2.new(0, 35, 0, 35),
-		NutTat = 30
+		NutDong = 30
 	}
 }
 
@@ -43,18 +43,17 @@ local function TaoGiaoDien()
 	if PlayerGui:FindFirstChild("HxInterface") then PlayerGui.HxInterface:Destroy() end
 
 	local DangDong = false
-	local ScreenGui = Instance.new("ScreenGui")
-	ScreenGui.Name = "HxInterface"
-	ScreenGui.ResetOnSpawn = false
-	ScreenGui.Parent = PlayerGui
+	local ManHinhGui = Instance.new("ScreenGui")
+	ManHinhGui.Name = "HxInterface"
+	ManHinhGui.ResetOnSpawn = false
+	ManHinhGui.Parent = PlayerGui
 
-	local MobileCheck = (UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled)
-	local ChieuRong = MobileCheck and 380 or 340
+	local KiemTraDienThoai = (UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled)
+	local ChieuRong = KiemTraDienThoai and 380 or 340
 	local TyLeChieuCao = 0.45
 	
-	
-	local SoLuong = #DanhSachScript
-	local ChieuCaoList = (SoLuong * (CauHinh.KichThuoc.NutH + CauHinh.KichThuoc.Gap))
+	local SoLuong = #DanhSachKichBan
+	local ChieuCaoList = (SoLuong * (CauHinh.KichThuoc.Cao + CauHinh.KichThuoc.Cach))
 	local TongCao = 70 + ChieuCaoList + 20
 	local MaxCao = Camera.ViewportSize.Y * TyLeChieuCao
 	
@@ -62,13 +61,13 @@ local function TaoGiaoDien()
 	
 	local KhungChinh = Instance.new("Frame")
 	KhungChinh.Name = "KhungChinh"
-	KhungChinh.Size = CauHinh.KichThuoc.IconTo
+	KhungChinh.Size = CauHinh.KichThuoc.IconLon
 	KhungChinh.Position = UDim2.new(0.5, 0, 0.5, 0)
 	KhungChinh.AnchorPoint = Vector2.new(0.5, 0.5)
 	KhungChinh.BackgroundColor3 = CauHinh.Mau.Nen
 	KhungChinh.BackgroundTransparency = 1
 	KhungChinh.ClipsDescendants = false
-	KhungChinh.Parent = ScreenGui
+	KhungChinh.Parent = ManHinhGui
 	Instance.new("UICorner", KhungChinh).CornerRadius = UDim.new(0, 10)
 
 	local Icon = Instance.new("ImageLabel")
@@ -99,25 +98,25 @@ local function TaoGiaoDien()
 	TieuDe.TextTransparency = 1
 	TieuDe.Parent = NoiDung
 
-	local NutTat = Instance.new("TextButton")
-	NutTat.Size = UDim2.fromOffset(CauHinh.KichThuoc.NutTat, CauHinh.KichThuoc.NutTat)
-	NutTat.Position = UDim2.new(1, -25, 0, 25)
-	NutTat.AnchorPoint = Vector2.new(0.5, 0.5)
-	NutTat.Text = "X"
-	NutTat.TextSize = 18
-	NutTat.Font = Enum.Font.GothamBlack
-	NutTat.BackgroundColor3 = CauHinh.Mau.NutTat
-	NutTat.TextColor3 = CauHinh.Mau.Chu
-	NutTat.BackgroundTransparency = 1
-	NutTat.TextTransparency = 1
-	NutTat.Parent = KhungChinh
-	Instance.new("UICorner", NutTat).CornerRadius = UDim.new(0, 6)
+	local NutDong = Instance.new("TextButton")
+	NutDong.Size = UDim2.fromOffset(CauHinh.KichThuoc.NutDong, CauHinh.KichThuoc.NutDong)
+	NutDong.Position = UDim2.new(1, -25, 0, 25)
+	NutDong.AnchorPoint = Vector2.new(0.5, 0.5)
+	NutDong.Text = "X"
+	NutDong.TextSize = 18
+	NutDong.Font = Enum.Font.GothamBlack
+	NutDong.BackgroundColor3 = CauHinh.Mau.NutDong
+	NutDong.TextColor3 = CauHinh.Mau.Chu
+	NutDong.BackgroundTransparency = 1
+	NutDong.TextTransparency = 1
+	NutDong.Parent = KhungChinh
+	Instance.new("UICorner", NutDong).CornerRadius = UDim.new(0, 6)
 	
-	local VienNutTat = Instance.new("UIStroke", NutTat)
-	VienNutTat.Color = CauHinh.Mau.Vien
-	VienNutTat.Transparency = 1
-	VienNutTat.Thickness = 1.5
-	VienNutTat.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	local VienNutDong = Instance.new("UIStroke", NutDong)
+	VienNutDong.Color = CauHinh.Mau.Vien
+	VienNutDong.Transparency = 1
+	VienNutDong.Thickness = 1.5
+	VienNutDong.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
 	local KhungList = Instance.new("ScrollingFrame")
 	KhungList.Size = UDim2.new(0.9, 0, 1, -65)
@@ -131,7 +130,7 @@ local function TaoGiaoDien()
 	Instance.new("UICorner", KhungList).CornerRadius = UDim.new(0, 6)
 	
 	local Layout = Instance.new("UIListLayout", KhungList)
-	Layout.Padding = UDim.new(0, CauHinh.KichThuoc.Gap)
+	Layout.Padding = UDim.new(0, CauHinh.KichThuoc.Cach)
 	Layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	Layout.SortOrder = Enum.SortOrder.LayoutOrder
 	
@@ -139,37 +138,37 @@ local function TaoGiaoDien()
 		KhungList.CanvasSize = UDim2.new(0, 0, 0, Layout.AbsoluteContentSize.Y + 10)
 	end)
 
-	local Elements = {
-		ScreenGui = ScreenGui, Khung = KhungChinh, Icon = Icon,
-		TieuDe = TieuDe, NutDong = NutTat, VienNutDong = VienNutTat, DanhSach = KhungList
+	local DoiTuongUI = {
+		ScreenGui = ManHinhGui, Khung = KhungChinh, Icon = Icon,
+		TieuDe = TieuDe, NutDong = NutDong, VienNutDong = VienNutDong, DanhSach = KhungList
 	}
 	
-	local AnimConfigs = {
-		IconDau = CauHinh.KichThuoc.IconTo,
+	local CauHinhHieuUng = {
+		IconDau = CauHinh.KichThuoc.IconLon,
 		IconCuoi = CauHinh.KichThuoc.IconNho,
 		IconDauPos = UDim2.new(0.5, 0, 0.5, 0),
 		IconCuoiPos = UDim2.new(0, 27, 0, 27),
-		KhungDau = CauHinh.KichThuoc.IconTo,
+		KhungDau = CauHinh.KichThuoc.IconLon,
 		KhungCuoi = UDim2.new(0, ChieuRong, 0, TongCao),
 		NutDongPop = UDim2.new(0, 42, 0, 42),
 		KhungTrans = 0.15
 	}
 
-	LibHieuUng.MoGiaoDien(Elements, AnimConfigs)
+	LibHieuUng.MoGiaoDien(DoiTuongUI, CauHinhHieuUng)
 	LibHieuUng.KeoTha(KhungChinh, KhungChinh)
 
-	local function DongUI()
+	local function DongGiaoDien()
 		if DangDong then return end
 		DangDong = true
-		LibHieuUng.DongGiaoDien(Elements, AnimConfigs, function()
-			ScreenGui:Destroy()
+		LibHieuUng.DongGiaoDien(DoiTuongUI, CauHinhHieuUng, function()
+			ManHinhGui:Destroy()
 		end)
 	end
 
-	for i, Data in ipairs(DanhSachScript) do
+	for i, DuLieu in ipairs(DanhSachKichBan) do
 		local Nut = Instance.new("TextButton")
-		Nut.Size = UDim2.new(0.9, 0, 0, CauHinh.KichThuoc.NutH)
-		Nut.Text = Data.Ten
+		Nut.Size = UDim2.new(0.9, 0, 0, CauHinh.KichThuoc.Cao)
+		Nut.Text = DuLieu.Ten
 		Nut.BackgroundColor3 = CauHinh.Mau.Nut
 		Nut.TextColor3 = CauHinh.Mau.Chu
 		Nut.Font = Enum.Font.GothamMedium
@@ -180,34 +179,37 @@ local function TaoGiaoDien()
 		Nut.Parent = KhungList
 		Instance.new("UICorner", Nut).CornerRadius = UDim.new(0, 6)
 
-		local PropsThuong = {
-			Size = UDim2.new(0.9, 0, 0, CauHinh.KichThuoc.NutH),
+		local ThuocTinhThuong = {
+			Size = UDim2.new(0.9, 0, 0, CauHinh.KichThuoc.Cao),
 			BackgroundColor3 = CauHinh.Mau.Nut,
 			TextSize = 16
 		}
-		local PropsHover = {
-			Size = UDim2.new(0.98, 0, 0, CauHinh.KichThuoc.NutH + 4),
-			BackgroundColor3 = CauHinh.Mau.NutHover,
+		local ThuocTinhLuot = {
+			Size = UDim2.new(0.98, 0, 0, CauHinh.KichThuoc.Cao + 4),
+			BackgroundColor3 = CauHinh.Mau.NutLuot,
 			TextSize = 18
 		}
 
-		Nut.MouseEnter:Connect(function() LibHieuUng.Hover(Nut, true, PropsHover, PropsThuong) end)
-		Nut.MouseLeave:Connect(function() LibHieuUng.Hover(Nut, false, PropsHover, PropsThuong) end)
+		Nut.MouseEnter:Connect(function() LibHieuUng.Hover(Nut, true, ThuocTinhLuot, ThuocTinhThuong) end)
+		Nut.MouseLeave:Connect(function() LibHieuUng.Hover(Nut, false, ThuocTinhLuot, ThuocTinhThuong) end)
 		
 		Nut.MouseButton1Click:Connect(function()
 			LibHieuUng.Click(Nut)
-			LibHieuUng.Hover(Nut, false, PropsHover, PropsThuong)
-			if _G.DaKichHoat[Data.Ten] then
+			
+			task.wait(0.1)
+			LibHieuUng.Hover(Nut, false, ThuocTinhLuot, ThuocTinhThuong)
+
+			if _G.DaKichHoat[DuLieu.Ten] then
 				ThongBao("Hx Script", "Đã bật chức năng này rồi!", 2)
 				return
 			end
 
-			if Data.Link ~= "" then
-				_G.DaKichHoat[Data.Ten] = true
-				ThongBao("Hx Script", "Đang tải: " .. Data.Ten, 2)
+			if DuLieu.Link ~= "" then
+				_G.DaKichHoat[DuLieu.Ten] = true
+				ThongBao("Hx Script", "Đang tải: " .. DuLieu.Ten, 2)
 
 				task.spawn(function()
-					local ok, err = pcall(function() loadstring(game:HttpGet(Data.Link))() end)
+					local ok, err = pcall(function() loadstring(game:HttpGet(DuLieu.Link))() end)
 					if not ok then warn(err) ThongBao("Hx Script", "Link hỏng!", 3) end
 				end)
 			else
@@ -216,36 +218,36 @@ local function TaoGiaoDien()
 		end)
 	end
 
-	local TatPropsThuong = {
+	local NutDongThuong = {
 		Size = UDim2.fromOffset(30, 30),
-		BackgroundColor3 = CauHinh.Mau.NutTat,
+		BackgroundColor3 = CauHinh.Mau.NutDong,
 		BackgroundTransparency = 0.6,
 		TextSize = 18,
 		TextColor3 = CauHinh.Mau.Chu
 	}
-	local TatPropsHover = {
+	local NutDongLuot = {
 		Size = UDim2.fromOffset(34, 34),
-		BackgroundColor3 = CauHinh.Mau.NutTatHover,
-		BackgroundTransparency = 0, 
+		BackgroundColor3 = CauHinh.Mau.NutDongLuot,
+		BackgroundTransparency = 0,
 		TextSize = 22,
 		TextColor3 = Color3.new(1,1,1)
 	}
 
-	NutTat.MouseEnter:Connect(function()
-		if not DangDong then 
-			LibHieuUng.Hover(NutTat, true, TatPropsHover, TatPropsThuong)
-			game:GetService("TweenService"):Create(VienNutTat, TweenInfo.new(0.3), {Transparency = 0.4}):Play()
+	NutDong.MouseEnter:Connect(function()
+		if not DangDong then
+			LibHieuUng.Hover(NutDong, true, NutDongLuot, NutDongThuong)
+			game:GetService("TweenService"):Create(VienNutDong, TweenInfo.new(0.3), {Transparency = 0.4}):Play()
 		end
 	end)
-	NutTat.MouseLeave:Connect(function()
-		if not DangDong then 
-			LibHieuUng.Hover(NutTat, false, TatPropsHover, TatPropsThuong)
-			game:GetService("TweenService"):Create(VienNutTat, TweenInfo.new(0.3), {Transparency = 0.8}):Play()
+	NutDong.MouseLeave:Connect(function()
+		if not DangDong then
+			LibHieuUng.Hover(NutDong, false, NutDongLuot, NutDongThuong)
+			game:GetService("TweenService"):Create(VienNutDong, TweenInfo.new(0.3), {Transparency = 0.8}):Play()
 		end
 	end)
 	
-	NutTat.MouseButton1Click:Connect(function()
-		if not DangDong then DongUI() end
+	NutDong.MouseButton1Click:Connect(function()
+		if not DangDong then DongGiaoDien() end
 	end)
 end
 
