@@ -1,8 +1,10 @@
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
 
 local NguoiChoi = Players.LocalPlayer
 local GiaoDienNguoiChoi = NguoiChoi:WaitForChild("PlayerGui")
+local Camera = Workspace.CurrentCamera
 
 local ThuVienHieuUng = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Animation.lua"))()
 local ThongBao = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Notify.lua"))()
@@ -13,6 +15,8 @@ local DuLieuNut = {
 	{ Ten = "Transform", Link = "https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform.lua" },
 	{ Ten = "Example 2", Link = "" },
 	{ Ten = "Example 3", Link = "" },
+	{ Ten = "Example 4", Link = "" },
+	{ Ten = "Example 5", Link = "" },
 }
 
 local CauHinh = {
@@ -32,8 +36,6 @@ local CauHinh = {
 		ViTriIconCuoi = UDim2.new(0, 27.5, 0, 27.5),
 		ViTriIconDau = UDim2.new(0.5, 0, 0.5, 0),
 		KhungDau = UDim2.new(0, 80, 0, 80),
-		KhungCuoiMobile = UDim2.new(0.45, 0, 0.7425, 0),
-		KhungCuoiPC = UDim2.new(0, 360, 0, 238),
 		NutDong = UDim2.new(0, 30, 0, 30),
 		NutDongLuot = UDim2.new(0, 35, 0, 35),
 		NutDongNhan = UDim2.new(0, 28, 0, 28),
@@ -50,8 +52,21 @@ local function TaoGiaoDien()
 	ManHinhGui.Parent = GiaoDienNguoiChoi
 	ManHinhGui.ResetOnSpawn = false
 
-	local KichThuocCuoi = (UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled) 
-		and CauHinh.KichThuoc.KhungCuoiMobile or CauHinh.KichThuoc.KhungCuoiPC
+	local SoLuongNut = #DuLieuNut
+	local ChieuCaoNut = 45
+	local KhoangCach = 8
+	local ChieuCaoDau = 60 
+	local ChieuCaoDuoi = 20 
+	
+	local TongChieuCaoCanThiet = ChieuCaoDau + (SoLuongNut * (ChieuCaoNut + KhoangCach)) + ChieuCaoDuoi
+	local ChieuCaoToiDa = Camera.ViewportSize.Y * 0.7
+	
+	if TongChieuCaoCanThiet > ChieuCaoToiDa then
+		TongChieuCaoCanThiet = ChieuCaoToiDa
+	end
+
+	local ChieuRongKhung = (UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled) and 320 or 360
+	local KichThuocCuoi = UDim2.new(0, ChieuRongKhung, 0, TongChieuCaoCanThiet)
 
 	local KhungChinh = Instance.new("Frame")
 	KhungChinh.Size = CauHinh.KichThuoc.KhungDau
@@ -113,7 +128,7 @@ local function TaoGiaoDien()
 	VienNutDong.Thickness = 1.5
 
 	local KhungDanhSach = Instance.new("ScrollingFrame")
-	KhungDanhSach.Size = UDim2.new(1, -20, 1, -70)
+	KhungDanhSach.Size = UDim2.new(0.8, 0, 1, -70)
 	KhungDanhSach.Position = UDim2.new(0, 10, 0, 50)
 	KhungDanhSach.BackgroundTransparency = 1
 	KhungDanhSach.BackgroundColor3 = CauHinh.MauSac.NenNoiDung
@@ -123,7 +138,7 @@ local function TaoGiaoDien()
 	Instance.new("UICorner", KhungDanhSach).CornerRadius = UDim.new(0, 8)
 	
 	local BoCuc = Instance.new("UIListLayout", KhungDanhSach)
-	BoCuc.Padding = UDim.new(0, 8)
+	BoCuc.Padding = UDim.new(0, KhoangCach)
 	BoCuc.SortOrder = Enum.SortOrder.LayoutOrder
 	
 	BoCuc:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
@@ -156,7 +171,7 @@ local function TaoGiaoDien()
 
 	for i, duLieu in ipairs(DuLieuNut) do
 		local Nut = Instance.new("TextButton")
-		Nut.Size = UDim2.new(1, 0, 0, 45)
+		Nut.Size = UDim2.new(1, 0, 0, ChieuCaoNut)
 		Nut.Text = duLieu.Ten
 		Nut.BackgroundColor3 = CauHinh.MauSac.NutThuong
 		Nut.TextColor3 = CauHinh.MauSac.Chu
@@ -169,8 +184,8 @@ local function TaoGiaoDien()
 		Instance.new("UICorner", Nut).CornerRadius = UDim.new(0, 8)
 
 		local CauHinhHieuUngNut = {
-			KichThuocThuong = UDim2.new(1, 0, 0, 45),
-			KichThuocLuot = UDim2.new(1, 0, 0, 56),
+			KichThuocThuong = UDim2.new(1, 0, 0, ChieuCaoNut),
+			KichThuocLuot = UDim2.new(1, 0, 0, ChieuCaoNut + 11),
 			MauThuong = CauHinh.MauSac.NutThuong,
 			MauLuot = CauHinh.MauSac.NutLuot
 		}
@@ -180,13 +195,13 @@ local function TaoGiaoDien()
 		
 		Nut.MouseButton1Click:Connect(function()
 			if _G.HxScript_DaKichHoat[duLieu.Ten] then
-				ThongBao("Hệ Thống", "Đã được kích hoạt rồi!", 3)
+				ThongBao("Hx Script", "Đã được kích hoạt rồi!", 3)
 				return
 			end
 
 			if duLieu.Link ~= "" then
 				_G.HxScript_DaKichHoat[duLieu.Ten] = true
-				ThongBao("Hệ Thống", "Đã kích hoạt: " .. duLieu.Ten, 3)
+				ThongBao("Hx Script", "Đã kích hoạt: " .. duLieu.Ten, 3)
 
 				task.spawn(function()
 					local thanhCong, loi = pcall(function() loadstring(game:HttpGet(duLieu.Link))() end)
@@ -196,7 +211,7 @@ local function TaoGiaoDien()
 					end
 				end)
 			else
-				ThongBao("Thông Báo", "Chức năng này chưa có Link!", 2)
+				ThongBao("Hx Script", "Chức năng này chưa có Link!", 2)
 			end
 		end)
 	end
