@@ -44,6 +44,8 @@ local CauHinh = {
 local function TaoGiaoDien()
 	if GiaoDienNguoiChoi:FindFirstChild("GiaoDienChinh") then GiaoDienNguoiChoi.GiaoDienChinh:Destroy() end
 
+	local DangXuLy = false
+
 	local ScreenGui = Instance.new("ScreenGui")
 	ScreenGui.Name = "GiaoDienChinh"
 	ScreenGui.Parent = GiaoDienNguoiChoi
@@ -165,12 +167,19 @@ local function TaoGiaoDien()
 		}
 
 		Nut.MouseEnter:Connect(function()
-			ThuVienHieuUng.HieuUngLuotNut(Nut, true, CauHinhNut)
+			if not DangXuLy then
+				ThuVienHieuUng.HieuUngLuotNut(Nut, true, CauHinhNut)
+			end
 		end)
 		Nut.MouseLeave:Connect(function()
-			ThuVienHieuUng.HieuUngLuotNut(Nut, false, CauHinhNut)
+			if not DangXuLy then
+				ThuVienHieuUng.HieuUngLuotNut(Nut, false, CauHinhNut)
+			end
 		end)
 		Nut.MouseButton1Click:Connect(function()
+			if DangXuLy then return end
+			DangXuLy = true
+			
 			if duLieu.Link ~= "" then
 				pcall(function() loadstring(game:HttpGet(duLieu.Link))() end)
 			end
@@ -183,15 +192,23 @@ local function TaoGiaoDien()
 	local CauHinhKichThuocNutDong = { Thuong = CauHinh.KichThuoc.NutDong, Luot = CauHinh.KichThuoc.NutDongLuot }
 
 	NutDong.MouseEnter:Connect(function()
-		ThuVienHieuUng.HieuUngLuotNutDong(CacDoiTuongNutDong, true, CauHinhMauNutDong, CauHinhKichThuocNutDong)
+		if not DangXuLy then
+			ThuVienHieuUng.HieuUngLuotNutDong(CacDoiTuongNutDong, true, CauHinhMauNutDong, CauHinhKichThuocNutDong)
+		end
 	end)
 	NutDong.MouseLeave:Connect(function()
-		ThuVienHieuUng.HieuUngLuotNutDong(CacDoiTuongNutDong, false, CauHinhMauNutDong, CauHinhKichThuocNutDong)
+		if not DangXuLy then
+			ThuVienHieuUng.HieuUngLuotNutDong(CacDoiTuongNutDong, false, CauHinhMauNutDong, CauHinhKichThuocNutDong)
+		end
 	end)
 	NutDong.MouseButton1Down:Connect(function()
-		ThuVienHieuUng.HieuUngNhanNut(NutDong, CauHinh.KichThuoc.NutDongNhan)
+		if not DangXuLy then
+			ThuVienHieuUng.HieuUngNhanNut(NutDong, CauHinh.KichThuoc.NutDongNhan)
+		end
 	end)
 	NutDong.MouseButton1Up:Connect(function()
+		if DangXuLy then return end
+		DangXuLy = true
 		DongVaXoa()
 	end)
 end
