@@ -45,7 +45,7 @@ local function thongbao(tieude, noidung, thoigian)
 
 	local khung = Instance.new("Frame")
 	khung.Name = "NoiDung"
-	khung.Size = UDim2.new(0, 220, 0, NOTIF_HEIGHT)
+	khung.Size = UDim2.new(0, 190, 0, NOTIF_HEIGHT)
 	khung.Position = viTriAn
 	khung.AnchorPoint = Vector2.new(1, 1)
 	khung.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
