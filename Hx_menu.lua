@@ -101,6 +101,7 @@ local function TaoGiaoDien()
 	NutTat.Position = UDim2.new(1, -25, 0, 25)
 	NutTat.AnchorPoint = Vector2.new(0.5, 0.5)
 	NutTat.Text = "X"
+	Nut.TextSize = 18
 	NutTat.Font = Enum.Font.GothamBlack
 	NutTat.BackgroundColor3 = CaiDat.Mau.NutTat
 	NutTat.TextColor3 = CaiDat.Mau.Chu
