@@ -7,9 +7,12 @@ local GiaoDienNguoiChoi = NguoiChoi:WaitForChild("PlayerGui")
 local LINK_THU_VIEN = "https://raw.githubusercontent.com/9311-nex4/Hx/main/Animation.lua" 
 local ThuVienHieuUng = loadstring(game:HttpGet(LINK_THU_VIEN))()
 
+-- [THÊM] Tạo bảng lưu trạng thái toàn cục để không bị mất khi tắt GUI
+_G.HxScript_DaKichHoat = _G.HxScript_DaKichHoat or {}
+
 local DuLieuNut = {
 	{ Ten = "Transform", Link = "https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform.lua" },
-	{ Ten = "Example 2", Link = "" },
+	{ Ten = "Example 2", Link = "" }, -- Ví dụ link rỗng
 	{ Ten = "Example 3", Link = "" },
 }
 
@@ -24,7 +27,8 @@ local CauHinh = {
 		DongThuong = Color3.fromRGB(90, 90, 90),
 		DongLuot = Color3.fromRGB(180, 50, 50),
 		Chu = Color3.fromRGB(255, 255, 255),
-		Vien = Color3.fromRGB(255, 255, 255)
+		Vien = Color3.fromRGB(255, 255, 255),
+		DaBat = Color3.fromRGB(100, 255, 100) -- [THÊM] Màu cho nút đã bật
 	},
 	KichThuoc = {
 		IconDau = UDim2.new(0, 80, 0, 80),
@@ -104,7 +108,7 @@ local function TaoGiaoDien()
 	local DemNutDong = Instance.new("UIPadding", NutDong)
 	local VienNutDong = Instance.new("UIStroke", NutDong)
 	VienNutDong.Color = CauHinh.MauSac.Vien
-	VienNutDong.Color = ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	VienNutDong.ApplyStrokeMode = Enum.ApplyStrokeMode.Border -- Sửa lỗi cú pháp nhỏ ở đây
 	VienNutDong.Transparency = 1
 	VienNutDong.Thickness = 1.5
 
@@ -160,6 +164,12 @@ local function TaoGiaoDien()
 		Nut.LayoutOrder = i
 		Instance.new("UICorner", Nut).CornerRadius = UDim.new(0, 8)
 
+		-- [THÊM] Kiểm tra nếu nút đã được kích hoạt trước đó
+		if _G.HxScript_DaKichHoat[duLieu.Ten] then
+			Nut.Text = duLieu.Ten .. " (Đã Bật)"
+			Nut.TextColor3 = CauHinh.MauSac.DaBat
+		end
+
 		local CauHinhNut = {
 			KichThuocThuong = UDim2.new(1,0,0,45),
 			KichThuocLuot = UDim2.new(1,0,0,56),
@@ -178,12 +188,28 @@ local function TaoGiaoDien()
 			end
 		end)
 		Nut.MouseButton1Click:Connect(function()
+			-- [SỬA] Chặn spam: Nếu đang xử lý HOẶC script này đã kích hoạt rồi thì dừng lại
 			if DangXuLy then return end
+			
+			if _G.HxScript_DaKichHoat[duLieu.Ten] then
+				-- Tùy chọn: Thêm thông báo "Đã bật rồi" ở đây nếu muốn
+				return 
+			end
+			
 			DangXuLy = true
 			
 			if duLieu.Link ~= "" then
+				-- Đánh dấu đã kích hoạt script này
+				_G.HxScript_DaKichHoat[duLieu.Ten] = true
+				
+				-- Cập nhật giao diện nút ngay lập tức
+				Nut.Text = duLieu.Ten .. " (Đã Bật)"
+				Nut.TextColor3 = CauHinh.MauSac.DaBat
+				
 				pcall(function() loadstring(game:HttpGet(duLieu.Link))() end)
 			end
+			
+			-- Đợi 1 chút cho chắc chắn rồi mới đóng (tùy chọn), hoặc đóng luôn
 			DongVaXoa()
 		end)
 	end
