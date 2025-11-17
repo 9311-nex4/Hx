@@ -1,6 +1,5 @@
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 
 local Plr = Players.LocalPlayer
 local PlayerGui = Plr:WaitForChild("PlayerGui")
@@ -14,8 +13,6 @@ local DataButtons = {
 	{ Ten = "Transform", Link = "https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform.lua" },
 	{ Ten = "Example 2", Link = "" },
 	{ Ten = "Example 3", Link = "" },
-	{ Ten = "Example 4", Link = "" },
-	{ Ten = "Example 5", Link = "" },
 }
 
 local Config = {
@@ -27,8 +24,7 @@ local Config = {
 		CloseNormal = Color3.fromRGB(90, 90, 90),
 		CloseHover = Color3.fromRGB(180, 50, 50),
 		Text = Color3.fromRGB(255, 255, 255),
-		Border = Color3.fromRGB(255, 255, 255),
-		Enabled = Color3.fromRGB(100, 255, 100)
+		Border = Color3.fromRGB(255, 255, 255)
 	},
 	Sizes = {
 		IconStart = UDim2.new(0, 80, 0, 80),
@@ -172,11 +168,6 @@ local function CreateUI()
 		Btn.Parent = ListFrame
 		Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 8)
 
-		if _G.HxScript_DaKichHoat[data.Ten] then
-			Btn.Text = data.Ten .. " (Đã Bật)"
-			Btn.TextColor3 = Config.Colors.Enabled
-		end
-
 		local BtnAnimCfg = {
 			KichThuocThuong = UDim2.new(1, 0, 0, 45),
 			KichThuocLuot = UDim2.new(1, 0, 0, 56),
@@ -188,11 +179,13 @@ local function CreateUI()
 		Btn.MouseLeave:Connect(function() LibAnim.HieuUngLuotNut(Btn, false, BtnAnimCfg) end)
 		
 		Btn.MouseButton1Click:Connect(function()
+			if _G.HxScript_DaKichHoat[data.Ten] then
+				Notify("Hệ Thống", "Đã được kích hoạt rồi!", 3)
+				return
+			end
+
 			if data.Link ~= "" then
 				_G.HxScript_DaKichHoat[data.Ten] = true
-				Btn.Text = data.Ten .. " (Đã Bật)"
-				Btn.TextColor3 = Config.Colors.Enabled
-				
 				Notify("Hệ Thống", "Đã kích hoạt: " .. data.Ten, 3)
 
 				task.spawn(function()
