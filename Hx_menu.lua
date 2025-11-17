@@ -156,6 +156,7 @@ local function TaoGiaoDien()
 	}
 
 	LibHieuUng.MoGiaoDien(Elements, AnimConfigs)
+	LibHieuUng.KeoTha(KhungChinh, KhungChinh)
 
 	local function DongUI()
 		if DangDong then return end
