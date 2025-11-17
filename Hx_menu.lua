@@ -131,7 +131,6 @@ local function TaoGiaoDien()
 	Layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	Layout.SortOrder = Enum.SortOrder.LayoutOrder
 	
-	-- Tự động chỉnh độ dài cuộn
 	Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
 		KhungList.CanvasSize = UDim2.new(0, 0, 0, Layout.AbsoluteContentSize.Y + 10)
 	end)
