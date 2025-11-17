@@ -4,19 +4,16 @@ local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
---// 1. LOAD THƯ VIỆN HIỆU ỨNG TỪ GITHUB //--
--- Thay link dưới bằng link raw github file Animation.lua của bạn
-local LINK_LIB = "https://raw.githubusercontent.com/9311-nex4/Hx/main/Animation.lua" 
-local HieuUngLib = loadstring(game:HttpGet(LINK_LIB))()
+local Animation = loadstring(game:HttpGet("LINK_GITHUB_RAW_FILE_ANIMATION_CUA_BAN_O_DAY"))()
 
 local DATA_NUT = {
 	{ Ten = "Transform", Link = "https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform.lua" },
 	{ Ten = "Example 2", Link = "" },
+	{ Ten = "Example 3", Link = "" },
 }
 
 local ID_ICON = "rbxassetid://117118515787811"
 
--- Cấu hình màu sắc/kích thước (Vẫn giữ ở Client để dễ chỉnh giao diện)
 local CONFIG = {
 	MauSac = {
 		Nen = Color3.fromRGB(15, 15, 15),
@@ -51,11 +48,9 @@ local function TaoGiaoDien()
 	ScreenGui.Parent = PlayerGui
 	ScreenGui.ResetOnSpawn = false
 
-	-- Xác định kích thước cuối dựa trên thiết bị
 	local KichThuocCuoi = (UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled) 
 		and CONFIG.KichThuoc.KhungCuoiMobile or CONFIG.KichThuoc.KhungCuoiPC
 
-	-- == TẠO GUI OBJECTS == --
 	local KhungChinh = Instance.new("Frame", ScreenGui)
 	KhungChinh.Size = CONFIG.KichThuoc.KhungDau
 	KhungChinh.Position = UDim2.new(0.5,0,0.5,0)
@@ -125,7 +120,6 @@ local function TaoGiaoDien()
 		DanhSach.CanvasSize = UDim2.new(0,0,0, Layout.AbsoluteContentSize.Y + 20)
 	end)
 
-	-- == GÓI OBJECTS VÀ CONFIG ĐỂ GỬI QUA THƯ VIỆN == --
 	local GuiObjects = {
 		ScreenGui = ScreenGui, Khung = KhungChinh, Icon = IconDaiDien,
 		TieuDe = TieuDe, NutDong = NutDong, VienNutDong = VienNutDong, DanhSach = DanhSach
@@ -141,10 +135,8 @@ local function TaoGiaoDien()
 		NutDongPop = CONFIG.KichThuoc.NutDongPop
 	}
 
-	-- == GỌI HIỆU ỨNG TỪ THƯ VIỆN == --
-	HieuUngLib.MoGiaoDien(GuiObjects, AnimConfigs)
+	Animation.MoGiaoDien(GuiObjects, AnimConfigs)
 
-	-- Tạo list nút
 	for i, data in ipairs(DATA_NUT) do
 		local Nut = Instance.new("TextButton", DanhSach)
 		Nut.Size = UDim2.new(1,0,0,45)
@@ -158,12 +150,11 @@ local function TaoGiaoDien()
 		Nut.LayoutOrder = i
 		Instance.new("UICorner", Nut).CornerRadius = UDim.new(0, 8)
 
-		-- Gọi hiệu ứng Hover từ Lib
 		Nut.MouseEnter:Connect(function()
-			HieuUngLib.HoverNut(Nut, true, CONFIG.MauSac.NutThuong, CONFIG.MauSac.NutHover)
+			Animation.HoverNut(Nut, true, CONFIG.MauSac.NutThuong, CONFIG.MauSac.NutHover)
 		end)
 		Nut.MouseLeave:Connect(function()
-			HieuUngLib.HoverNut(Nut, false, CONFIG.MauSac.NutThuong, CONFIG.MauSac.NutHover)
+			Animation.HoverNut(Nut, false, CONFIG.MauSac.NutThuong, CONFIG.MauSac.NutHover)
 		end)
 		Nut.MouseButton1Click:Connect(function()
 			if data.Link ~= "" then
@@ -172,23 +163,22 @@ local function TaoGiaoDien()
 		end)
 	end
 
-	-- Xử lý nút đóng
 	local NutDongData = { NutDong = NutDong, Padding = PadNutDong, Vien = VienNutDong }
 	local ColorData = { Normal = CONFIG.MauSac.DongThuong, Hover = CONFIG.MauSac.DongHover }
 	local SizeData = { Normal = CONFIG.KichThuoc.NutDong, Hover = CONFIG.KichThuoc.NutDongHover }
 
 	NutDong.MouseEnter:Connect(function()
-		HieuUngLib.HoverNutDong(NutDongData, true, ColorData, SizeData)
+		Animation.HoverNutDong(NutDongData, true, ColorData, SizeData)
 	end)
 	NutDong.MouseLeave:Connect(function()
-		HieuUngLib.HoverNutDong(NutDongData, false, ColorData, SizeData)
+		Animation.HoverNutDong(NutDongData, false, ColorData, SizeData)
 	end)
 	NutDong.MouseButton1Down:Connect(function()
-		HieuUngLib.NhanNut(NutDong, CONFIG.KichThuoc.NutDongNhan)
+		Animation.NhanNut(NutDong, CONFIG.KichThuoc.NutDongNhan)
 	end)
 	NutDong.MouseButton1Up:Connect(function()
-		HieuUngLib.DongGiaoDien(GuiObjects, AnimConfigs, function()
-			ScreenGui:Destroy() -- Hủy GUI sau khi hiệu ứng xong
+		Animation.DongGiaoDien(GuiObjects, AnimConfigs, function()
+			ScreenGui:Destroy()
 		end)
 	end)
 end
