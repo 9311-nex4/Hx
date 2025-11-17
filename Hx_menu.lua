@@ -3,7 +3,7 @@ local nguoiChoiCucBo = nguoiChoi.LocalPlayer
 local giaoDienNguoiChoi = nguoiChoiCucBo:WaitForChild("PlayerGui")
 
 local danhSachNut = {
-	{ vanBan = "Transform", maLenh = "https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform.lua" },
+	{ vanBan = "Transform", maLenh = "https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform.lua"},
 	{ vanBan = "2", maLenh = "" },
 	{ vanBan = "3", maLenh = "" },
 	{ vanBan = "4", maLenh = "" },
