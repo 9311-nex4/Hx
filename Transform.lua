@@ -114,23 +114,23 @@ local function taoHieuUng(partGoc)
 end
 
 local success, externalNotify = pcall(function()
-    return loadstring(game:HttpGet('https://raw.githubusercontent.com/9311-nex4/Hx/main/Notify.lua'))()
+	return loadstring(game:HttpGet('https://raw.githubusercontent.com/9311-nex4/Hx/main/Notify.lua'))()
 end)
 
 local function guiThongBao(tieuDe, noiDung, thoiGian)
-    local thoiGianHienThi = thoiGian or 3
-    
-    if success and typeof(externalNotify) == "function" then
-        externalNotify(tieuDe, noiDung, thoiGianHienThi)
-    else
-        pcall(function()
-            game:GetService("StarterGui"):SetCore("SendNotification", {
-                Title = tieuDe,
-                Text = noiDung,
-                Duration = thoiGianHienThi,
-            })
-        end)
-    end
+	local thoiGianHienThi = thoiGian or 3
+
+	if success and typeof(externalNotify) == "function" then
+		externalNotify(tieuDe, noiDung, thoiGianHienThi)
+	else
+		pcall(function()
+			game:GetService("StarterGui"):SetCore("SendNotification", {
+				Title = tieuDe,
+				Text = noiDung,
+				Duration = thoiGianHienThi,
+			})
+		end)
+	end
 end
 
 local function updateCloneAnimation()
@@ -766,7 +766,7 @@ local function taoGiaoDien()
 
 	uiChinh = Instance.new("Frame")
 	uiChinh.Name = "UiTuChinh"
-	uiChinh.Size = UDim2.new(0, 300, 0, 400)
+	uiChinh.Size = UDim2.new(0, 300, 0, 350)
 	uiChinh.Position = UDim2.new(0.5, 0, 0.5, 0)
 	uiChinh.AnchorPoint = Vector2.new(0.5, 0.5)
 	uiChinh.BackgroundColor3 = THEME.COLORS.Background
