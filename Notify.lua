@@ -160,3 +160,5 @@ local function thongbao(tieude, noidung, thoigian)
 		val:Destroy()
 	end)
 end
+
+return thongbao
