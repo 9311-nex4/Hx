@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
+local TweenService = game:GetService("TweenService")
 
 local NguoiChoi = Players.LocalPlayer
 local PlayerGui = NguoiChoi:WaitForChild("PlayerGui")
@@ -185,7 +186,7 @@ local function TaoGiaoDien()
 			TextSize = 16
 		}
 		local ThuocTinhLuot = {
-			Size = UDim2.new(0.98, 0, 0, CauHinh.KichThuoc.Cao + 4),
+			Size = KiemTraDienThoai and UDim2.new(0.9, 0, 0, CauHinh.KichThuoc.Cao) or UDim2.new(0.98, 0, 0, CauHinh.KichThuoc.Cao + 4),
 			BackgroundColor3 = CauHinh.Mau.NutLuot,
 			TextSize = 18
 		}
@@ -196,9 +197,6 @@ local function TaoGiaoDien()
 		Nut.MouseButton1Click:Connect(function()
 			LibHieuUng.Click(Nut)
 			
-			task.wait(0.1)
-			LibHieuUng.Hover(Nut, false, ThuocTinhLuot, ThuocTinhThuong)
-
 			if _G.DaKichHoat[DuLieu.Ten] then
 				ThongBao("Hx Script", "Đã bật chức năng này rồi!", 2)
 				return
@@ -226,7 +224,7 @@ local function TaoGiaoDien()
 		TextColor3 = CauHinh.Mau.Chu
 	}
 	local NutDongLuot = {
-		Size = UDim2.fromOffset(34, 34),
+		Size = KiemTraDienThoai and UDim2.fromOffset(30, 30) or UDim2.fromOffset(34, 34),
 		BackgroundColor3 = CauHinh.Mau.NutDongLuot,
 		BackgroundTransparency = 0,
 		TextSize = 22,
@@ -236,13 +234,13 @@ local function TaoGiaoDien()
 	NutDong.MouseEnter:Connect(function()
 		if not DangDong then
 			LibHieuUng.Hover(NutDong, true, NutDongLuot, NutDongThuong)
-			game:GetService("TweenService"):Create(VienNutDong, TweenInfo.new(0.3), {Transparency = 0.4}):Play()
+			TweenService:Create(VienNutDong, TweenInfo.new(0.3), {Transparency = 0.4}):Play()
 		end
 	end)
 	NutDong.MouseLeave:Connect(function()
 		if not DangDong then
 			LibHieuUng.Hover(NutDong, false, NutDongLuot, NutDongThuong)
-			game:GetService("TweenService"):Create(VienNutDong, TweenInfo.new(0.3), {Transparency = 0.8}):Play()
+			TweenService:Create(VienNutDong, TweenInfo.new(0.3), {Transparency = 0.8}):Play()
 		end
 	end)
 	
