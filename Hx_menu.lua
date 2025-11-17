@@ -104,6 +104,7 @@ local function TaoGiaoDien()
 	local DemNutDong = Instance.new("UIPadding", NutDong)
 	local VienNutDong = Instance.new("UIStroke", NutDong)
 	VienNutDong.Color = CauHinh.MauSac.Vien
+	VienNutDong.Color = ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	VienNutDong.Transparency = 1
 	VienNutDong.Thickness = 1.5
 
