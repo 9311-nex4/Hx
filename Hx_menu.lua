@@ -1,222 +1,222 @@
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 
-local Plr = Players.LocalPlayer
-local PlayerGui = Plr:WaitForChild("PlayerGui")
+local NguoiChoi = Players.LocalPlayer
+local GiaoDienNguoiChoi = NguoiChoi:WaitForChild("PlayerGui")
 
-local LibAnim = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Animation.lua"))()
-local Notify = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Notify.lua"))()
+local ThuVienHieuUng = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Animation.lua"))()
+local ThongBao = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Notify.lua"))()
 
 _G.HxScript_DaKichHoat = _G.HxScript_DaKichHoat or {}
 
-local DataButtons = {
+local DuLieuNut = {
 	{ Ten = "Transform", Link = "https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform.lua" },
 	{ Ten = "Example 2", Link = "" },
 	{ Ten = "Example 3", Link = "" },
 }
 
-local Config = {
-	Colors = {
-		Bg = Color3.fromRGB(15, 15, 15),
-		BgContent = Color3.fromRGB(40, 40, 40),
-		BtnNormal = Color3.fromRGB(90, 90, 90),
-		BtnHover = Color3.fromRGB(125, 125, 125),
-		CloseNormal = Color3.fromRGB(90, 90, 90),
-		CloseHover = Color3.fromRGB(180, 50, 50),
-		Text = Color3.fromRGB(255, 255, 255),
-		Border = Color3.fromRGB(255, 255, 255)
+local CauHinh = {
+	MauSac = {
+		Nen = Color3.fromRGB(15, 15, 15),
+		NenNoiDung = Color3.fromRGB(40, 40, 40),
+		NutThuong = Color3.fromRGB(90, 90, 90),
+		NutLuot = Color3.fromRGB(125, 125, 125),
+		DongThuong = Color3.fromRGB(90, 90, 90),
+		DongLuot = Color3.fromRGB(180, 50, 50),
+		Chu = Color3.fromRGB(255, 255, 255),
+		Vien = Color3.fromRGB(255, 255, 255)
 	},
-	Sizes = {
-		IconStart = UDim2.new(0, 80, 0, 80),
-		IconEnd = UDim2.new(0, 35, 0, 35),
-		IconEndPos = UDim2.new(0, 27.5, 0, 27.5),
-		IconStartPos = UDim2.new(0.5, 0, 0.5, 0),
-		FrameStart = UDim2.new(0, 80, 0, 80),
-		FrameEndMob = UDim2.new(0.45, 0, 0.7425, 0),
-		FrameEndPC = UDim2.new(0, 360, 0, 238),
-		CloseBtn = UDim2.new(0, 30, 0, 30),
-		CloseBtnHover = UDim2.new(0, 35, 0, 35),
-		CloseBtnPress = UDim2.new(0, 28, 0, 28),
-		CloseBtnPop = UDim2.new(0, 48, 0, 48)
+	KichThuoc = {
+		IconDau = UDim2.new(0, 80, 0, 80),
+		IconCuoi = UDim2.new(0, 35, 0, 35),
+		ViTriIconCuoi = UDim2.new(0, 27.5, 0, 27.5),
+		ViTriIconDau = UDim2.new(0.5, 0, 0.5, 0),
+		KhungDau = UDim2.new(0, 80, 0, 80),
+		KhungCuoiMobile = UDim2.new(0.45, 0, 0.7425, 0),
+		KhungCuoiPC = UDim2.new(0, 360, 0, 238),
+		NutDong = UDim2.new(0, 30, 0, 30),
+		NutDongLuot = UDim2.new(0, 35, 0, 35),
+		NutDongNhan = UDim2.new(0, 28, 0, 28),
+		NutDongPop = UDim2.new(0, 48, 0, 48)
 	}
 }
 
-local function CreateUI()
-	if PlayerGui:FindFirstChild("HxInterface") then PlayerGui.HxInterface:Destroy() end
+local function TaoGiaoDien()
+	if GiaoDienNguoiChoi:FindFirstChild("HxInterface") then GiaoDienNguoiChoi.HxInterface:Destroy() end
 
-	local IsClosing = false
-	local ScreenGui = Instance.new("ScreenGui")
-	ScreenGui.Name = "HxInterface"
-	ScreenGui.Parent = PlayerGui
-	ScreenGui.ResetOnSpawn = false
+	local DangDong = false
+	local ManHinhGui = Instance.new("ScreenGui")
+	ManHinhGui.Name = "HxInterface"
+	ManHinhGui.Parent = GiaoDienNguoiChoi
+	ManHinhGui.ResetOnSpawn = false
 
-	local FinalSize = (UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled) 
-		and Config.Sizes.FrameEndMob or Config.Sizes.FrameEndPC
+	local KichThuocCuoi = (UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled) 
+		and CauHinh.KichThuoc.KhungCuoiMobile or CauHinh.KichThuoc.KhungCuoiPC
 
-	local MainFrame = Instance.new("Frame")
-	MainFrame.Size = Config.Sizes.FrameStart
-	MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-	MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-	MainFrame.BackgroundColor3 = Config.Colors.Bg
-	MainFrame.BackgroundTransparency = 1
-	MainFrame.ClipsDescendants = false
-	MainFrame.Parent = ScreenGui
-	Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
+	local KhungChinh = Instance.new("Frame")
+	KhungChinh.Size = CauHinh.KichThuoc.KhungDau
+	KhungChinh.Position = UDim2.new(0.5, 0, 0.5, 0)
+	KhungChinh.AnchorPoint = Vector2.new(0.5, 0.5)
+	KhungChinh.BackgroundColor3 = CauHinh.MauSac.Nen
+	KhungChinh.BackgroundTransparency = 1
+	KhungChinh.ClipsDescendants = false
+	KhungChinh.Parent = ManHinhGui
+	Instance.new("UICorner", KhungChinh).CornerRadius = UDim.new(0, 12)
 
 	local Icon = Instance.new("ImageLabel")
 	Icon.Size = UDim2.new(0, 0, 0, 0)
-	Icon.Position = Config.Sizes.IconStartPos
+	Icon.Position = CauHinh.KichThuoc.ViTriIconDau
 	Icon.AnchorPoint = Vector2.new(0.5, 0.5)
 	Icon.Image = "rbxassetid://117118515787811"
 	Icon.BackgroundTransparency = 0.6
 	Icon.BackgroundColor3 = Color3.new(0, 0, 0)
 	Icon.ZIndex = 100
-	Icon.Parent = MainFrame
+	Icon.Parent = KhungChinh
 	Instance.new("UICorner", Icon).CornerRadius = UDim.new(0, 12)
 
-	local Container = Instance.new("Frame")
-	Container.Size = UDim2.new(1, 0, 1, 0)
-	Container.BackgroundTransparency = 1
-	Container.Parent = MainFrame
+	local VungChua = Instance.new("Frame")
+	VungChua.Size = UDim2.new(1, 0, 1, 0)
+	VungChua.BackgroundTransparency = 1
+	VungChua.Parent = KhungChinh
 
-	local Title = Instance.new("TextLabel")
-	Title.Text = "Hx Script"
-	Title.Size = UDim2.new(1, -80, 0, 40)
-	Title.Position = UDim2.new(0, 50, 0, 5)
-	Title.BackgroundTransparency = 1
-	Title.TextColor3 = Config.Colors.Text
-	Title.Font = Enum.Font.GothamBold
-	Title.TextSize = 22
-	Title.TextXAlignment = Enum.TextXAlignment.Left
-	Title.TextTransparency = 1
-	Title.Parent = Container
+	local TieuDe = Instance.new("TextLabel")
+	TieuDe.Text = "Hx Script"
+	TieuDe.Size = UDim2.new(1, -80, 0, 40)
+	TieuDe.Position = UDim2.new(0, 50, 0, 5)
+	TieuDe.BackgroundTransparency = 1
+	TieuDe.TextColor3 = CauHinh.MauSac.Chu
+	TieuDe.Font = Enum.Font.GothamBold
+	TieuDe.TextSize = 22
+	TieuDe.TextXAlignment = Enum.TextXAlignment.Left
+	TieuDe.TextTransparency = 1
+	TieuDe.Parent = VungChua
 
-	local CloseBtn = Instance.new("TextButton")
-	CloseBtn.Size = Config.Sizes.CloseBtn
-	CloseBtn.Position = UDim2.new(1, -25, 0, 25)
-	CloseBtn.AnchorPoint = Vector2.new(0.5, 0.5)
-	CloseBtn.Text = "X"
-	CloseBtn.Font = Enum.Font.GothamBold
-	CloseBtn.BackgroundColor3 = Config.Colors.CloseNormal
-	CloseBtn.TextColor3 = Config.Colors.Text
-	CloseBtn.BackgroundTransparency = 1
-	CloseBtn.TextTransparency = 1
-	CloseBtn.ZIndex = 2
-	CloseBtn.Parent = MainFrame
-	Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 8)
+	local NutDong = Instance.new("TextButton")
+	NutDong.Size = CauHinh.KichThuoc.NutDong
+	NutDong.Position = UDim2.new(1, -25, 0, 25)
+	NutDong.AnchorPoint = Vector2.new(0.5, 0.5)
+	NutDong.Text = "X"
+	NutDong.Font = Enum.Font.GothamBold
+	NutDong.BackgroundColor3 = CauHinh.MauSac.DongThuong
+	NutDong.TextColor3 = CauHinh.MauSac.Chu
+	NutDong.BackgroundTransparency = 1
+	NutDong.TextTransparency = 1
+	NutDong.ZIndex = 2
+	NutDong.Parent = KhungChinh
+	Instance.new("UICorner", NutDong).CornerRadius = UDim.new(0, 8)
 	
-	local ClosePad = Instance.new("UIPadding", CloseBtn)
-	local CloseStroke = Instance.new("UIStroke", CloseBtn)
-	CloseStroke.Color = Config.Colors.Border
-	CloseStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	CloseStroke.Transparency = 1
-	CloseStroke.Thickness = 1.5
+	local DemNutDong = Instance.new("UIPadding", NutDong)
+	local VienNutDong = Instance.new("UIStroke", NutDong)
+	VienNutDong.Color = CauHinh.MauSac.Vien
+	VienNutDong.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	VienNutDong.Transparency = 1
+	VienNutDong.Thickness = 1.5
 
-	local ListFrame = Instance.new("ScrollingFrame")
-	ListFrame.Size = UDim2.new(1, -20, 1, -70)
-	ListFrame.Position = UDim2.new(0, 10, 0, 50)
-	ListFrame.BackgroundTransparency = 1
-	ListFrame.BackgroundColor3 = Config.Colors.BgContent
-	ListFrame.ScrollBarImageTransparency = 1
-	ListFrame.BorderSizePixel = 0
-	ListFrame.Parent = Container
-	Instance.new("UICorner", ListFrame).CornerRadius = UDim.new(0, 8)
+	local KhungDanhSach = Instance.new("ScrollingFrame")
+	KhungDanhSach.Size = UDim2.new(1, -20, 1, -70)
+	KhungDanhSach.Position = UDim2.new(0, 10, 0, 50)
+	KhungDanhSach.BackgroundTransparency = 1
+	KhungDanhSach.BackgroundColor3 = CauHinh.MauSac.NenNoiDung
+	KhungDanhSach.ScrollBarImageTransparency = 1
+	KhungDanhSach.BorderSizePixel = 0
+	KhungDanhSach.Parent = VungChua
+	Instance.new("UICorner", KhungDanhSach).CornerRadius = UDim.new(0, 8)
 	
-	local Layout = Instance.new("UIListLayout", ListFrame)
-	Layout.Padding = UDim.new(0, 8)
-	Layout.SortOrder = Enum.SortOrder.LayoutOrder
+	local BoCuc = Instance.new("UIListLayout", KhungDanhSach)
+	BoCuc.Padding = UDim.new(0, 8)
+	BoCuc.SortOrder = Enum.SortOrder.LayoutOrder
 	
-	Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-		ListFrame.CanvasSize = UDim2.new(0, 0, 0, Layout.AbsoluteContentSize.Y + 20)
+	BoCuc:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+		KhungDanhSach.CanvasSize = UDim2.new(0, 0, 0, BoCuc.AbsoluteContentSize.Y + 20)
 	end)
 
-	local UIObjects = {
-		ScreenGui = ScreenGui, Khung = MainFrame, Icon = Icon,
-		TieuDe = Title, NutDong = CloseBtn, VienNutDong = CloseStroke, DanhSach = ListFrame
+	local CacDoiTuongUI = {
+		ScreenGui = ManHinhGui, Khung = KhungChinh, Icon = Icon,
+		TieuDe = TieuDe, NutDong = NutDong, VienNutDong = VienNutDong, DanhSach = KhungDanhSach
 	}
 	
-	local AnimConfig = {
-		IconDau = Config.Sizes.IconStart,
-		IconCuoi = Config.Sizes.IconEnd,
-		IconDauPos = Config.Sizes.IconStartPos,
-		IconCuoiPos = Config.Sizes.IconEndPos,
-		KhungDau = Config.Sizes.FrameStart,
-		KhungCuoi = FinalSize,
-		NutDongPop = Config.Sizes.CloseBtnPop
+	local CauHinhHieuUng = {
+		IconDau = CauHinh.KichThuoc.IconDau,
+		IconCuoi = CauHinh.KichThuoc.IconCuoi,
+		IconDauPos = CauHinh.KichThuoc.ViTriIconDau,
+		IconCuoiPos = CauHinh.KichThuoc.ViTriIconCuoi,
+		KhungDau = CauHinh.KichThuoc.KhungDau,
+		KhungCuoi = KichThuocCuoi,
+		NutDongPop = CauHinh.KichThuoc.NutDongPop
 	}
 
-	LibAnim.MoGiaoDien(UIObjects, AnimConfig)
+	ThuVienHieuUng.MoGiaoDien(CacDoiTuongUI, CauHinhHieuUng)
 	
-	local function CloseAndDestroy()
-		IsClosing = true
-		LibAnim.DongGiaoDien(UIObjects, AnimConfig, function()
-			ScreenGui:Destroy()
+	local function DongVaXoa()
+		DangDong = true
+		ThuVienHieuUng.DongGiaoDien(CacDoiTuongUI, CauHinhHieuUng, function()
+			ManHinhGui:Destroy()
 		end)
 	end
 
-	for i, data in ipairs(DataButtons) do
-		local Btn = Instance.new("TextButton")
-		Btn.Size = UDim2.new(1, 0, 0, 45)
-		Btn.Text = data.Ten
-		Btn.BackgroundColor3 = Config.Colors.BtnNormal
-		Btn.TextColor3 = Config.Colors.Text
-		Btn.Font = Enum.Font.GothamBold
-		Btn.TextSize = 18
-		Btn.BackgroundTransparency = 1
-		Btn.TextTransparency = 1
-		Btn.LayoutOrder = i
-		Btn.Parent = ListFrame
-		Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 8)
+	for i, duLieu in ipairs(DuLieuNut) do
+		local Nut = Instance.new("TextButton")
+		Nut.Size = UDim2.new(1, 0, 0, 45)
+		Nut.Text = duLieu.Ten
+		Nut.BackgroundColor3 = CauHinh.MauSac.NutThuong
+		Nut.TextColor3 = CauHinh.MauSac.Chu
+		Nut.Font = Enum.Font.GothamBold
+		Nut.TextSize = 18
+		Nut.BackgroundTransparency = 1
+		Nut.TextTransparency = 1
+		Nut.LayoutOrder = i
+		Nut.Parent = KhungDanhSach
+		Instance.new("UICorner", Nut).CornerRadius = UDim.new(0, 8)
 
-		local BtnAnimCfg = {
+		local CauHinhHieuUngNut = {
 			KichThuocThuong = UDim2.new(1, 0, 0, 45),
 			KichThuocLuot = UDim2.new(1, 0, 0, 56),
-			MauThuong = Config.Colors.BtnNormal,
-			MauLuot = Config.Colors.BtnHover
+			MauThuong = CauHinh.MauSac.NutThuong,
+			MauLuot = CauHinh.MauSac.NutLuot
 		}
 
-		Btn.MouseEnter:Connect(function() LibAnim.HieuUngLuotNut(Btn, true, BtnAnimCfg) end)
-		Btn.MouseLeave:Connect(function() LibAnim.HieuUngLuotNut(Btn, false, BtnAnimCfg) end)
+		Nut.MouseEnter:Connect(function() ThuVienHieuUng.HieuUngLuotNut(Nut, true, CauHinhHieuUngNut) end)
+		Nut.MouseLeave:Connect(function() ThuVienHieuUng.HieuUngLuotNut(Nut, false, CauHinhHieuUngNut) end)
 		
-		Btn.MouseButton1Click:Connect(function()
-			if _G.HxScript_DaKichHoat[data.Ten] then
-				Notify("Hệ Thống", "Đã được kích hoạt rồi!", 3)
+		Nut.MouseButton1Click:Connect(function()
+			if _G.HxScript_DaKichHoat[duLieu.Ten] then
+				ThongBao("Hệ Thống", "Đã được kích hoạt rồi!", 3)
 				return
 			end
 
-			if data.Link ~= "" then
-				_G.HxScript_DaKichHoat[data.Ten] = true
-				Notify("Hệ Thống", "Đã kích hoạt: " .. data.Ten, 3)
+			if duLieu.Link ~= "" then
+				_G.HxScript_DaKichHoat[duLieu.Ten] = true
+				ThongBao("Hệ Thống", "Đã kích hoạt: " .. duLieu.Ten, 3)
 
 				task.spawn(function()
-					local s, e = pcall(function() loadstring(game:HttpGet(data.Link))() end)
-					if not s then 
-						Notify("Lỗi", "Không thể tải script!", 3)
-						warn(e) 
+					local thanhCong, loi = pcall(function() loadstring(game:HttpGet(duLieu.Link))() end)
+					if not thanhCong then 
+						ThongBao("Lỗi", "Không thể tải script!", 3)
+						warn(loi) 
 					end
 				end)
 			else
-				Notify("Thông Báo", "Chức năng này chưa có Link!", 2)
+				ThongBao("Thông Báo", "Chức năng này chưa có Link!", 2)
 			end
 		end)
 	end
 
-	local CloseBtnObjs = { NutDong = CloseBtn, Dem = ClosePad, Vien = CloseStroke }
-	local CloseBtnColors = { Thuong = Config.Colors.CloseNormal, Luot = Config.Colors.CloseHover }
-	local CloseBtnSizes = { Thuong = Config.Sizes.CloseBtn, Luot = Config.Sizes.CloseBtnHover }
+	local DoiTuongNutDong = { NutDong = NutDong, Dem = DemNutDong, Vien = VienNutDong }
+	local MauNutDong = { Thuong = CauHinh.MauSac.DongThuong, Luot = CauHinh.MauSac.DongLuot }
+	local KichThuocNutDong = { Thuong = CauHinh.KichThuoc.NutDong, Luot = CauHinh.KichThuoc.NutDongLuot }
 
-	CloseBtn.MouseEnter:Connect(function()
-		if not IsClosing then LibAnim.HieuUngLuotNutDong(CloseBtnObjs, true, CloseBtnColors, CloseBtnSizes) end
+	NutDong.MouseEnter:Connect(function()
+		if not DangDong then ThuVienHieuUng.HieuUngLuotNutDong(DoiTuongNutDong, true, MauNutDong, KichThuocNutDong) end
 	end)
-	CloseBtn.MouseLeave:Connect(function()
-		if not IsClosing then LibAnim.HieuUngLuotNutDong(CloseBtnObjs, false, CloseBtnColors, CloseBtnSizes) end
+	NutDong.MouseLeave:Connect(function()
+		if not DangDong then ThuVienHieuUng.HieuUngLuotNutDong(DoiTuongNutDong, false, MauNutDong, KichThuocNutDong) end
 	end)
-	CloseBtn.MouseButton1Down:Connect(function()
-		if not IsClosing then LibAnim.HieuUngNhanNut(CloseBtn, Config.Sizes.CloseBtnPress) end
+	NutDong.MouseButton1Down:Connect(function()
+		if not DangDong then ThuVienHieuUng.HieuUngNhanNut(NutDong, CauHinh.KichThuoc.NutDongNhan) end
 	end)
-	CloseBtn.MouseButton1Up:Connect(function()
-		if not IsClosing then CloseAndDestroy() end
+	NutDong.MouseButton1Up:Connect(function()
+		if not DangDong then DongVaXoa() end
 	end)
 end
 
-CreateUI()
+TaoGiaoDien()
