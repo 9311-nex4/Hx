@@ -1,113 +1,117 @@
 local TweenService = game:GetService("TweenService")
 local ThuVien = {}
 
-local CauHinhTween = {
+ThuVien.Styles = {
 	Mo = TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
 	Dong = TweenInfo.new(0.6, Enum.EasingStyle.Quart, Enum.EasingDirection.InOut),
-	FadeNhanh = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-	FadeCham = TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-	NutLuot = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-	NutDongPop = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	Smooth = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+	Pop = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+	Fade = TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 }
 
-local function ChayTween(doiTuong, thongTin, thuocTinh)
-	if doiTuong then TweenService:Create(doiTuong, thongTin, thuocTinh):Play() end
-end
-
-function ThuVien.HieuUngLuotNut(nut, dangLuot, cauHinh)
-	local kichThuocDich = dangLuot and cauHinh.KichThuocLuot or cauHinh.KichThuocThuong
-	local mauDich = dangLuot and cauHinh.MauLuot or cauHinh.MauThuong
-	local coChuDich = dangLuot and 20 or 18
-	
-	ChayTween(nut, CauHinhTween.NutLuot, {
-		Size = kichThuocDich,
-		BackgroundColor3 = mauDich,
-		TextSize = coChuDich
-	})
-end
-
-function ThuVien.HieuUngLuotNutDong(cacDoiTuong, dangLuot, cauHinhMau, cauHinhKichThuoc)
-	if dangLuot then
-		ChayTween(cacDoiTuong.NutDong, CauHinhTween.NutLuot, {Size = cauHinhKichThuoc.Luot, BackgroundColor3 = cauHinhMau.Luot, TextSize = 22})
-		ChayTween(cacDoiTuong.Dem, CauHinhTween.NutLuot, {PaddingRight = UDim.new(0, 0.5)})
-		cacDoiTuong.Vien.Transparency = 0.4
-	else
-		ChayTween(cacDoiTuong.NutDong, CauHinhTween.NutLuot, {Size = cauHinhKichThuoc.Thuong, BackgroundColor3 = cauHinhMau.Thuong, TextSize = 18})
-		ChayTween(cacDoiTuong.Dem, CauHinhTween.NutLuot, {PaddingRight = UDim.new(0, 0)})
-		cacDoiTuong.Vien.Transparency = 0.8
+local function ChayTween(doiTuong, tweenInfo, properties)
+	if doiTuong and properties then 
+		TweenService:Create(doiTuong, tweenInfo, properties):Play() 
 	end
 end
-
-function ThuVien.HieuUngNhanNut(nut, kichThuocNhan)
-	ChayTween(nut, CauHinhTween.FadeNhanh, {Size = kichThuocNhan})
+function ThuVien.Hover(doiTuong, trangThai, propsVao, propsRa)
+	local props = trangThai and propsVao or propsRa
+	ChayTween(doiTuong, ThuVien.Styles.Smooth, props)
 end
 
-function ThuVien.MoGiaoDien(cacDoiTuong, cauHinh)
-	ChayTween(cacDoiTuong.Khung, CauHinhTween.FadeCham, {BackgroundTransparency = 1})
-	ChayTween(cacDoiTuong.Icon, CauHinhTween.Mo, {Size = cauHinh.IconDau, ImageTransparency = 0})
-
-	task.wait(0.5)
-
-	ChayTween(cacDoiTuong.Khung, CauHinhTween.Mo, {Size = cauHinh.KhungCuoi, BackgroundTransparency = 0.15})
-
-	local tweenIcon = TweenService:Create(cacDoiTuong.Icon, CauHinhTween.Mo, {
-		Size = cauHinh.IconCuoi,
-		Position = cauHinh.IconCuoiPos,
-		AnchorPoint = Vector2.new(0.5, 0.5)
-	})
-	tweenIcon:Play()
-
-	tweenIcon.Completed:Connect(function()
-		ChayTween(cacDoiTuong.TieuDe, CauHinhTween.FadeCham, {TextTransparency = 0})
-		ChayTween(cacDoiTuong.NutDong, CauHinhTween.FadeCham, {BackgroundTransparency = 0.6, TextTransparency = 0})
-		ChayTween(cacDoiTuong.VienNutDong, CauHinhTween.FadeCham, {Transparency = 0.8})
-		ChayTween(cacDoiTuong.DanhSach, CauHinhTween.FadeCham, {BackgroundTransparency = 0.6, ScrollBarImageTransparency = 0})
-
-		for _, con in ipairs(cacDoiTuong.DanhSach:GetChildren()) do
-			if con:IsA("TextButton") then
-				ChayTween(con, CauHinhTween.FadeCham, {BackgroundTransparency = 0, TextTransparency = 0})
-			end
-		end
+function ThuVien.Click(doiTuong)
+	if not doiTuong then return end
+	local sizeGoc = doiTuong.Size
+	local tweenDown = TweenService:Create(doiTuong, ThuVien.Styles.Pop, {Size = UDim2.new(sizeGoc.X.Scale, sizeGoc.X.Offset - 4, sizeGoc.Y.Scale, sizeGoc.Y.Offset - 4)})
+	tweenDown:Play()
+	tweenDown.Completed:Connect(function()
+		ChayTween(doiTuong, ThuVien.Styles.Pop, {Size = sizeGoc})
 	end)
 end
 
-function ThuVien.DongGiaoDien(cacDoiTuong, cauHinh, hamXong)
-	local hieuUngPop = TweenService:Create(cacDoiTuong.NutDong, CauHinhTween.NutDongPop, {Size = cauHinh.NutDongPop})
-	hieuUngPop:Play()
+function ThuVien.MoGiaoDien(uiElements, configs)
+	if uiElements.Khung then 
+		uiElements.Khung.Size = configs.KhungDau
+		uiElements.Khung.BackgroundTransparency = 1 
+	end
+	if uiElements.Icon then 
+		uiElements.Icon.Size = configs.IconDau
+		uiElements.Icon.Position = configs.IconDauPos
+		uiElements.Icon.ImageTransparency = 0
+	end
 
-	hieuUngPop.Completed:Connect(function()
-		ChayTween(cacDoiTuong.TieuDe, CauHinhTween.FadeNhanh, {TextTransparency = 1})
-		ChayTween(cacDoiTuong.DanhSach, CauHinhTween.FadeNhanh, {BackgroundTransparency = 1, ScrollBarImageTransparency = 1})
-		ChayTween(cacDoiTuong.NutDong, CauHinhTween.FadeNhanh, {BackgroundTransparency = 1, TextTransparency = 1})
-		ChayTween(cacDoiTuong.VienNutDong, CauHinhTween.FadeNhanh, {Transparency = 1})
+	ChayTween(uiElements.Khung, ThuVien.Styles.Fade, {BackgroundTransparency = 1})
+	
+	task.wait(0.2)
+	ChayTween(uiElements.Khung, ThuVien.Styles.Mo, {Size = configs.KhungCuoi, BackgroundTransparency = configs.KhungTrans or 0.15})
 
-		for _, con in ipairs(cacDoiTuong.DanhSach:GetChildren()) do
-			if con:IsA("GuiObject") then
-				ChayTween(con, CauHinhTween.FadeNhanh, {BackgroundTransparency = 1})
-				if con:IsA("TextButton") or con:IsA("TextLabel") then
-					ChayTween(con, CauHinhTween.FadeNhanh, {TextTransparency = 1})
+	if uiElements.Icon then
+		local tweenIcon = TweenService:Create(uiElements.Icon, ThuVien.Styles.Mo, {
+			Size = configs.IconCuoi,
+			Position = configs.IconCuoiPos,
+			AnchorPoint = Vector2.new(0.5, 0.5)
+		})
+		tweenIcon:Play()
+
+		tweenIcon.Completed:Connect(function()
+			ChayTween(uiElements.TieuDe, ThuVien.Styles.Fade, {TextTransparency = 0})
+			ChayTween(uiElements.NutDong, ThuVien.Styles.Fade, {BackgroundTransparency = 1, TextTransparency = 0})
+			ChayTween(uiElements.VienNutDong, ThuVien.Styles.Fade, {Transparency = 0.5})
+			ChayTween(uiElements.DanhSach, ThuVien.Styles.Fade, {BackgroundTransparency = 0.8, ScrollBarImageTransparency = 0})
+
+			if uiElements.DanhSach then
+				for _, con in ipairs(uiElements.DanhSach:GetChildren()) do
+					if con:IsA("TextButton") then
+						ChayTween(con, ThuVien.Styles.Fade, {BackgroundTransparency = 0, TextTransparency = 0})
+					end
 				end
 			end
-		end
-
-		task.delay(0.2, function()
-			ChayTween(cacDoiTuong.Icon, CauHinhTween.Dong, {Position = cauHinh.IconDauPos, Size = cauHinh.IconDau})
-			
-			local dongKhung = TweenService:Create(cacDoiTuong.Khung, CauHinhTween.Dong, {
-				Size = cauHinh.KhungDau,
-				BackgroundTransparency = 1
-			})
-			dongKhung:Play()
-
-			dongKhung.Completed:Connect(function()
-				local fadeCuoi = TweenService:Create(cacDoiTuong.Icon, CauHinhTween.FadeCham, {ImageTransparency = 1, Size = UDim2.new(0,0,0,0)})
-				fadeCuoi:Play()
-				
-				fadeCuoi.Completed:Connect(function()
-					if hamXong then hamXong() end
-				end)
-			end)
 		end)
+	end
+end
+
+function ThuVien.DongGiaoDien(uiElements, configs, callback)
+	if uiElements.NutDong then
+		local pop = TweenService:Create(uiElements.NutDong, ThuVien.Styles.Pop, {Size = configs.NutDongPop})
+		pop:Play()
+		pop.Completed:Wait() 
+	end
+
+	ChayTween(uiElements.TieuDe, ThuVien.Styles.Smooth, {TextTransparency = 1})
+	ChayTween(uiElements.DanhSach, ThuVien.Styles.Smooth, {BackgroundTransparency = 1, ScrollBarImageTransparency = 1})
+	ChayTween(uiElements.NutDong, ThuVien.Styles.Smooth, {BackgroundTransparency = 1, TextTransparency = 1})
+	ChayTween(uiElements.VienNutDong, ThuVien.Styles.Smooth, {Transparency = 1})
+
+	if uiElements.DanhSach then
+		for _, con in ipairs(uiElements.DanhSach:GetChildren()) do
+			if con:IsA("GuiObject") then
+				ChayTween(con, ThuVien.Styles.Smooth, {BackgroundTransparency = 1, TextTransparency = 1})
+			end
+		end
+	end
+
+	task.wait(0.2)
+
+	if uiElements.Icon then
+		ChayTween(uiElements.Icon, ThuVien.Styles.Dong, {Position = configs.IconDauPos, Size = configs.IconDau})
+	end
+	
+	local dongKhung = TweenService:Create(uiElements.Khung, ThuVien.Styles.Dong, {
+		Size = configs.KhungDau,
+		BackgroundTransparency = 1
+	})
+	dongKhung:Play()
+
+	dongKhung.Completed:Connect(function()
+		if uiElements.Icon then
+			local fadeCuoi = TweenService:Create(uiElements.Icon, ThuVien.Styles.Fade, {ImageTransparency = 1, Size = UDim2.new(0,0,0,0)})
+			fadeCuoi:Play()
+			fadeCuoi.Completed:Connect(function()
+				if callback then callback() end
+			end)
+		else
+			if callback then callback() end
+		end
 	end)
 end
 
