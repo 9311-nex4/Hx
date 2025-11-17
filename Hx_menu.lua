@@ -10,6 +10,8 @@ local DATA_NUT = {
 	{ Ten = "Transform", Link = "https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform.lua" },
 	{ Ten = "Example 2", Link = "" },
 	{ Ten = "Example 3", Link = "" },
+	{ Ten = "Example 4", Link = "" },
+	{ Ten = "Example 5", Link = "" },
 }
 
 local ID_ICON = "rbxassetid://117118515787811"
@@ -158,7 +160,10 @@ local function TaoGiaoDien()
 		end)
 		Nut.MouseButton1Click:Connect(function()
 			if data.Link ~= "" then
-				pcall(function() loadstring(game:HttpGet(data.Link))() end)
+				pcall(function() loadstring(game:HttpGet(data.Link))() 
+									Animation.DongGiaoDien(GuiObjects, AnimConfigs, function()
+										ScreenGui:Destroy()
+						end)
 			end
 		end)
 	end
