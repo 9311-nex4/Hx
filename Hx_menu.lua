@@ -196,6 +196,7 @@ local function TaoGiaoDien()
 		
 		Nut.MouseButton1Click:Connect(function()
 			LibHieuUng.Click(Nut)
+			LibHieuUng.Hover(Nut, false, PropsHover, PropsThuong)
 			if _G.DaKichHoat[Data.Ten] then
 				ThongBao("Hx Script", "Đã bật chức năng này rồi!", 2)
 				return
@@ -203,14 +204,14 @@ local function TaoGiaoDien()
 
 			if Data.Link ~= "" then
 				_G.DaKichHoat[Data.Ten] = true
-				ThongBao("Thành công", "Đang tải: " .. Data.Ten, 2)
+				ThongBao("Hx Script", "Đang tải: " .. Data.Ten, 2)
 
 				task.spawn(function()
 					local ok, err = pcall(function() loadstring(game:HttpGet(Data.Link))() end)
-					if not ok then warn(err) ThongBao("Lỗi", "Link hỏng!", 3) end
+					if not ok then warn(err) ThongBao("Hx Script", "Link hỏng!", 3) end
 				end)
 			else
-				ThongBao("Thông báo", "Chưa có script", 2)
+				ThongBao("Hx Script", "Chưa có script", 2)
 			end
 		end)
 	end
