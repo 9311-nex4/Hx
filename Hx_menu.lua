@@ -52,14 +52,14 @@ local function TaoGiaoDien()
 	local KiemTraDienThoai = (UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled)
 	local ChieuRong = KiemTraDienThoai and 380 or 340
 	local TyLeChieuCao = 0.45
-	
+
 	local SoLuong = #DanhSachKichBan
 	local ChieuCaoList = (SoLuong * (CauHinh.KichThuoc.Cao + CauHinh.KichThuoc.Cach))
 	local TongCao = 70 + ChieuCaoList + 20
 	local MaxCao = Camera.ViewportSize.Y * TyLeChieuCao
-	
+
 	if TongCao > MaxCao then TongCao = MaxCao end
-	
+
 	local KhungChinh = Instance.new("Frame")
 	KhungChinh.Name = "KhungChinh"
 	KhungChinh.Size = CauHinh.KichThuoc.IconLon
@@ -112,7 +112,7 @@ local function TaoGiaoDien()
 	NutDong.TextTransparency = 1
 	NutDong.Parent = KhungChinh
 	Instance.new("UICorner", NutDong).CornerRadius = UDim.new(0, 6)
-	
+
 	local VienNutDong = Instance.new("UIStroke", NutDong)
 	VienNutDong.Color = CauHinh.Mau.Vien
 	VienNutDong.Transparency = 1
@@ -129,12 +129,12 @@ local function TaoGiaoDien()
 	KhungList.BorderSizePixel = 0
 	KhungList.Parent = NoiDung
 	Instance.new("UICorner", KhungList).CornerRadius = UDim.new(0, 6)
-	
+
 	local Layout = Instance.new("UIListLayout", KhungList)
 	Layout.Padding = UDim.new(0, CauHinh.KichThuoc.Cach)
 	Layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	Layout.SortOrder = Enum.SortOrder.LayoutOrder
-	
+
 	Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
 		KhungList.CanvasSize = UDim2.new(0, 0, 0, Layout.AbsoluteContentSize.Y + 10)
 	end)
@@ -143,7 +143,7 @@ local function TaoGiaoDien()
 		ScreenGui = ManHinhGui, Khung = KhungChinh, Icon = Icon,
 		TieuDe = TieuDe, NutDong = NutDong, VienNutDong = VienNutDong, DanhSach = KhungList
 	}
-	
+
 	local CauHinhHieuUng = {
 		IconDau = CauHinh.KichThuoc.IconLon,
 		IconCuoi = CauHinh.KichThuoc.IconNho,
@@ -193,10 +193,10 @@ local function TaoGiaoDien()
 
 		Nut.MouseEnter:Connect(function() LibHieuUng.Hover(Nut, true, ThuocTinhLuot, ThuocTinhThuong) end)
 		Nut.MouseLeave:Connect(function() LibHieuUng.Hover(Nut, false, ThuocTinhLuot, ThuocTinhThuong) end)
-		
+
 		Nut.MouseButton1Click:Connect(function()
 			LibHieuUng.Click(Nut)
-			
+
 			if _G.DaKichHoat[DuLieu.Ten] then
 				ThongBao("Hx Script", "Đã bật chức năng này rồi!", 2)
 				return
@@ -208,10 +208,10 @@ local function TaoGiaoDien()
 
 				task.spawn(function()
 					local ok, err = pcall(function() loadstring(game:HttpGet(DuLieu.Link))() end)
-					if not ok then warn(err) ThongBao("Hx Script", "Link hỏng!", 3) end
+					if not ok then warn(err) ThongBao("Hx Script", "Link hiện tại chưa được cập nhật. Vui lòng chờ!", 3) end
 				end)
 			else
-				ThongBao("Hx Script", "Chưa có script", 2)
+				ThongBao("Hx Script", "Chưa có script cho nút này. Vui lòng chờ!", 2)
 			end
 		end)
 	end
@@ -243,7 +243,7 @@ local function TaoGiaoDien()
 			TweenService:Create(VienNutDong, TweenInfo.new(0.3), {Transparency = 0.8}):Play()
 		end
 	end)
-	
+
 	NutDong.MouseButton1Click:Connect(function()
 		if not DangDong then DongGiaoDien() end
 	end)
