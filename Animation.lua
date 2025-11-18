@@ -8,12 +8,23 @@ ThuVien.Styles = {
 	Smooth = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
 	Pop = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
 	Fade = TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-	Keo = TweenInfo.new(0.1, Enum.EasingStyle.Sine, Enum.EasingDirection.Out) 
+	Keo = TweenInfo.new(0.1, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
 }
 
 local function ChayTween(doiTuong, tweenInfo, properties)
-	if doiTuong and properties then 
-		TweenService:Create(doiTuong, tweenInfo, properties):Play() 
+	if not doiTuong or not properties then return end
+	
+	local propsHopLe = {}
+	
+	for k, v in pairs(properties) do
+		local success = pcall(function() return doiTuong[k] end)
+		if success then
+			propsHopLe[k] = v
+		end
+	end
+	
+	if next(propsHopLe) then
+		TweenService:Create(doiTuong, tweenInfo, propsHopLe):Play()
 	end
 end
 
@@ -34,7 +45,7 @@ end
 
 function ThuVien.KeoTha(khung, diemKeo)
 	diemKeo = diemKeo or khung
-	
+
 	local dangKeo, dragInput, dragStart, startPos
 
 	local function capNhat(input)
@@ -83,9 +94,17 @@ function ThuVien.MoGiaoDien(uiElements, configs)
 		uiElements.Icon.Position = configs.IconDauPos
 		uiElements.Icon.ImageTransparency = 0
 	end
+	
+	if uiElements.DanhSach then
+		for _, con in ipairs(uiElements.DanhSach:GetDescendants()) do
+			if con:IsA("GuiObject") then
+				ChayTween(con, TweenInfo.new(0), {TextTransparency = 1, ImageTransparency = 1, BackgroundTransparency = 1})
+			end
+		end
+	end
 
 	ChayTween(uiElements.Khung, ThuVien.Styles.Fade, {BackgroundTransparency = 1})
-	
+
 	task.wait(0.2)
 	ChayTween(uiElements.Khung, ThuVien.Styles.Mo, {Size = configs.KhungCuoi, BackgroundTransparency = configs.KhungTrans or 0.15})
 
@@ -100,13 +119,26 @@ function ThuVien.MoGiaoDien(uiElements, configs)
 		tweenIcon.Completed:Connect(function()
 			ChayTween(uiElements.TieuDe, ThuVien.Styles.Fade, {TextTransparency = 0})
 			ChayTween(uiElements.NutDong, ThuVien.Styles.Fade, {BackgroundTransparency = 0.6, TextTransparency = 0})
-			ChayTween(uiElements.VienNutDong, ThuVien.Styles.Fade, {Transparency = 0.8})
+			if uiElements.VienNutDong then
+				ChayTween(uiElements.VienNutDong, ThuVien.Styles.Fade, {Transparency = 0.8})
+			end
 			ChayTween(uiElements.DanhSach, ThuVien.Styles.Fade, {BackgroundTransparency = 0.6, ScrollBarImageTransparency = 0})
 
 			if uiElements.DanhSach then
+				local delayTime = 0
 				for _, con in ipairs(uiElements.DanhSach:GetChildren()) do
-					if con:IsA("TextButton") then
-						ChayTween(con, ThuVien.Styles.Fade, {BackgroundTransparency = 0, TextTransparency = 0})
+					if con:IsA("GuiObject") then
+						task.delay(delayTime, function()
+							ChayTween(con, ThuVien.Styles.Fade, {
+								BackgroundTransparency = 1,
+								TextTransparency = 0,
+								ImageTransparency = 0
+							})
+							if con.Name:match("Group") and con:FindFirstChild("Header") then
+								ChayTween(con.Header, ThuVien.Styles.Fade, {BackgroundTransparency = 0, TextTransparency = 0})
+							end
+						end)
+						delayTime = delayTime + 0.05
 					end
 				end
 			end
@@ -124,12 +156,14 @@ function ThuVien.DongGiaoDien(uiElements, configs, callback)
 	ChayTween(uiElements.TieuDe, ThuVien.Styles.Smooth, {TextTransparency = 1})
 	ChayTween(uiElements.DanhSach, ThuVien.Styles.Smooth, {BackgroundTransparency = 1, ScrollBarImageTransparency = 1})
 	ChayTween(uiElements.NutDong, ThuVien.Styles.Smooth, {BackgroundTransparency = 1, TextTransparency = 1})
-	ChayTween(uiElements.VienNutDong, ThuVien.Styles.Smooth, {Transparency = 1})
+	if uiElements.VienNutDong then
+		ChayTween(uiElements.VienNutDong, ThuVien.Styles.Smooth, {Transparency = 1})
+	end
 
 	if uiElements.DanhSach then
-		for _, con in ipairs(uiElements.DanhSach:GetChildren()) do
+		for _, con in ipairs(uiElements.DanhSach:GetDescendants()) do
 			if con:IsA("GuiObject") then
-				ChayTween(con, ThuVien.Styles.Smooth, {BackgroundTransparency = 1, TextTransparency = 1})
+				ChayTween(con, ThuVien.Styles.Smooth, {BackgroundTransparency = 1, TextTransparency = 1, ImageTransparency = 1})
 			end
 		end
 	end
@@ -139,7 +173,7 @@ function ThuVien.DongGiaoDien(uiElements, configs, callback)
 	if uiElements.Icon then
 		ChayTween(uiElements.Icon, ThuVien.Styles.Dong, {Position = configs.IconDauPos, Size = configs.IconDau})
 	end
-	
+
 	local dongKhung = TweenService:Create(uiElements.Khung, ThuVien.Styles.Dong, {
 		Size = configs.KhungDau,
 		BackgroundTransparency = 1
