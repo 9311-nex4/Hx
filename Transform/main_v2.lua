@@ -317,6 +317,7 @@ local function TaoGiaoDien()
 		KhungChinh.Visible = true
 
 		NutDong.Size = UDim2.fromOffset(CauHinh.KichThuoc.NutDong, CauHinh.KichThuoc.NutDong)
+		NutDong.BackgroundColor3 = CauHinh.Mau.NutDong
 
 		HoatAnh.MoGiaoDien(CacPhanTu, CauHinhHieuUng)
 
