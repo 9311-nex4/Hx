@@ -8,13 +8,13 @@ local PlayerGui = NguoiChoi:WaitForChild("PlayerGui")
 local PlayerScripts = NguoiChoi:WaitForChild("PlayerScripts")
 local Camera = Workspace.CurrentCamera
 
-local HoatAnh = require(PlayerScripts:WaitForChild("Animation"))
-local ThongBao = require(PlayerScripts:WaitForChild("Notify")) 
+local HoatAnh = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Animation.lua"))()
+local ThongBao = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Notify.lua"))()
 
 _G.DaKichHoat = _G.DaKichHoat or {}
 
 local DanhSachKichBan = {
-	{ Ten = "Transform", Link = "" },
+	{ Ten = "Transform", Link = "https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform/main.lua" },
 	{ Ten = "Example 2", Link = "" },
 	{ Ten = "Example 3", Link = "" },
 	{ Ten = "Example 4", Link = "" },
