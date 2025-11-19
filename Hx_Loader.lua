@@ -255,7 +255,4 @@ local function TaoGiaoDien()
 		if not DangDong then DongGiaoDien() end
 	end)
 end
-
-task.wait(2)
-
 TaoGiaoDien()
