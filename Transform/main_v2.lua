@@ -52,6 +52,7 @@ local DanhSachNhom = {
 			{ 
 				Ten = "Chức Năng Biến Hình", 
 				Loai = "Otich",
+				HienTai = "Bat",
 				SuKien = function(TrangThai)
 					BaoTrangThai("chức năng biến hình!", TrangThai)
 				end
@@ -59,6 +60,7 @@ local DanhSachNhom = {
 			{ 
 				Ten = "Hiển Thị Nút Chức Năng", 
 				Loai = "Otich",
+				HienTai = "Bat",
 				SuKien = function(TrangThai)
 					BaoTrangThai("hiển thị nút chức năng thành công!", TrangThai)
 				end
@@ -66,6 +68,7 @@ local DanhSachNhom = {
 			{ 
 				Ten = "Hiển thị Outline Vùng Chọn", 
 				Loai = "Otich",
+				HienTai = "Bat",
 				SuKien = function(TrangThai)
 					BaoTrangThai("hiển thị outline vùng chọn cho các part.", TrangThai)
 				end
@@ -75,16 +78,21 @@ local DanhSachNhom = {
 	{
 		TieuDe = "Nhân Vật Transform",
 		ChucNang = {
-			{ 
-				Ten = "Tạo Nhân Vật", 
-				Loai = "Otich",
-				SuKien = function(TrangThai)
-					BaoTrangThai("tạo nhân vật tại vị trí người chơi!", TrangThai)
-				end
+			{
+				Loai = "NhieuNut",
+				Ten_1 = "Tạo Nhân Vật Mẫu",
+				SuKien_1 = function() 
+					ThongBao("Hx Script", "Đã tạo nhân vật tại vị trí của bạn!", 3) 
+				end,
+				Ten_2 = "Xóa Nhân Vật Chọn",
+				SuKien_2 = function() 
+					ThongBao("Hx Script", "Đã xóa nhân vật bạn chọn!", 3) 
+				end,
 			},
 			{ 
 				Ten = "Cho Phép Di Chuyển", 
 				Loai = "Otich",
+				HienTai = "Bat",
 				SuKien = function(TrangThai)
 					BaoTrangThai("di chuyển cho model nhân vật mẫu.", TrangThai)
 				end
@@ -92,6 +100,7 @@ local DanhSachNhom = {
 			{ 
 				Ten = "Cho Phép Chọn", 
 				Loai = "Otich",
+				HienTai = "Bat",
 				SuKien = function(TrangThai)
 					BaoTrangThai("chọn model nhân vật mẫu.", TrangThai)
 				end
@@ -110,7 +119,18 @@ local DanhSachNhom = {
 							{ Ten = "Tay Trái", Loai = "Otich" },
 							{ Ten = "Tay Phải", Loai = "Otich" },
 							{ Ten = "Chân Trái", Loai = "Otich" },
-							{ Ten = "Chân Phải", Loai = "Otich" }
+							{ Ten = "Chân Phải", Loai = "Otich" },
+							{
+								Loai = "NhieuNut",
+								Ten_1 = "Lưu Trữ",
+								SuKien_1 = function() 
+									ThongBao("Hx Script", "Đã tạo khối tại vị trí của bạn!", 3) 
+								end,
+								Ten_2 = "Xóa Lưu",
+								SuKien_2 = function() 
+									ThongBao("Hx Script", "Đã xóa khối bạn chọn!", 3) 
+								end,
+							}
 						}
 					},
 					"Nhân Vật"
@@ -120,7 +140,7 @@ local DanhSachNhom = {
 				Ten = "Transform", 
 				Loai = "Nut",
 				SuKien = function()
-					ThongBao("Hx Script", "Biến theo nhân vật đã thực hiện", 3)
+					ThongBao("Hx Script", "Biến theo nhân vật đã thực hiện!", 3)
 				end
 			}
 		}
@@ -142,11 +162,83 @@ local DanhSachNhom = {
 							{ Ten = "Tay Trái", Loai = "Otich" },
 							{ Ten = "Tay Phải", Loai = "Otich" },
 							{ Ten = "Chân Trái", Loai = "Otich" },
-							{ Ten = "Chân Phải", Loai = "Otich" }
+							{ Ten = "Chân Phải", Loai = "Otich" },
+							{
+								Loai = "NhieuNut",
+								Ten_1 = "Lưu Trữ",
+								SuKien_1 = function() 
+									ThongBao("Hx Script", "Đã tạo khối tại vị trí của bạn!", 3) 
+								end,
+								Ten_2 = "Xóa Lưu",
+								SuKien_2 = function() 
+									ThongBao("Hx Script", "Đã xóa khối bạn chọn!", 3) 
+								end,
+							}
 						}
 					},
 					"Nhân Vật"
 				}
+			}
+		}
+	},
+	{
+		TieuDe = "Tạo Khối",
+		ChucNang = {
+			{
+				Loai = "NhieuNut",
+				Ten_1 = "Tạo Khối Mẫu",
+				SuKien_1 = function() 
+					ThongBao("Hx Script", "Đã tạo khối tại vị trí của bạn!", 3) 
+				end,
+				Ten_2 = "Xóa Khối Chọn",
+				SuKien_2 = function() 
+					ThongBao("Hx Script", "Đã xóa khối bạn chọn!", 3) 
+				end,
+			},
+			{ 
+				Ten = "Cho Phép Di Chuyển", 
+				Loai = "Otich",
+				HienTai = "Bat",
+				SuKien = function(TrangThai)
+					BaoTrangThai("di chuyển cho model nhân vật mẫu.", TrangThai)
+				end
+			},
+			{ 
+				Ten = "Cho Phép Chọn", 
+				Loai = "Otich",
+				HienTai = "Bat",
+				SuKien = function(TrangThai)
+					BaoTrangThai("chọn model nhân vật mẫu.", TrangThai)
+				end
+			},
+			{
+				Ten = "Các Khối Đã Tạo",
+				Loai = "Danhsach",
+				Danhsach = {
+					{
+						Ten = "Khối 1",
+						Loai = "Otich",
+						HienTai = "Tat",
+						SuKien = function(val) end
+					},
+					{
+						Ten = "Khối 2",
+						Loai = "Otich",
+						HienTai = "Tat",
+						SuKien = function(val) end
+					}
+				}
+			},
+			{
+				Loai = "NhieuNut",
+				Ten_1 = "Hàn Các Khối Đã Chọn",
+				SuKien_1 = function() 
+					ThongBao("Hx Script", "Đã hàn các khối.", 3) 
+				end,
+				Ten_2 = "Tháo Các Khối Đã Chọn",
+				SuKien_2 = function() 
+					ThongBao("Hx Script", "Đã tháo hàn các khối.", 3) 
+				end,
 			}
 		}
 	}
