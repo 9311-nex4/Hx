@@ -1,164 +1,167 @@
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 
-local nguoi = Players.LocalPlayer
-local guiNguoi = nguoi:WaitForChild("PlayerGui")
+local NguoiChoi = Players.LocalPlayer
+local GuiNguoiChoi = NguoiChoi:WaitForChild("PlayerGui")
 
-local MAX_NOTIFS = 3
-local NOTIF_HEIGHT = 80
-local PADDING = 10
+local SO_LUONG_TOI_DA = 3
+local CHIEU_CAO_TB = 80
+local KHOANG_CACH = 10
 
-local mainGui = Instance.new("ScreenGui")
-mainGui.Name = "HeThongThongBao"
-mainGui.ResetOnSpawn = false
-mainGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
-mainGui.Parent = guiNguoi
+local GuiChinh = Instance.new("ScreenGui")
+GuiChinh.Name = "HeThongThongBao"
+GuiChinh.ResetOnSpawn = false
+GuiChinh.ZIndexBehavior = Enum.ZIndexBehavior.Global
+GuiChinh.Parent = GuiNguoiChoi
 
-local activeNotifs = {} 
+local ThongBaoDangHien = {} 
 
-local function updatePositions()
-	for i, item in ipairs(activeNotifs) do
-		local offset = (i - 1) * (NOTIF_HEIGHT + PADDING)
-		local targetPos = UDim2.new(1, -20, 1, -20 - offset)
-		TweenService:Create(item.Frame, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = targetPos}):Play()
+local function CapNhatViTri()
+	for i, Muc in ipairs(ThongBaoDangHien) do
+		local DoLech = (i - 1) * (CHIEU_CAO_TB + KHOANG_CACH)
+		local ViTriDich = UDim2.new(1, -20, 1, -20 - DoLech)
+		TweenService:Create(Muc.Khung, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = ViTriDich}):Play()
 	end
 end
 
-local function thongbao(tieude, noidung, thoigian)
-	if #activeNotifs >= MAX_NOTIFS then
-		local oldNotif = activeNotifs[1]
-		if oldNotif and not oldNotif.IsClosing then
-			oldNotif.SpeedUp()
+local function TaoThongBao(TieuDe, NoiDung, ThoiGian)
+	if #ThongBaoDangHien >= SO_LUONG_TOI_DA then
+		local ThongBaoCu = ThongBaoDangHien[1]
+		if ThongBaoCu and not ThongBaoCu.DangDong then
+			ThongBaoCu.DongNhanh()
 		end
-		repeat task.wait() until #activeNotifs < MAX_NOTIFS
+		repeat task.wait() until #ThongBaoDangHien < SO_LUONG_TOI_DA
 	end
 
-	local currentCount = #activeNotifs
-	local offset = currentCount * (NOTIF_HEIGHT + PADDING)
+	local SoLuongHienTai = #ThongBaoDangHien
+	local DoLech = SoLuongHienTai * (CHIEU_CAO_TB + KHOANG_CACH)
 
-	local viTriAn = UDim2.new(1, 250, 1, -20 - offset)
-	local viTriHien = UDim2.new(1, -20, 1, -20 - offset)
+	local ViTriAn = UDim2.new(1, 250, 1, -20 - DoLech)
+	local ViTriHien = UDim2.new(1, -20, 1, -20 - DoLech)
 
-	local mau1 = Color3.fromRGB(85, 255, 127)
-	local mau2 = Color3.fromRGB(255, 255, 85)
-	local mau3 = Color3.fromRGB(255, 85, 85)
+	local MauXanh = Color3.fromRGB(85, 255, 127)
+	local MauVang = Color3.fromRGB(255, 255, 85)
+	local MauDo = Color3.fromRGB(255, 85, 85)
 
-	local khung = Instance.new("Frame")
-	khung.Name = "NoiDung"
-	khung.Size = UDim2.new(0, 170, 0, NOTIF_HEIGHT - 10)
-	khung.Position = viTriAn
-	khung.AnchorPoint = Vector2.new(1, 1)
-	khung.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-	khung.BorderSizePixel = 0
-	khung.Parent = mainGui
+	local KhungChua = Instance.new("Frame")
+	KhungChua.Name = "NoiDung"
+	KhungChua.Size = UDim2.new(0, 170, 0, CHIEU_CAO_TB - 10)
+	KhungChua.Position = ViTriAn
+	KhungChua.AnchorPoint = Vector2.new(1, 1)
+	KhungChua.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+	KhungChua.BorderSizePixel = 0
+	KhungChua.Parent = GuiChinh
 
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 12)
-	corner.Parent = khung
+	local BoGoc = Instance.new("UICorner")
+	BoGoc.CornerRadius = UDim.new(0, 12)
+	BoGoc.Parent = KhungChua
 
-	local stroke = Instance.new("UIStroke")
-	stroke.Color = mau1
-	stroke.Thickness = 2
-	stroke.Transparency = 0.8
-	stroke.Parent = khung
+	local VienKhung = Instance.new("UIStroke")
+	VienKhung.Color = MauXanh
+	VienKhung.Thickness = 2
+	VienKhung.Transparency = 0.8
+	VienKhung.Parent = KhungChua
 
-	local lblTieuDe = Instance.new("TextLabel")
-	lblTieuDe.Text = tieude
-	lblTieuDe.Size = UDim2.new(0.9, 0, 0.25, 0)
-	lblTieuDe.Position = UDim2.new(0.5, 0, 0.2, 0)
-	lblTieuDe.AnchorPoint = Vector2.new(0.5, 0.5)
-	lblTieuDe.BackgroundTransparency = 1
-	lblTieuDe.TextColor3 = Color3.fromRGB(255, 255, 255)
-	lblTieuDe.Font = Enum.Font.GothamBold
-	lblTieuDe.TextSize = 18
-	lblTieuDe.Parent = khung
+	local NhanTieuDe = Instance.new("TextLabel")
+	NhanTieuDe.Text = TieuDe
+	NhanTieuDe.Size = UDim2.new(0.9, 0, 0.25, 0)
+	NhanTieuDe.Position = UDim2.new(0.5, 0, 0.2, 0)
+	NhanTieuDe.AnchorPoint = Vector2.new(0.5, 0.5)
+	NhanTieuDe.BackgroundTransparency = 1
+	NhanTieuDe.TextColor3 = Color3.fromRGB(255, 255, 255)
+	NhanTieuDe.Font = Enum.Font.GothamBold
+	NhanTieuDe.TextScaled = true
+	NhanTieuDe.Parent = KhungChua
+	Instance.new("UITextSizeConstraint", NhanTieuDe).MaxTextSize = 14
 
-	local lblNoiDung = Instance.new("TextLabel")
-	lblNoiDung.Text = noidung
-	lblNoiDung.Size = UDim2.new(0.9, 0, 0.4, 0)
-	lblNoiDung.Position = UDim2.new(0.5, 0, 0.55, 0)
-	lblNoiDung.AnchorPoint = Vector2.new(0.5, 0.5)
-	lblNoiDung.BackgroundTransparency = 1
-	lblNoiDung.TextColor3 = Color3.fromRGB(220, 220, 220)
-	lblNoiDung.Font = Enum.Font.Gotham
-	lblNoiDung.TextScaled = true
-	lblNoiDung.Parent = khung
+	local NhanNoiDung = Instance.new("TextLabel")
+	NhanNoiDung.Text = NoiDung
+	NhanNoiDung.TextXAlignment = Enum.TextXAlignment.Left
+	NhanNoiDung.Size = UDim2.new(0.9, 0, 0.4, 0)
+	NhanNoiDung.Position = UDim2.new(0.5, 0, 0.55, 0)
+	NhanNoiDung.AnchorPoint = Vector2.new(0.5, 0.5)
+	NhanNoiDung.BackgroundTransparency = 1
+	NhanNoiDung.TextColor3 = Color3.fromRGB(220, 220, 220)
+	NhanNoiDung.Font = Enum.Font.Gotham
+	NhanNoiDung.TextScaled = true
+	NhanNoiDung.Parent = KhungChua
+	Instance.new("UITextSizeConstraint", NhanNoiDung).MaxTextSize = 14
 
-	local nenThanh = Instance.new("Frame")
-	nenThanh.Size = UDim2.new(0.9, 0, 0.05, 0)
-	nenThanh.Position = UDim2.new(0.5, 0, 0.88, 0)
-	nenThanh.AnchorPoint = Vector2.new(0.5, 0.5)
-	nenThanh.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-	nenThanh.Parent = khung
-	Instance.new("UICorner", nenThanh).CornerRadius = UDim.new(0, 6)
+	local NenThanhThoiGian = Instance.new("Frame")
+	NenThanhThoiGian.Size = UDim2.new(0.9, 0, 0.05, 0)
+	NenThanhThoiGian.Position = UDim2.new(0.5, 0, 0.88, 0)
+	NenThanhThoiGian.AnchorPoint = Vector2.new(0.5, 0.5)
+	NenThanhThoiGian.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	NenThanhThoiGian.Parent = KhungChua
+	Instance.new("UICorner", NenThanhThoiGian).CornerRadius = UDim.new(0, 6)
 
-	local thanh = Instance.new("Frame")
-	thanh.Size = UDim2.new(1, 0, 1, 0)
-	thanh.BackgroundColor3 = mau1
-	thanh.Parent = nenThanh
-	Instance.new("UICorner", thanh).CornerRadius = UDim.new(0, 6)
+	local ThanhThoiGian = Instance.new("Frame")
+	ThanhThoiGian.Size = UDim2.new(1, 0, 1, 0)
+	ThanhThoiGian.BackgroundColor3 = MauXanh
+	ThanhThoiGian.Parent = NenThanhThoiGian
+	Instance.new("UICorner", ThanhThoiGian).CornerRadius = UDim.new(0, 6)
 
-	local notifData = {
-		Frame = khung,
-		IsClosing = false,
-		SpeedUp = nil
+	local DuLieuTB = {
+		Khung = KhungChua,
+		DangDong = false,
+		DongNhanh = nil
 	}
-	table.insert(activeNotifs, notifData)
+	table.insert(ThongBaoDangHien, DuLieuTB)
 
 	task.spawn(function()
-		local inTw = TweenService:Create(khung, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = viTriHien})
-		inTw:Play()
-		inTw.Completed:Wait()
+		local HieuUngVao = TweenService:Create(KhungChua, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = ViTriHien})
+		HieuUngVao:Play()
+		HieuUngVao.Completed:Wait()
 
-		local timeTw = TweenService:Create(thanh, TweenInfo.new(thoigian, Enum.EasingStyle.Linear), {Size = UDim2.new(0, 0, 1, 0)})
+		local HieuUngThoiGian = TweenService:Create(ThanhThoiGian, TweenInfo.new(ThoiGian, Enum.EasingStyle.Linear), {Size = UDim2.new(0, 0, 1, 0)})
 
-		local val = Instance.new("Color3Value")
-		val.Value = mau1
-		val.Changed:Connect(function(v)
-			stroke.Color = v
-			thanh.BackgroundColor3 = v
+		local GiaTriMau = Instance.new("Color3Value")
+		GiaTriMau.Value = MauXanh
+		GiaTriMau.Changed:Connect(function(v)
+			VienKhung.Color = v
+			ThanhThoiGian.BackgroundColor3 = v
 		end)
 
-		local half = thoigian / 2
-		local c1 = TweenService:Create(val, TweenInfo.new(half), {Value = mau2})
-		local c2 = TweenService:Create(val, TweenInfo.new(half), {Value = mau3})
+		local NuaThoiGian = ThoiGian / 2
+		local DoiMau1 = TweenService:Create(GiaTriMau, TweenInfo.new(NuaThoiGian), {Value = MauVang})
+		local DoiMau2 = TweenService:Create(GiaTriMau, TweenInfo.new(NuaThoiGian), {Value = MauDo})
 
-		c1:Play()
-		c1.Completed:Connect(function() if not notifData.IsClosing then c2:Play() end end)
-		timeTw:Play()
+		DoiMau1:Play()
+		DoiMau1.Completed:Connect(function() if not DuLieuTB.DangDong then DoiMau2:Play() end end)
+		HieuUngThoiGian:Play()
 
-		notifData.SpeedUp = function()
-			if not notifData.IsClosing then
-				notifData.IsClosing = true
-				timeTw:Cancel()
-				c1:Cancel()
-				c2:Cancel()
-				TweenService:Create(thanh, TweenInfo.new(0.1), {Size = UDim2.new(0,0,1,0)}):Play()
+		DuLieuTB.DongNhanh = function()
+			if not DuLieuTB.DangDong then
+				DuLieuTB.DangDong = true
+				HieuUngThoiGian:Cancel()
+				DoiMau1:Cancel()
+				DoiMau2:Cancel()
+				TweenService:Create(ThanhThoiGian, TweenInfo.new(0.1), {Size = UDim2.new(0,0,1,0)}):Play()
 				task.wait(0.15)
 			end
 		end
 
-		if not notifData.IsClosing then
-			timeTw.Completed:Wait()
+		if not DuLieuTB.DangDong then
+			HieuUngThoiGian.Completed:Wait()
 		end
-		notifData.IsClosing = true
+		DuLieuTB.DangDong = true
 
-		for i, v in ipairs(activeNotifs) do
-			if v == notifData then
-				table.remove(activeNotifs, i)
+		for i, v in ipairs(ThongBaoDangHien) do
+			if v == DuLieuTB then
+				table.remove(ThongBaoDangHien, i)
 				break
 			end
 		end
-		updatePositions()
+		CapNhatViTri()
 
-		local outPos = UDim2.new(1, 250, khung.Position.Y.Scale, khung.Position.Y.Offset)
-		local outTw = TweenService:Create(khung, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = outPos})
-		outTw:Play()
-		outTw.Completed:Wait()
+		local ViTriRa = UDim2.new(1, 250, KhungChua.Position.Y.Scale, KhungChua.Position.Y.Offset)
+		local HieuUngRa = TweenService:Create(KhungChua, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = ViTriRa})
+		HieuUngRa:Play()
+		HieuUngRa.Completed:Wait()
 
-		khung:Destroy()
-		val:Destroy()
+		KhungChua:Destroy()
+		GiaTriMau:Destroy()
 	end)
 end
 
-return thongbao
+return TaoThongBao
