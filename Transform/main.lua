@@ -113,24 +113,12 @@ local function taoHieuUng(partGoc)
 	end
 end
 
-local success, externalNotify = pcall(function()
-	return loadstring(game:HttpGet('https://raw.githubusercontent.com/9311-nex4/Hx/main/Notify.lua'))()
-end)
-
-local function guiThongBao(tieuDe, noiDung, thoiGian)
-	local thoiGianHienThi = thoiGian or 3
-
-	if success and typeof(externalNotify) == "function" then
-		externalNotify(tieuDe, noiDung, thoiGianHienThi)
-	else
-		pcall(function()
-			game:GetService("StarterGui"):SetCore("SendNotification", {
-				Title = tieuDe,
-				Text = noiDung,
-				Duration = thoiGianHienThi,
-			})
-		end)
-	end
+local GuiThongBao = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Notify.lua"))()
+local function ThongBao(TieuDe, NoiDung, ThoiGian)
+	 GuiThongBao.thongbao(TieuDe, NoiDung, ThoiGian)
+end
+local function ThongBaoLoi(TieuDe, NoiDung)
+	 GuiThongBao.thongbaoloi(TieuDe, NoiDung)
 end
 
 local function updateCloneAnimation()
@@ -236,7 +224,7 @@ end
 
 local function bienHinhToanThan(nhanVat, partGoc)
 	if not partDuocChon or not partDuocChon.Parent then
-		guiThongBao("Lỗi!", "Chưa chọn part để biến hình toàn thân.", 3)
+		GuiThongBao("Lỗi!", "Chưa chọn part để biến hình toàn thân.", 3)
 		return false
 	end
 
@@ -333,7 +321,7 @@ local function bienHinhTungPhan(nhanVat)
 	end
 
 	if not daBienHinhMotPhan then
-		guiThongBao("Thông báo", "Không có bộ phận nào được bật hoặc có part để biến hình.", 3)
+		GuiThongBao("Thông báo", "Không có bộ phận nào được bật hoặc có part để biến hình.", 3)
 		return false
 	end
 	return true
@@ -341,24 +329,24 @@ end
 
 local function bienHinhNhanVat(nhanVat, partGoc)
 	if not partDuocChon or not partDuocChon.Parent then
-		guiThongBao("Loi!", "Chua chon doi tuong de bien hinh.", 3)
+		GuiThongBao("Loi!", "Chua chon doi tuong de bien hinh.", 3)
 		return false
 	end
 
 	local modelMucTieu = partDuocChon:FindFirstAncestorWhichIsA("Model")
 	if not modelMucTieu or not modelMucTieu:FindFirstChildWhichIsA("Humanoid") then
-		guiThongBao("Loi!", "Doi tuong da chon khong phai la nhan vat hop le.", 3)
+		GuiThongBao("Loi!", "Doi tuong da chon khong phai la nhan vat hop le.", 3)
 		return false
 	end
 
 	if modelMucTieu == nhanVat then
-		guiThongBao("Loi!", "Ban khong the bien hinh thanh chinh minh.", 3)
+		GuiThongBao("Loi!", "Ban khong the bien hinh thanh chinh minh.", 3)
 		return false
 	end
 
 	local humanoidNguoiChoi = nhanVat:FindFirstChildWhichIsA("Humanoid")
 	if not humanoidNguoiChoi then
-		guiThongBao("Loi!", "Khong tim thay Humanoid cua nguoi choi.", 3)
+		GuiThongBao("Loi!", "Khong tim thay Humanoid cua nguoi choi.", 3)
 		return false
 	end
 
@@ -385,7 +373,7 @@ local function bienHinhNhanVat(nhanVat, partGoc)
 	if not gocBanSao then
 		banSao:Destroy()
 		hoanTac(nhanVat)
-		guiThongBao("Loi!", "Doi tuong ban sao khong co HumanoidRootPart.", 3)
+		GuiThongBao("Loi!", "Doi tuong ban sao khong co HumanoidRootPart.", 3)
 		return false
 	end
 
@@ -409,7 +397,7 @@ local function bienHinhNhanVat(nhanVat, partGoc)
 	else
 		banSao:Destroy()
 		hoanTac(nhanVat)
-		guiThongBao("Loi!", "Doi tuong ban sao khong co Humanoid (can cho scaling/animation).", 3)
+		GuiThongBao("Loi!", "Doi tuong ban sao khong co Humanoid (can cho scaling/animation).", 3)
 		return false
 	end
 
@@ -480,11 +468,11 @@ local function chayBienHinh()
 				end
 			end
 			if not coPartLuuTru then
-				guiThongBao("Lỗi!", "Bạn phải chọn một part (hoặc có part đã lưu trữ)!", 3)
+				GuiThongBao("Lỗi!", "Bạn phải chọn một part (hoặc có part đã lưu trữ)!", 3)
 				return
 			end
 		else
-			guiThongBao("Lỗi!", "Bạn phải chọn một đối tượng trước!", 3)
+			GuiThongBao("Lỗi!", "Bạn phải chọn một đối tượng trước!", 3)
 			return
 		end
 	end
@@ -739,17 +727,17 @@ local function taoDongBoPhan(parent, tenBoPhanLogic, data)
 		if partDuocChon then
 			luuTruBoPhan[tenBoPhanLogic] = partDuocChon:Clone()
 			cauHinh.boPhan[tenBoPhanLogic].LuuGiu = true
-			guiThongBao("Đã lưu", "Đã lưu " .. partDuocChon.Name .. " cho " .. tenHienThi, 2)
+			GuiThongBao("Đã lưu", "Đã lưu " .. partDuocChon.Name .. " cho " .. tenHienThi, 2)
 			capNhatNut()
 		else
-			guiThongBao("Lỗi", "Bạn phải chọn một part trước khi lưu!", 3)
+			GuiThongBao("Lỗi", "Bạn phải chọn một part trước khi lưu!", 3)
 		end
 	end)
 
 	nutXoaLuu.MouseButton1Click:Connect(function()
 		luuTruBoPhan[tenBoPhanLogic] = nil
 		cauHinh.boPhan[tenBoPhanLogic].LuuGiu = false
-		guiThongBao("Đã xóa", "Đã xóa lưu cho " .. tenHienThi, 2)
+		GuiThongBao("Đã xóa", "Đã xóa lưu cho " .. tenHienThi, 2)
 		capNhatNut()
 	end)
 
@@ -1052,20 +1040,20 @@ UserInputService.InputBegan:Connect(function(input, daXuLyGame)
 				if cauHinh.cheDoBienHinh == "NhanVat" then
 					local modelMucTieu = partChonDuoc:FindFirstAncestorWhichIsA("Model")
 					if not modelMucTieu or not modelMucTieu:FindFirstChildWhichIsA("Humanoid") then
-						guiThongBao("Lỗi!", "Bạn phải chọn một người chơi (hoặc đối tượng có Humanoid).", 3)
+						GuiThongBao("Lỗi!", "Bạn phải chọn một người chơi (hoặc đối tượng có Humanoid).", 3)
 						return
 					end
 				elseif cauHinh.cheDoBienHinh == "ToanThan" or cauHinh.cheDoBienHinh == "TungPhan" then
 					local modelMucTieu = partChonDuoc:FindFirstAncestorWhichIsA("Model")
 					if modelMucTieu and modelMucTieu:FindFirstChildWhichIsA("Humanoid") then
-						guiThongBao("Lỗi!", "Không thể chọn người chơi/nhân vật ở chế độ này.", 3)
+						GuiThongBao("Lỗi!", "Không thể chọn người chơi/nhân vật ở chế độ này.", 3)
 						return
 					end
 				end
 
 				partDuocChon = partChonDuoc
 				capNhatHopChon(partDuocChon)
-				guiThongBao(
+				GuiThongBao(
 					"Đã chọn Part!",
 					"Nhấn [R] (PC) hoặc nút [Biến] (Mobile) để biến hình.",
 					4
