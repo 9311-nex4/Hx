@@ -6,9 +6,17 @@ local NguoiChoi = Players.LocalPlayer
 local PlayerGui = NguoiChoi:WaitForChild("PlayerGui")
 local PlayerScripts = NguoiChoi:WaitForChild("PlayerScripts")
 
-local KhungCuon = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/KhungCuon.lua"))()
+local GuiThongBao = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Notify.lua"))()
+local function ThongBao(TieuDe, NoiDung, ThoiGian)
+	 GuiThongBao.thongbao(TieuDe, NoiDung, ThoiGian)
+end
+
+local function ThongBaoLoi(TieuDe, NoiDung)
+	 GuiThongBao.thongbaoloi(TieuDe, NoiDung)
+end
+
 local HoatAnh = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Animation.lua"))()
-local ThongBao = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Notify.lua"))()
+local KhungCuon = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/KhungCuon.lua"))()
 
 local CauHinh = {
 	Mau = {
@@ -37,6 +45,11 @@ local CauHinh = {
 	Asset = {
 		Icon = "rbxassetid://117118515787811",
 		MuiTenXuong = "rbxassetid://6031091004"
+	},
+	VanBan = {
+		Nut = 18,
+		Nho = 12,
+		TieuDe = 14
 	}
 }
 
@@ -49,166 +62,219 @@ local DanhSachNhom = {
 	{
 		TieuDe = "Main Transform",
 		ChucNang = {
-			{ 
-				Ten = "Chức Năng Biến Hình", 
+			{
+				Ten = "Chức Năng Biến Hình",
 				Loai = "Otich",
 				HienTai = "Bat",
+				CacNutCon = {
+					{
+						Ten = "Hiển Thị Nút Chức Năng",
+						Loai = "Otich",
+						HienTai = "Bat",
+						SuKien = function(TrangThai)
+							BaoTrangThai("hiển thị nút chức năng thành công!", TrangThai)
+						end
+					},
+					{
+						Ten = "Hiển thị Outline Vùng Chọn",
+						Loai = "Otich",
+						HienTai = "Bat",
+						SuKien = function(TrangThai)
+							BaoTrangThai("hiển thị outline vùng chọn cho các part.", TrangThai)
+						end
+					},
+				},
 				SuKien = function(TrangThai)
 					BaoTrangThai("chức năng biến hình!", TrangThai)
 				end
 			},
-			{ 
-				Ten = "Hiển Thị Nút Chức Năng", 
-				Loai = "Otich",
-				HienTai = "Bat",
-				SuKien = function(TrangThai)
-					BaoTrangThai("hiển thị nút chức năng thành công!", TrangThai)
-				end
-			},
-			{ 
-				Ten = "Hiển thị Outline Vùng Chọn", 
-				Loai = "Otich",
-				HienTai = "Bat",
-				SuKien = function(TrangThai)
-					BaoTrangThai("hiển thị outline vùng chọn cho các part.", TrangThai)
-				end
-			},
 		}
 	},
+
 	{
 		TieuDe = "Nhân Vật Transform",
 		ChucNang = {
 			{
 				Loai = "NhieuNut",
 				Ten_1 = "Tạo Nhân Vật Mẫu",
-				SuKien_1 = function() 
-					ThongBao("Hx Script", "Đã tạo nhân vật tại vị trí của bạn!", 3) 
+				SuKien_1 = function()
+					ThongBaoLoi("Hx Script", "Tính năng đang phát triển!")
 				end,
 				Ten_2 = "Xóa Nhân Vật Chọn",
-				SuKien_2 = function() 
-					ThongBao("Hx Script", "Đã xóa nhân vật bạn chọn!", 3) 
+				SuKien_2 = function()
+					ThongBaoLoi("Hx Script", "Tính năng đang phát triển!")
 				end,
 			},
-			{ 
-				Ten = "Cho Phép Di Chuyển", 
+			{
+				Ten = "Cho Phép Di Chuyển",
 				Loai = "Otich",
 				HienTai = "Bat",
 				SuKien = function(TrangThai)
-					BaoTrangThai("di chuyển cho model nhân vật mẫu.", TrangThai)
+					ThongBaoLoi("Hx Script", "Tính năng đang phát triển!")
 				end
 			},
-			{ 
-				Ten = "Cho Phép Chọn", 
+			{
+				Ten = "Cho Phép Chọn",
 				Loai = "Otich",
 				HienTai = "Bat",
 				SuKien = function(TrangThai)
-					BaoTrangThai("chọn model nhân vật mẫu.", TrangThai)
+					ThongBaoLoi("Hx Script", "Tính năng đang phát triển!")
 				end
 			},
-			{ 
-				Ten = "Thành Phần", 
-				Loai = "HopXo", 
-				HienTai = "Toàn Thân",
-				LuaChon = {
-					"Toàn Thân",
-					{
-						Ten = "Từng Phần",
-						CacNutCon = {
-							{ Ten = "Phần Đầu", Loai = "Otich" },
-							{ Ten = "Phần Thân", Loai = "Otich" },
-							{ Ten = "Tay Trái", Loai = "Otich" },
-							{ Ten = "Tay Phải", Loai = "Otich" },
-							{ Ten = "Chân Trái", Loai = "Otich" },
-							{ Ten = "Chân Phải", Loai = "Otich" },
-							{
-								Loai = "NhieuNut",
-								Ten_1 = "Lưu Trữ",
-								SuKien_1 = function() 
-									ThongBao("Hx Script", "Đã tạo khối tại vị trí của bạn!", 3) 
-								end,
-								Ten_2 = "Xóa Lưu",
-								SuKien_2 = function() 
-									ThongBao("Hx Script", "Đã xóa khối bạn chọn!", 3) 
-								end,
-							}
-						}
-					},
-					"Nhân Vật"
-				}
-			},
-			{ 
-				Ten = "Transform", 
+			{
+				Ten = "Transform",
 				Loai = "Nut",
 				SuKien = function()
-					ThongBao("Hx Script", "Biến theo nhân vật đã thực hiện!", 3)
+					ThongBaoLoi("Hx Script", "Tính năng đang phát triển!")
 				end
 			}
 		}
 	},
+
 	{
 		TieuDe = "Thành Phần Transform",
 		ChucNang = {
-			{ 
-				Ten = "Thành Phần", 
-				Loai = "HopXo", 
+			{
+				Ten = "Thành Phần",
+				Loai = "HopXo",
 				HienTai = "Toàn Thân",
 				LuaChon = {
 					"Toàn Thân",
 					{
 						Ten = "Từng Phần",
 						CacNutCon = {
-							{ Ten = "Phần Đầu", Loai = "Otich" },
-							{ Ten = "Phần Thân", Loai = "Otich" },
-							{ Ten = "Tay Trái", Loai = "Otich" },
-							{ Ten = "Tay Phải", Loai = "Otich" },
-							{ Ten = "Chân Trái", Loai = "Otich" },
-							{ Ten = "Chân Phải", Loai = "Otich" },
 							{
-								Loai = "NhieuNut",
-								Ten_1 = "Lưu Trữ",
-								SuKien_1 = function() 
-									ThongBao("Hx Script", "Đã tạo khối tại vị trí của bạn!", 3) 
-								end,
-								Ten_2 = "Xóa Lưu",
-								SuKien_2 = function() 
-									ThongBao("Hx Script", "Đã xóa khối bạn chọn!", 3) 
-								end,
+								Ten = "Phần Đầu",
+								Loai = "Otich",
+								HienTai = "Bat",
+								LoaiNutCon = "CungHang",
+								CacNutCon = {
+									{
+										Ten = "Lưu Trữ",
+										SuKien = function() ThongBao("Hx Script", "Đã lưu trữ Phần Đầu!", 3) end
+									},
+									{
+										Ten = "Xóa Lưu",
+										SuKien = function() ThongBao("Hx Script", "Đã xóa lưu Phần Đầu!", 3) end
+									}
+								}
+							},
+							{
+								Ten = "Phần Thân",
+								Loai = "Otich",
+								HienTai = "Bat",
+								LoaiNutCon = "CungHang",
+								CacNutCon = {
+									{
+										Ten = "Lưu Trữ",
+										SuKien = function() ThongBao("Hx Script", "Đã lưu trữ Phần Thân!", 3) end
+									},
+									{
+										Ten = "Xóa Lưu",
+										SuKien = function() ThongBao("Hx Script", "Đã xóa lưu Phần Thân!", 3) end
+									}
+								}
+							},
+							{
+								Ten = "Tay Trái",
+								Loai = "Otich",
+								HienTai = "Bat",
+								LoaiNutCon = "CungHang",
+								CacNutCon = {
+									{
+										Ten = "Lưu Trữ",
+										SuKien = function() ThongBao("Hx Script", "Đã lưu trữ Tay Trái!", 3) end
+									},
+									{
+										Ten = "Xóa Lưu",
+										SuKien = function() ThongBao("Hx Script", "Đã xóa lưu Tay Trái!", 3) end
+									}
+								}
+							},
+							{
+								Ten = "Tay Phải",
+								Loai = "Otich",
+								HienTai = "Bat",
+								LoaiNutCon = "CungHang",
+								CacNutCon = {
+									{
+										Ten = "Lưu Trữ",
+										SuKien = function() ThongBao("Hx Script", "Đã lưu trữ Tay Phải!", 3) end
+									},
+									{
+										Ten = "Xóa Lưu",
+										SuKien = function() ThongBao("Hx Script", "Đã xóa lưu Tay Phải!", 3) end
+									}
+								}
+							},
+							{
+								Ten = "Chân Trái",
+								Loai = "Otich",
+								HienTai = "Bat",
+								LoaiNutCon = "CungHang",
+								CacNutCon = {
+									{
+										Ten = "Lưu Trữ",
+										SuKien = function() ThongBao("Hx Script", "Đã lưu trữ Chân Trái!", 3) end
+									},
+									{
+										Ten = "Xóa Lưu",
+										SuKien = function() ThongBao("Hx Script", "Đã xóa lưu Chân Trái!", 3) end
+									}
+								}
+							},
+							{
+								Ten = "Chân Phải",
+								Loai = "Otich",
+								HienTai = "Bat",
+								LoaiNutCon = "CungHang",
+								CacNutCon = {
+									{
+										Ten = "Lưu Trữ",
+										SuKien = function() ThongBao("Hx Script", "Đã lưu trữ Chân Phải!", 3) end
+									},
+									{
+										Ten = "Xóa Lưu",
+										SuKien = function() ThongBao("Hx Script", "Đã xóa lưu Chân Phải!", 3) end
+									}
+								}
 							}
 						}
 					},
 					"Nhân Vật"
 				}
-			}
+			},
 		}
 	},
+
 	{
 		TieuDe = "Tạo Khối",
 		ChucNang = {
 			{
 				Loai = "NhieuNut",
 				Ten_1 = "Tạo Khối Mẫu",
-				SuKien_1 = function() 
-					ThongBao("Hx Script", "Đã tạo khối tại vị trí của bạn!", 3) 
+				SuKien_1 = function()
+					ThongBaoLoi("Hx Script", "Tính năng đang phát triển!")
 				end,
 				Ten_2 = "Xóa Khối Chọn",
-				SuKien_2 = function() 
-					ThongBao("Hx Script", "Đã xóa khối bạn chọn!", 3) 
+				SuKien_2 = function()
+					ThongBaoLoi("Hx Script", "Tính năng đang phát triển!")
 				end,
 			},
-			{ 
-				Ten = "Cho Phép Di Chuyển", 
+			{
+				Ten = "Cho Phép Di Chuyển",
 				Loai = "Otich",
 				HienTai = "Bat",
 				SuKien = function(TrangThai)
-					BaoTrangThai("di chuyển cho model nhân vật mẫu.", TrangThai)
+					ThongBaoLoi("Hx Script", "Tính năng đang phát triển!")
 				end
 			},
-			{ 
-				Ten = "Cho Phép Chọn", 
+			{
+				Ten = "Cho Phép Chọn",
 				Loai = "Otich",
 				HienTai = "Bat",
 				SuKien = function(TrangThai)
-					BaoTrangThai("chọn model nhân vật mẫu.", TrangThai)
+					ThongBaoLoi("Hx Script", "Tính năng đang phát triển!")
 				end
 			},
 			{
@@ -232,12 +298,12 @@ local DanhSachNhom = {
 			{
 				Loai = "NhieuNut",
 				Ten_1 = "Hàn Các Khối Đã Chọn",
-				SuKien_1 = function() 
-					ThongBao("Hx Script", "Đã hàn các khối.", 3) 
+				SuKien_1 = function()
+					ThongBaoLoi("Hx Script", "Tính năng đang phát triển!")
 				end,
 				Ten_2 = "Tháo Các Khối Đã Chọn",
-				SuKien_2 = function() 
-					ThongBao("Hx Script", "Đã tháo hàn các khối.", 3) 
+				SuKien_2 = function()
+					ThongBaoLoi("Hx Script", "Tính năng đang phát triển!")
 				end,
 			}
 		}
@@ -248,7 +314,7 @@ local function TaoGiaoDien()
 	if PlayerGui:FindFirstChild("TransformUI") then PlayerGui.TransformUI:Destroy() end
 
 	local DangHanhDong = false
-	
+
 	local KiemTraDienThoai = (UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled)
 
 	local KichThuocMo = UDim2.new(0, 550, 0, 380)
@@ -415,7 +481,7 @@ local function TaoGiaoDien()
 
 		task.delay(0.2, function() DangHanhDong = false end)
 	end
-	
+
 	local NutDongThuong = {
 		Size = UDim2.fromOffset(30, 30),
 		BackgroundColor3 = CauHinh.Mau.NutDong,
@@ -443,7 +509,7 @@ local function TaoGiaoDien()
 			TweenService:Create(VienNutDong, TweenInfo.new(0.3), {Transparency = 0.8}):Play()
 		end
 	end)
-	
+
 	NutDong.MouseButton1Click:Connect(DongGiaoDien)
 	NutMoUI.MouseButton1Click:Connect(function()
 		HoatAnh.NhanChuot(NutMoUI) 
@@ -454,4 +520,6 @@ local function TaoGiaoDien()
 end
 
 if not game:IsLoaded() then game.Loaded:Wait() end
+task.wait(2)
+
 TaoGiaoDien()
