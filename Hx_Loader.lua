@@ -8,8 +8,15 @@ local PlayerGui = NguoiChoi:WaitForChild("PlayerGui")
 local PlayerScripts = NguoiChoi:WaitForChild("PlayerScripts")
 local Camera = Workspace.CurrentCamera
 
+local GuiThongBao = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Notify.lua"))()
+local function ThongBao(TieuDe, NoiDung, ThoiGian)
+	 GuiThongBao.thongbao(TieuDe, NoiDung, ThoiGian)
+end
+local function ThongBaoLoi(TieuDe, NoiDung)
+	 GuiThongBao.thongbaoloi(TieuDe, NoiDung)
+end
+
 local HoatAnh = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Animation.lua"))()
-local ThongBao = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Notify.lua"))()
 
 _G.DaKichHoat = _G.DaKichHoat or {}
 
@@ -203,10 +210,10 @@ local function TaoGiaoDien()
 
 				task.spawn(function()
 					local ok, err = pcall(function() loadstring(game:HttpGet(DuLieu.Link))() end)
-					if not ok then warn(err) ThongBao("Hx Script", "Link hiện tại chưa được cập nhật. Vui lòng chờ!", 3) end
+					if not ok then warn(err) ThongBaoLoi("Hx Script", "Link hiện tại chưa được cập nhật. Vui lòng chờ!", 3) end
 				end)
 			else
-				ThongBao("Hx Script", "Chưa có script cho nút này. Vui lòng chờ!", 2)
+				ThongBaoLoi("Hx Script", "Chưa có script cho nút này. Vui lòng chờ!", 2)
 			end
 		end)
 	end
