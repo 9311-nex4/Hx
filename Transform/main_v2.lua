@@ -260,7 +260,7 @@ local DanhSachNhom = {
 				end,
 			},
 			{
-				Ten = "Danh Sách (Tự động)",
+				Ten = "Danh Sách",
 				Loai = "Danhsach",
 				Danhsach = DuLieuDanhSachKhoiUI
 			},
