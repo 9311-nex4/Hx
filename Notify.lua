@@ -49,7 +49,7 @@ function Guithongbao.thongbao(TieuDe, NoiDung, ThoiGian)
 
 	local KhungChua = Instance.new("Frame")
 	KhungChua.Name = "Notify"
-	KhungChua.Size = UDim2.new(0, 260, 0, CONFIG.CHIEU_CAO_TB)
+	KhungChua.Size = UDim2.new(0, 180, 0, CONFIG.CHIEU_CAO_TB)
 	KhungChua.Position = UDim2.new(1, 300, 1, -50)
 	KhungChua.AnchorPoint = Vector2.new(1, 1)
 	KhungChua.BackgroundColor3 = CONFIG.MAU_NEN
