@@ -7,16 +7,12 @@ local PlayerGui = NguoiChoi:WaitForChild("PlayerGui")
 local PlayerScripts = NguoiChoi:WaitForChild("PlayerScripts")
 
 local GuiThongBao = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Notify.lua"))()
-local function ThongBao(TieuDe, NoiDung, ThoiGian)
-	 GuiThongBao.thongbao(TieuDe, NoiDung, ThoiGian)
-end
-
-local function ThongBaoLoi(TieuDe, NoiDung)
-	 GuiThongBao.thongbaoloi(TieuDe, NoiDung)
-end
+local function ThongBao(TieuDe, NoiDung, ThoiGian) GuiThongBao.thongbao(TieuDe, NoiDung, ThoiGian) end
+local function ThongBaoLoi(TieuDe, NoiDung) GuiThongBao.thongbaoloi(TieuDe, NoiDung) end
 
 local HoatAnh = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Animation.lua"))()
 local KhungCuon = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/KhungCuon.lua"))()
+local Khoi = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform/Khoi_Logic.lua"))()
 
 local CauHinh = {
 	Mau = {
@@ -58,6 +54,71 @@ local function BaoTrangThai(TenChucNang, TrangThai)
 	ThongBao("Hx Script", NoiDung, 2)
 end
 
+local DuLieuDanhSachKhoiUI = {}
+local TaiLaiGiaoDien = nil 
+
+local function TaoCauTrucItemChoKhoi(Obj)
+	local TenHienThi = Obj.Name
+	local LaNhom = Obj:IsA("Model")
+
+	return {
+		Ten = LaNhom and "[NHÓM] " .. TenHienThi or TenHienThi,
+		Loai = "Otich", 
+		HienTai = "Bat",
+		SuKien = function(TrangThai)
+			if LaNhom then
+				for _, child in pairs(Obj:GetDescendants()) do
+					if child:IsA("BasePart") then child.Transparency = TrangThai and 0 or 1 end
+				end
+			else
+				if Obj then Obj.Transparency = TrangThai and 0 or 1 end
+			end
+		end,
+		CacNutCon = {
+			{
+				Ten = "Cho Phép Chọn",
+				Loai = "Otich",
+				HienTai = "Bat",
+				CacNutCon = {
+					{
+						Ten = "Cho Phép Di Chuyển",
+						Loai = "Otich",
+						HienTai = "Bat",
+						SuKien = function(TrangThai)
+							if TrangThai then
+								ThongBao("Hx Script", "Đã bật di chuyển riêng: " .. TenHienThi, 1)
+							else
+								ThongBao("Hx Script", "Đã khóa di chuyển riêng: " .. TenHienThi, 1)
+							end
+						end
+					}
+				},
+				SuKien = function(TrangThai)
+					if TrangThai then
+						ThongBao("Hx Script", "Đã bật chọn riêng: " .. TenHienThi, 1)
+					else
+						ThongBao("Hx Script", "Đã khóa chọn riêng: " .. TenHienThi, 1)
+					end
+				end
+			}
+		}
+	}
+end
+
+Khoi.SuKienThayDoi.Event:Connect(function(HanhDong, DoiTuong)
+	if HanhDong == "Them" then
+		table.insert(DuLieuDanhSachKhoiUI, TaoCauTrucItemChoKhoi(DoiTuong))
+	elseif HanhDong == "Xoa" then
+		for i, v in ipairs(DuLieuDanhSachKhoiUI) do
+			if v.Ten == DoiTuong.Name or v.Ten == "[NHÓM] " .. DoiTuong.Name then
+				table.remove(DuLieuDanhSachKhoiUI, i)
+				break
+			end
+		end
+	end
+	if TaiLaiGiaoDien then TaiLaiGiaoDien() end
+end)
+
 local DanhSachNhom = {
 	{
 		TieuDe = "Main Transform",
@@ -90,7 +151,6 @@ local DanhSachNhom = {
 			},
 		}
 	},
-
 	{
 		TieuDe = "Nhân Vật Transform",
 		ChucNang = {
@@ -130,7 +190,6 @@ local DanhSachNhom = {
 			}
 		}
 	},
-
 	{
 		TieuDe = "Thành Phần Transform",
 		ChucNang = {
@@ -175,70 +234,6 @@ local DanhSachNhom = {
 									}
 								}
 							},
-							{
-								Ten = "Tay Trái",
-								Loai = "Otich",
-								HienTai = "Bat",
-								LoaiNutCon = "CungHang",
-								CacNutCon = {
-									{
-										Ten = "Lưu Trữ",
-										SuKien = function() ThongBao("Hx Script", "Đã lưu trữ Tay Trái!", 3) end
-									},
-									{
-										Ten = "Xóa Lưu",
-										SuKien = function() ThongBao("Hx Script", "Đã xóa lưu Tay Trái!", 3) end
-									}
-								}
-							},
-							{
-								Ten = "Tay Phải",
-								Loai = "Otich",
-								HienTai = "Bat",
-								LoaiNutCon = "CungHang",
-								CacNutCon = {
-									{
-										Ten = "Lưu Trữ",
-										SuKien = function() ThongBao("Hx Script", "Đã lưu trữ Tay Phải!", 3) end
-									},
-									{
-										Ten = "Xóa Lưu",
-										SuKien = function() ThongBao("Hx Script", "Đã xóa lưu Tay Phải!", 3) end
-									}
-								}
-							},
-							{
-								Ten = "Chân Trái",
-								Loai = "Otich",
-								HienTai = "Bat",
-								LoaiNutCon = "CungHang",
-								CacNutCon = {
-									{
-										Ten = "Lưu Trữ",
-										SuKien = function() ThongBao("Hx Script", "Đã lưu trữ Chân Trái!", 3) end
-									},
-									{
-										Ten = "Xóa Lưu",
-										SuKien = function() ThongBao("Hx Script", "Đã xóa lưu Chân Trái!", 3) end
-									}
-								}
-							},
-							{
-								Ten = "Chân Phải",
-								Loai = "Otich",
-								HienTai = "Bat",
-								LoaiNutCon = "CungHang",
-								CacNutCon = {
-									{
-										Ten = "Lưu Trữ",
-										SuKien = function() ThongBao("Hx Script", "Đã lưu trữ Chân Phải!", 3) end
-									},
-									{
-										Ten = "Xóa Lưu",
-										SuKien = function() ThongBao("Hx Script", "Đã xóa lưu Chân Phải!", 3) end
-									}
-								}
-							}
 						}
 					},
 					"Nhân Vật"
@@ -246,7 +241,6 @@ local DanhSachNhom = {
 			},
 		}
 	},
-
 	{
 		TieuDe = "Tạo Khối",
 		ChucNang = {
@@ -254,56 +248,33 @@ local DanhSachNhom = {
 				Loai = "NhieuNut",
 				Ten_1 = "Tạo Khối Mẫu",
 				SuKien_1 = function()
-					ThongBaoLoi("Hx Script", "Tính năng đang phát triển!")
+					local TenKhoi = Khoi.TaoKhoiMau()
+					if TenKhoi then
+						ThongBao("Hx Script", "Đã tạo: " .. TenKhoi, 1)
+					end
 				end,
 				Ten_2 = "Xóa Khối Chọn",
 				SuKien_2 = function()
-					ThongBaoLoi("Hx Script", "Tính năng đang phát triển!")
+					Khoi.XoaKhoiChon()
+					ThongBao("Hx Script", "Đã xóa các khối được chọn!", 1)
 				end,
 			},
 			{
-				Ten = "Cho Phép Di Chuyển",
-				Loai = "Otich",
-				HienTai = "Bat",
-				SuKien = function(TrangThai)
-					ThongBaoLoi("Hx Script", "Tính năng đang phát triển!")
-				end
-			},
-			{
-				Ten = "Cho Phép Chọn",
-				Loai = "Otich",
-				HienTai = "Bat",
-				SuKien = function(TrangThai)
-					ThongBaoLoi("Hx Script", "Tính năng đang phát triển!")
-				end
-			},
-			{
-				Ten = "Các Khối Đã Tạo",
+				Ten = "Danh Sách (Tự động)",
 				Loai = "Danhsach",
-				Danhsach = {
-					{
-						Ten = "Khối 1",
-						Loai = "Otich",
-						HienTai = "Tat",
-						SuKien = function(val) end
-					},
-					{
-						Ten = "Khối 2",
-						Loai = "Otich",
-						HienTai = "Tat",
-						SuKien = function(val) end
-					}
-				}
+				Danhsach = DuLieuDanhSachKhoiUI
 			},
 			{
 				Loai = "NhieuNut",
-				Ten_1 = "Hàn Các Khối Đã Chọn",
+				Ten_1 = "Hàn (Tạo Nhóm)",
 				SuKien_1 = function()
-					ThongBaoLoi("Hx Script", "Tính năng đang phát triển!")
+					local Msg = Khoi.HanCacKhoi()
+					ThongBao("Hx Build", Msg, 2)
 				end,
-				Ten_2 = "Tháo Các Khối Đã Chọn",
+				Ten_2 = "Tháo Hàn (Rã Nhóm)",
 				SuKien_2 = function()
-					ThongBaoLoi("Hx Script", "Tính năng đang phát triển!")
+					local Msg = Khoi.ThaoCacKhoi()
+					ThongBao("Hx Build", Msg, 2)
 				end,
 			}
 		}
@@ -314,9 +285,7 @@ local function TaoGiaoDien()
 	if PlayerGui:FindFirstChild("TransformUI") then PlayerGui.TransformUI:Destroy() end
 
 	local DangHanhDong = false
-
 	local KiemTraDienThoai = (UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled)
-
 	local KichThuocMo = UDim2.new(0, 550, 0, 380)
 
 	local ManHinhGui = Instance.new("ScreenGui")
@@ -433,6 +402,15 @@ local function TaoGiaoDien()
 	VungCuon.Parent = KhungChinh
 	Instance.new("UICorner", VungCuon).CornerRadius = UDim.new(0, 6)
 
+	TaiLaiGiaoDien = function()
+		if not VungCuon or not VungCuon.Parent then return end
+		VungCuon:ClearAllChildren()
+		KhungCuon.Tao(VungCuon, DanhSachNhom, CauHinh, LopPhu, function()
+			CloseAllDropdowns()
+			ClickOutside.Visible = true
+		end)
+	end
+
 	KhungCuon.Tao(VungCuon, DanhSachNhom, CauHinh, LopPhu, function()
 		CloseAllDropdowns()
 		ClickOutside.Visible = true
@@ -520,6 +498,4 @@ local function TaoGiaoDien()
 end
 
 if not game:IsLoaded() then game.Loaded:Wait() end
-task.wait(2)
-
 TaoGiaoDien()
