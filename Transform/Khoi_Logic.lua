@@ -49,9 +49,11 @@ local CAI_DAT = {
 	ICON_REDO = "124647276241633",
 	ICON_MUI_TEN = "rbxassetid://6031091004",
 	ICON_DA_CHON = "109826670489779",
-	ICON_GHE = "18223639016",
+	ICON_GHE = "119465930347884",
 
 	ANIMATION_NGOI = "rbxassetid://2506281703", 
+	TOC_DO_XE = 20,
+	TOC_DO_XOAY_XE = 2.5,
 
 	MAU_CHON_BOX = Color3.fromRGB(255, 255, 255),
 	DO_DAY_VIEN_CHON = 0.08,
@@ -65,6 +67,7 @@ local CongCuHienTai = 1
 local CheDoScale = 1
 local CheDoLuoi = true
 local CheDoDaChon = false
+local CheDoGheHienTai = 0 
 
 local TayCam = {DiChuyen = nil, KeoGian = nil, Xoay = nil}
 local GiaoDien = {
@@ -162,39 +165,86 @@ local function XuLyNgoi(Ghe)
 	TrackAnimationNgoi = Humanoid:LoadAnimation(Anim)
 	TrackAnimationNgoi:Play()
 
+	local CheDo = Ghe:GetAttribute("CheDoGhe")
+	local KetNoiDiChuyen = nil
+
+	if CheDo == 2 then
+		KetNoiDiChuyen = DichVuRender.Heartbeat:Connect(function()
+			if Humanoid.Sit and Ghe and Ghe.Parent then
+				local MoveDir = Humanoid.MoveDirection
+				if MoveDir.Magnitude > 0.1 then
+					local ViTriMoi = Ghe.Position + (MoveDir * CAI_DAT.TOC_DO_XE)
+					local LookAtMoi = CFrame.lookAt(Ghe.Position, ViTriMoi)
+					local X, Y, Z = LookAtMoi:ToOrientation()
+					local XoayMoi = CFrame.new(Ghe.Position) * CFrame.fromOrientation(0, Y, 0)
+					Ghe.CFrame = Ghe.CFrame:Lerp(CFrame.new(ViTriMoi) * XoayMoi.Rotation, 0.1)
+				end
+			end
+		end)
+	end
+
 	local KetNoiJump
 	KetNoiJump = Humanoid.StateChanged:Connect(function(old, new)
 		if new == Enum.HumanoidStateType.Jumping or new == Enum.HumanoidStateType.GettingUp or new == Enum.HumanoidStateType.Dead then
-			if MoiHan then MoiHan:Destroy() end
+
+			if KetNoiDiChuyen then KetNoiDiChuyen:Disconnect() end
+			if KetNoiJump then KetNoiJump:Disconnect() end
 			if TrackAnimationNgoi then TrackAnimationNgoi:Stop() end
 			if Prompt then Prompt.Enabled = true end
-			if KetNoiJump then KetNoiJump:Disconnect() end
+
+			if MoiHan then 
+				MoiHan:Destroy()
+				MoiHan = nil
+			end
+
+			if Ghe and Ghe.Parent and RootPart then
+				task.defer(function()
+					Humanoid.Sit = false
+
+					RootPart.Velocity = Vector3.zero
+					RootPart.AssemblyLinearVelocity = Vector3.zero 
+					RootPart.AssemblyAngularVelocity = Vector3.zero
+
+					local ViTriThoat = Ghe.CFrame * CFrame.new(0, (Ghe.Size.Y / 2) + 5, 0)
+
+					RootPart.CFrame = CFrame.new(ViTriThoat.Position, ViTriThoat.Position + Ghe.CFrame.LookVector)
+				end)
+			end
 		end
 	end)
 end
 
-local function ToggleGheAo(Khoi)
+local function CapNhatTrangThaiGhe(Khoi, CheDo)
 	if not Khoi:IsA("Part") then return end
 	local Prompt = Khoi:FindFirstChild("GheAoPrompt")
 
-	if Prompt then
-		Prompt:Destroy()
-		Khoi:SetAttribute("LaGheAo", nil)
-		return false
+	Khoi:SetAttribute("CheDoGhe", CheDo)
+
+	if CheDo == 0 then
+		if Prompt then Prompt:Destroy() end
+		Khoi:SetAttribute("LaGhe", nil)
 	else
-		local P = Instance.new("ProximityPrompt")
-		P.Name = "GheAoPrompt"
-		P.ObjectText = "Ghế"
-		P.ActionText = "Ngồi"
-		P.HoldDuration = 0
-		P.ClickablePrompt = true
-		P.MaxActivationDistance = 10
-		P.Parent = Khoi
-		P.Triggered:Connect(function()
-			XuLyNgoi(Khoi)
-		end)
-		Khoi:SetAttribute("LaGheAo", true)
-		return true
+		if not Prompt then
+			local P = Instance.new("ProximityPrompt")
+			P.Name = "GheAoPrompt"
+			P.HoldDuration = 0
+			P.ClickablePrompt = true
+			P.MaxActivationDistance = 50
+			P.Parent = Khoi
+			P.Triggered:Connect(function()
+				XuLyNgoi(Khoi)
+			end)
+			Prompt = P
+		end
+
+		if CheDo == 1 then
+			Prompt.ObjectText = "Ghế"
+			Prompt.ActionText = "Ngồi"
+		elseif CheDo == 2 then
+			Prompt.ObjectText = "Xe"
+			Prompt.ActionText = "Lái"
+		end
+		Khoi:SetAttribute("LaGhe", true)
 	end
 end
 
@@ -230,6 +280,21 @@ CapNhatGiaoDien = function()
 		if NutDaChon and NutDaChon:FindFirstChild("Icon") then
 			local MauDaChon = CheDoDaChon and CAI_DAT.MAU_NUT_KICH_HOAT or CAI_DAT.MAU_NUT_OFF
 			DichVuHieuUng:Create(NutDaChon.Icon, CAI_DAT.TWEEN_ICON, {ImageColor3 = MauDaChon}):Play()
+		end
+
+		local NutGhe = GiaoDien.KhungPhu:FindFirstChild("NutGhe")
+		if NutGhe and NutGhe:FindFirstChild("Icon") then
+			local MauGhe = CAI_DAT.MAU_NUT_OFF
+			if CheDoGheHienTai == 1 then
+				MauGhe = CAI_DAT.MAU_NUT_KICH_HOAT 
+			elseif CheDoGheHienTai == 2 then
+				MauGhe = CAI_DAT.MAU_NUT_SCALE_2 
+			end
+			DichVuHieuUng:Create(NutGhe.Icon, CAI_DAT.TWEEN_ICON, {ImageColor3 = MauGhe}):Play()
+			local VienNet = NutGhe:FindFirstChild("VienNet")
+			if VienNet then
+				DichVuHieuUng:Create(VienNet, CAI_DAT.TWEEN_ICON, {Color = MauGhe, Transparency = CheDoGheHienTai > 0 and 0 or 1}):Play()
+			end
 		end
 	end
 end
@@ -376,12 +441,15 @@ local function TaoGiaoDien()
 	TaoNutPhu("NutDaChon", CAI_DAT.ICON_DA_CHON, 5, function() CheDoDaChon = not CheDoDaChon; CapNhatGiaoDien() end)
 
 	TaoNutPhu("NutGhe", CAI_DAT.ICON_GHE, 6, function() 
+		CheDoGheHienTai = CheDoGheHienTai + 1
+		if CheDoGheHienTai > 2 then CheDoGheHienTai = 0 end
+
 		for Khoi, _ in pairs(CacKhoiDangChon) do
 			if Khoi and Khoi.Parent then
-				ToggleGheAo(Khoi)
+				CapNhatTrangThaiGhe(Khoi, CheDoGheHienTai)
 			end
 		end
-		HuyChon()
+		CapNhatGiaoDien()
 	end)
 
 	NutMoRong.MouseButton1Click:Connect(function()
@@ -547,6 +615,10 @@ DichVuRender.RenderStepped:Connect(function()
 				if CacKhoiDangChon[Khoi] then HuyChon() else
 					if not (DichVuNhapLieu:IsKeyDown(Enum.KeyCode.LeftControl) or CheDoDaChon) then CacKhoiDangChon = {} end
 					CacKhoiDangChon[Khoi] = true; CongCuHienTai = 1; CheDoScale = 1
+
+					local Attr = Khoi:GetAttribute("CheDoGhe")
+					CheDoGheHienTai = Attr or 0
+
 					CapNhatGiaoDien(); HieuUngNhan(Khoi:IsA("Model") and Khoi.PrimaryPart or Khoi); CapNhatHienThiChon()
 				end
 			else
