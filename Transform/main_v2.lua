@@ -55,11 +55,22 @@ local function BaoTrangThai(TenChucNang, TrangThai)
 end
 
 local DuLieuDanhSachKhoiUI = {}
-local TaiLaiGiaoDien = nil 
+local TaiLaiGiaoDien = nil
 
 local function TaoCauTrucItemChoKhoi(Obj)
 	local TenHienThi = Obj.Name
 	local LaNhom = Obj:IsA("Model")
+
+	local CheckPart = LaNhom and Obj.PrimaryPart or Obj
+	if not CheckPart and LaNhom then
+		for _, v in pairs(Obj:GetChildren()) do
+			if v:IsA("BasePart") then CheckPart = v break end
+		end
+	end
+
+	local IsAnchored = CheckPart and CheckPart.Anchored or true
+	local IsLocked = CheckPart and CheckPart.Locked or false
+	local IsMoveLocked = Obj:GetAttribute("KhoaDiChuyen") == true
 
 	local function SetAnchored(TrangThai)
 		if LaNhom then
@@ -71,10 +82,21 @@ local function TaoCauTrucItemChoKhoi(Obj)
 		end
 	end
 
+	local function SetLocked(TrangThai)
+		local Khoa = not TrangThai
+		if LaNhom then
+			for _, child in pairs(Obj:GetDescendants()) do
+				if child:IsA("BasePart") then child.Locked = Khoa end
+			end
+		elseif Obj:IsA("BasePart") then
+			Obj.Locked = Khoa
+		end
+	end
+
 	return {
 		Ten = LaNhom and "[NHÓM] " .. TenHienThi or TenHienThi,
-		Loai = "Otich", 
-		HienTai = "Bat", 
+		Loai = "Otich",
+		HienTai = "Bat",
 		SuKien = function(TrangThai)
 			if LaNhom then
 				for _, child in pairs(Obj:GetDescendants()) do
@@ -88,13 +110,14 @@ local function TaoCauTrucItemChoKhoi(Obj)
 			{
 				Ten = "Cho Phép Chọn Khối",
 				Loai = "Otich",
-				HienTai = "Bat",
+				HienTai = not IsLocked and "Bat" or "Tat",
 				CacNutCon = {
 					{
 						Ten = "Cho Phép Di Chuyển",
 						Loai = "Otich",
-						HienTai = "Bat",
+						HienTai = not IsMoveLocked and "Bat" or "Tat",
 						SuKien = function(TrangThai)
+							if Obj then Obj:SetAttribute("KhoaDiChuyen", not TrangThai) end
 							if TrangThai then
 								ThongBao("Hx Script", "Đã mở khóa di chuyển: " .. TenHienThi, 2)
 							else
@@ -105,7 +128,7 @@ local function TaoCauTrucItemChoKhoi(Obj)
 					{
 						Ten = "Neo Khối",
 						Loai = "Otich",
-						HienTai = "Bat",
+						HienTai = IsAnchored and "Bat" or "Tat",
 						SuKien = function(TrangThai)
 							SetAnchored(TrangThai)
 							if TrangThai then
@@ -117,6 +140,10 @@ local function TaoCauTrucItemChoKhoi(Obj)
 					}
 				},
 				SuKien = function(TrangThai)
+					SetLocked(TrangThai)
+					if not TrangThai then
+						Khoi.KiemTraHuyChonKhiKhoa(Obj)
+					end
 					BaoTrangThai("khả năng chọn khối " .. TenHienThi, TrangThai)
 				end
 			}
@@ -414,7 +441,7 @@ local function TaoGiaoDien()
 	VungCuon.Position = UDim2.new(0.5, 0, 1, -10)
 	VungCuon.AnchorPoint = Vector2.new(0.5, 1)
 	VungCuon.BackgroundColor3 = CauHinh.Mau.NenList
-	VungCuon.BackgroundTransparency = 0.6 
+	VungCuon.BackgroundTransparency = 0.6
 	VungCuon.ScrollBarThickness = 4
 	VungCuon.BorderSizePixel = 0
 	VungCuon.ZIndex = 2
@@ -436,23 +463,23 @@ local function TaoGiaoDien()
 	end)
 
 	local CacPhanTu = {
-		Khung = KhungChinh, 
-		Icon = BieuTuong, 
-		TieuDe = TieuDe, 
-		NutDong = NutDong, 
+		Khung = KhungChinh,
+		Icon = BieuTuong,
+		TieuDe = TieuDe,
+		NutDong = NutDong,
 		VienNutDong = VienNutDong,
-		KhungNoiDung = VungCuon   
+		KhungNoiDung = VungCuon
 	}
 
 	local CauHinhHieuUng = {
-		IconDau = CauHinh.KichThuoc.IconLon, 
+		IconDau = CauHinh.KichThuoc.IconLon,
 		IconCuoi = CauHinh.KichThuoc.IconNho,
-		ViTriIconDau = UDim2.new(0.5, 0, 0.5, 0), 
+		ViTriIconDau = UDim2.new(0.5, 0, 0.5, 0),
 		ViTriIconCuoi = UDim2.new(0, 25, 0, 25),
-		KhungDau = CauHinh.KichThuoc.IconLon, 
+		KhungDau = CauHinh.KichThuoc.IconLon,
 		KhungCuoi = KichThuocMo,
-		KichThuocNutDongNay = UDim2.new(0, 42, 0, 42), 
-		DoTrongSuotKhung = 0.15 
+		KichThuocNutDongNay = UDim2.new(0, 42, 0, 42),
+		DoTrongSuotKhung = 0.15
 	}
 
 	HoatAnh.KeoTha(KhungChinh, KhungChinh)
@@ -509,7 +536,7 @@ local function TaoGiaoDien()
 
 	NutDong.MouseButton1Click:Connect(DongGiaoDien)
 	NutMoUI.MouseButton1Click:Connect(function()
-		HoatAnh.NhanChuot(NutMoUI) 
+		HoatAnh.NhanChuot(NutMoUI)
 		if KhungChinh.Visible then DongGiaoDien() else MoGiaoDien() end
 	end)
 
