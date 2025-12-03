@@ -20,17 +20,14 @@ local CAI_DAT = {
 	MAU_NEN_CHINH = Color3.fromRGB(25, 25, 30),
 	MAU_NEN_PHU = Color3.fromRGB(40, 40, 45),
 	MAU_VIEN = Color3.fromRGB(255, 255, 255),
-
 	DO_TRONG_SUOT_NEN = 0.3,
 	DO_TRONG_SUOT_VIEN = 0,
 
 	MAU_NUT_THUONG = Color3.fromRGB(225, 225, 225),
-	MAU_ICON_THUONG = Color3.fromRGB(255, 255, 255), 
-
-	MAU_NUT_KICH_HOAT = Color3.fromRGB(0, 150, 255), 
+	MAU_ICON_THUONG = Color3.fromRGB(255, 255, 255),
+	MAU_NUT_KICH_HOAT = Color3.fromRGB(0, 150, 255),
 	MAU_NUT_SCALE_2 = Color3.fromRGB(255, 160, 0),
 	MAU_NUT_OFF = Color3.fromRGB(100, 100, 100),
-
 	MAU_NUT_HUY_NEN = Color3.fromRGB(200, 40, 40),
 	MAU_NUT_HUY_CHU = Color3.fromRGB(255, 255, 255),
 
@@ -52,6 +49,9 @@ local CAI_DAT = {
 	ICON_REDO = "124647276241633",
 	ICON_MUI_TEN = "rbxassetid://6031091004",
 	ICON_DA_CHON = "109826670489779",
+	ICON_GHE = "18223639016",
+
+	ANIMATION_NGOI = "rbxassetid://2506281703", 
 
 	MAU_CHON_BOX = Color3.fromRGB(255, 255, 255),
 	DO_DAY_VIEN_CHON = 0.08,
@@ -74,10 +74,16 @@ local GiaoDien = {
 }
 local DuLieuGoc = {CFrame = nil, Size = nil}
 local LichSu = {Undo = {}, Redo = {}, TrangThaiBatDau = {}}
+
 local CacHinhDang = {Enum.PartType.Block, Enum.PartType.Ball, Enum.PartType.Cylinder, Enum.PartType.Wedge, Enum.PartType.CornerWedge}
+local CacMauHinhDang = {Color3.fromRGB(0, 150, 255), Color3.fromRGB(255, 60, 60), Color3.fromRGB(60, 255, 60), Color3.fromRGB(255, 255, 0), Color3.fromRGB(180, 0, 255)}
 local ChiSoHinhDang = 1
+local TrackAnimationNgoi = nil
 
 LogicKhoi.SuKienThayDoi = Instance.new("BindableEvent")
+
+local CapNhatGiaoDien, CapNhatHienThiChon, TaoTayCam, HieuUngNhan, XoaTayCam, HienThiUI
+local HuyChon, ChinhCongCu
 
 local function LayTrangThai(DanhSach)
 	local TrangThai = {}
@@ -127,14 +133,79 @@ local function LamTron(So, Luoi)
 	return CheDoLuoi and math.round(So / Luoi) * Luoi or So
 end
 
-local function HieuUngNhan(DoiTuong)
+local function XuLyNgoi(Ghe)
+	local NhanVat = NguoiChoi.Character
+	if not NhanVat then return end
+	local Humanoid = NhanVat:FindFirstChild("Humanoid")
+	local RootPart = NhanVat:FindFirstChild("HumanoidRootPart")
+
+	if not Humanoid or not RootPart or Humanoid.Sit then return end
+
+	local Prompt = Ghe:FindFirstChild("GheAoPrompt")
+	if Prompt then Prompt.Enabled = false end
+
+	local OffsetY = (Ghe.Size.Y / 2) + Humanoid.HipHeight
+	local ViTriNgoi = Ghe.CFrame * CFrame.new(0, OffsetY, 0)
+
+	RootPart.CFrame = ViTriNgoi
+
+	local MoiHan = Instance.new("WeldConstraint")
+	MoiHan.Part0 = RootPart
+	MoiHan.Part1 = Ghe
+	MoiHan.Parent = RootPart
+
+	Humanoid.Sit = true
+
+	if TrackAnimationNgoi then TrackAnimationNgoi:Stop() end
+	local Anim = Instance.new("Animation")
+	Anim.AnimationId = CAI_DAT.ANIMATION_NGOI
+	TrackAnimationNgoi = Humanoid:LoadAnimation(Anim)
+	TrackAnimationNgoi:Play()
+
+	local KetNoiJump
+	KetNoiJump = Humanoid.StateChanged:Connect(function(old, new)
+		if new == Enum.HumanoidStateType.Jumping or new == Enum.HumanoidStateType.GettingUp or new == Enum.HumanoidStateType.Dead then
+			if MoiHan then MoiHan:Destroy() end
+			if TrackAnimationNgoi then TrackAnimationNgoi:Stop() end
+			if Prompt then Prompt.Enabled = true end
+			if KetNoiJump then KetNoiJump:Disconnect() end
+		end
+	end)
+end
+
+local function ToggleGheAo(Khoi)
+	if not Khoi:IsA("Part") then return end
+	local Prompt = Khoi:FindFirstChild("GheAoPrompt")
+
+	if Prompt then
+		Prompt:Destroy()
+		Khoi:SetAttribute("LaGheAo", nil)
+		return false
+	else
+		local P = Instance.new("ProximityPrompt")
+		P.Name = "GheAoPrompt"
+		P.ObjectText = "Ghế"
+		P.ActionText = "Ngồi"
+		P.HoldDuration = 0
+		P.ClickablePrompt = true
+		P.MaxActivationDistance = 10
+		P.Parent = Khoi
+		P.Triggered:Connect(function()
+			XuLyNgoi(Khoi)
+		end)
+		Khoi:SetAttribute("LaGheAo", true)
+		return true
+	end
+end
+
+HieuUngNhan = function(DoiTuong)
 	if not DoiTuong or not DoiTuong:IsA("BasePart") then return end
 	local SizeGoc = DoiTuong.Size
 	local HieuUng = DichVuHieuUng:Create(DoiTuong, CAI_DAT.TWEEN_NHUN, {Size = SizeGoc * 1.1})
 	HieuUng:Play(); HieuUng.Completed:Connect(function() DichVuHieuUng:Create(DoiTuong, TweenInfo.new(0.15), {Size = SizeGoc}):Play() end)
 end
 
-local function CapNhatGiaoDien()
+CapNhatGiaoDien = function()
 	if not GiaoDien.DanhSachNut then return end
 
 	for _, Con in ipairs(GiaoDien.DanhSachNut:GetChildren()) do
@@ -155,7 +226,6 @@ local function CapNhatGiaoDien()
 		if NutGrid and NutGrid:FindFirstChild("Icon") then
 			DichVuHieuUng:Create(NutGrid.Icon, CAI_DAT.TWEEN_ICON, {ImageColor3 = CheDoLuoi and CAI_DAT.MAU_NUT_KICH_HOAT or CAI_DAT.MAU_NUT_OFF}):Play()
 		end
-
 		local NutDaChon = GiaoDien.KhungPhu:FindFirstChild("NutDaChon")
 		if NutDaChon and NutDaChon:FindFirstChild("Icon") then
 			local MauDaChon = CheDoDaChon and CAI_DAT.MAU_NUT_KICH_HOAT or CAI_DAT.MAU_NUT_OFF
@@ -164,10 +234,23 @@ local function CapNhatGiaoDien()
 	end
 end
 
+HuyChon = function()
+	CacKhoiDangChon = {}; HienThiUI(false); XoaTayCam()
+	if GiaoDien.KhungPhu then GiaoDien.KhungPhu.Visible = false end
+	for _, v in ipairs(DanhSachKhoi) do local MucTieu = v:IsA("Model") and v.PrimaryPart or v; if MucTieu and MucTieu:FindFirstChild("HopChon_Hx") then MucTieu.HopChon_Hx:Destroy() end end
+end
+
+ChinhCongCu = function(MaSo)
+	if MaSo == 2 and CongCuHienTai == 2 then CheDoScale = (CheDoScale == 1) and 2 or 1 else CheDoScale = 1; CongCuHienTai = MaSo end
+	CapNhatGiaoDien()
+	local DanhSach = {}; for k, _ in pairs(CacKhoiDangChon) do table.insert(DanhSach, k) end
+	if #DanhSach == 1 then local MucTieu = DanhSach[1]:IsA("Model") and DanhSach[1].PrimaryPart or DanhSach[1]; TaoTayCam(MucTieu) end
+end
+
 local function TaoGiaoDien()
 	if GiaoDien.HopChua then GiaoDien.HopChua:Destroy() end
 	local KhoGiaoDien = NguoiChoi:WaitForChild("PlayerGui")
-	local ManHinhGui = Instance.new("ScreenGui", KhoGiaoDien); ManHinhGui.Name = "HeThongXayDung_V9_SizeColor"
+	local ManHinhGui = Instance.new("ScreenGui", KhoGiaoDien); ManHinhGui.Name = "HeThongXayDung_V11_FinalFix"
 	ManHinhGui.ResetOnSpawn = false
 
 	local HopChua = Instance.new("Frame", ManHinhGui); HopChua.Name = "HopChua"
@@ -211,7 +294,7 @@ local function TaoGiaoDien()
 		local VienNet = Instance.new("UIStroke", Nut); VienNet.Color = CAI_DAT.MAU_VIEN; VienNet.Thickness = 1.5; VienNet.Transparency = 1
 		local BieuTuong = Instance.new("ImageLabel", Nut); BieuTuong.Name = "Icon"; BieuTuong.BackgroundTransparency = 1; BieuTuong.ImageTransparency = 0
 		BieuTuong.Size = UDim2.new(0.65, 0, 0.65, 0); BieuTuong.Position = UDim2.fromScale(0.5, 0.5); BieuTuong.AnchorPoint = Vector2.new(0.5, 0.5); BieuTuong.Image = "rbxassetid://" .. MaBieuTuong; BieuTuong.ImageColor3 = CAI_DAT.MAU_ICON_THUONG; BieuTuong.ZIndex = 25
-		Nut.MouseButton1Click:Connect(function() LogicKhoi.ChinhCongCu(MaSo) end)
+		Nut.MouseButton1Click:Connect(function() ChinhCongCu(MaSo) end)
 	end
 	TaoNutCongCu(CAI_DAT.ICON_DI_CHUYEN, 1, 1); TaoNutCongCu(CAI_DAT.ICON_KEO_GIAN, 2, 2); TaoNutCongCu(CAI_DAT.ICON_XOAY, 3, 3)
 
@@ -219,7 +302,7 @@ local function TaoGiaoDien()
 	NutHuy.Size = UDim2.new(1, -24, 0, 28); NutHuy.Position = UDim2.new(0.5, 0, 1, -12); NutHuy.AnchorPoint = Vector2.new(0.5, 1); NutHuy.Text = "ĐÓNG"; NutHuy.Font = Enum.Font.GothamBlack; NutHuy.TextSize = 11
 	NutHuy.TextColor3 = CAI_DAT.MAU_NUT_HUY_CHU; NutHuy.BackgroundColor3 = CAI_DAT.MAU_NUT_HUY_NEN; NutHuy.BackgroundTransparency = 0.1; NutHuy.ZIndex = 20
 	Instance.new("UICorner", NutHuy).CornerRadius = UDim.new(0, 6)
-	NutHuy.MouseButton1Click:Connect(function() LogicKhoi.HuyChon() end)
+	NutHuy.MouseButton1Click:Connect(function() HuyChon() end)
 
 	local NutMoRong = Instance.new("ImageButton", HopChua); NutMoRong.Name = "NutMoRong"
 	NutMoRong.Size = UDim2.fromOffset(22, 44); NutMoRong.Position = UDim2.new(0, -15, 0.45, 0); NutMoRong.AnchorPoint = Vector2.new(1.5, 1)
@@ -236,10 +319,23 @@ local function TaoGiaoDien()
 	Instance.new("UIStroke", KhungPhu).Color = CAI_DAT.MAU_VIEN
 	local GridPhu = Instance.new("UIGridLayout", KhungPhu); GridPhu.CellSize = UDim2.fromOffset(CAI_DAT.KICH_THUOC_NUT_PHU, CAI_DAT.KICH_THUOC_NUT_PHU); GridPhu.CellPadding = UDim2.fromOffset(8, 8); GridPhu.HorizontalAlignment = Enum.HorizontalAlignment.Center; GridPhu.VerticalAlignment = Enum.VerticalAlignment.Center; GridPhu.SortOrder = Enum.SortOrder.LayoutOrder
 
+	local function ChuyenDoiClassAnToan(KhoiCu, ClassDich)
+		if KhoiCu.ClassName == ClassDich then return KhoiCu end
+		local KhoiMoi = Instance.new(ClassDich)
+		KhoiMoi.Name = KhoiCu.Name; KhoiMoi.Size = KhoiCu.Size; KhoiMoi.CFrame = KhoiCu.CFrame; KhoiMoi.Color = KhoiCu.Color
+		KhoiMoi.Material = KhoiCu.Material; KhoiMoi.Anchored = KhoiCu.Anchored; KhoiMoi.CanCollide = KhoiCu.CanCollide
+		KhoiMoi.Transparency = KhoiCu.Transparency; KhoiMoi.Reflectance = KhoiCu.Reflectance; KhoiMoi.Parent = KhoiCu.Parent
+		for _, Con in ipairs(KhoiCu:GetChildren()) do if not Con:IsA("Snap") and not Con:IsA("Weld") then Con.Parent = KhoiMoi end end
+		for i, v in ipairs(DanhSachKhoi) do if v == KhoiCu then table.remove(DanhSachKhoi, i) break end end
+		table.insert(DanhSachKhoi, KhoiMoi); LogicKhoi.SuKienThayDoi:Fire("Them", KhoiMoi); KhoiCu:Destroy()
+		return KhoiMoi
+	end
+
 	local function TaoNutPhu(Ten, MaBieuTuong, ThuTu, HamGoiLai)
 		local Nut = Instance.new("ImageButton", KhungPhu); Nut.Name = Ten; Nut.LayoutOrder = ThuTu
 		Nut.BackgroundColor3 = CAI_DAT.MAU_NUT_THUONG; Nut.BackgroundTransparency = 0.3; Nut.Image = ""; Nut.ZIndex = 12
 		Instance.new("UICorner", Nut).CornerRadius = UDim.new(0, 6)
+		local VienNet = Instance.new("UIStroke", Nut); VienNet.Name = "VienNet"; VienNet.Color = CAI_DAT.MAU_VIEN; VienNet.Thickness = 2.5; VienNet.Transparency = 0.5; VienNet.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 		local BieuTuong = Instance.new("ImageLabel", Nut); BieuTuong.Name = "Icon"; BieuTuong.BackgroundTransparency = 1; BieuTuong.ImageTransparency = 0
 		BieuTuong.Size = UDim2.new(0.7, 0, 0.7, 0); BieuTuong.Position = UDim2.fromScale(0.5, 0.5); BieuTuong.AnchorPoint = Vector2.new(0.5, 0.5); BieuTuong.Image = "rbxassetid://" .. MaBieuTuong; BieuTuong.ImageColor3 = CAI_DAT.MAU_ICON_THUONG; BieuTuong.ZIndex = 13
 		Nut.MouseButton1Click:Connect(HamGoiLai)
@@ -247,29 +343,54 @@ local function TaoGiaoDien()
 	end
 
 	TaoNutPhu("NutGrid", CAI_DAT.ICON_GRID, 1, function() CheDoLuoi = not CheDoLuoi; CapNhatGiaoDien() end)
-	TaoNutPhu("NutHinhDang", CAI_DAT.ICON_HINH_DANG, 2, function() 
-		local TrangThaiCu = LayTrangThai(CacKhoiDangChon); ChiSoHinhDang = ChiSoHinhDang + 1; if ChiSoHinhDang > #CacHinhDang then ChiSoHinhDang = 1 end
-		local HinhMoi = CacHinhDang[ChiSoHinhDang]; for Khoi, _ in pairs(CacKhoiDangChon) do if Khoi:IsA("BasePart") then Khoi.Shape = HinhMoi end end
-		GhiLichSu(TrangThaiCu, LayTrangThai(CacKhoiDangChon)); CapNhatGiaoDien()
+
+	local NutHinhDang = TaoNutPhu("NutHinhDang", CAI_DAT.ICON_HINH_DANG, 2, function()
+		local TrangThaiCu = LayTrangThai(CacKhoiDangChon)
+		ChiSoHinhDang = ChiSoHinhDang + 1
+		if ChiSoHinhDang > #CacHinhDang then ChiSoHinhDang = 1 end
+
+		local HinhDangMoi = CacHinhDang[ChiSoHinhDang]
+		local MauMoi = CacMauHinhDang[ChiSoHinhDang]
+		local DanhSachChonMoi = {}
+
+		for KhoiCu, _ in pairs(CacKhoiDangChon) do
+			if KhoiCu and KhoiCu.Parent then
+				local KhoiXuLy = ChuyenDoiClassAnToan(KhoiCu, "Part")
+				if KhoiXuLy:IsA("Part") then KhoiXuLy.Shape = HinhDangMoi end
+				DanhSachChonMoi[KhoiXuLy] = true
+			end
+		end
+
+		CacKhoiDangChon = DanhSachChonMoi
+		CapNhatHienThiChon()
+		GhiLichSu(TrangThaiCu, LayTrangThai(CacKhoiDangChon))
+
+		local Vien = GiaoDien.KhungPhu:FindFirstChild("NutHinhDang")
+		if Vien and Vien:FindFirstChild("VienNet") then DichVuHieuUng:Create(Vien.VienNet, TweenInfo.new(0.2), {Color = MauMoi, Transparency = 0}):Play() end
+		CapNhatGiaoDien()
 	end)
+	local VienHinhDang = NutHinhDang:FindFirstChild("VienNet"); if VienHinhDang then VienHinhDang.Color = CacMauHinhDang[ChiSoHinhDang]; VienHinhDang.Transparency = 0 end
+
 	TaoNutPhu("NutUndo", CAI_DAT.ICON_UNDO, 3, ThucHienUndo)
 	TaoNutPhu("NutRedo", CAI_DAT.ICON_REDO, 4, ThucHienRedo)
+	TaoNutPhu("NutDaChon", CAI_DAT.ICON_DA_CHON, 5, function() CheDoDaChon = not CheDoDaChon; CapNhatGiaoDien() end)
 
-	TaoNutPhu("NutDaChon", CAI_DAT.ICON_DA_CHON, 5, function() 
-		CheDoDaChon = not CheDoDaChon
-		CapNhatGiaoDien()
+	TaoNutPhu("NutGhe", CAI_DAT.ICON_GHE, 6, function() 
+		for Khoi, _ in pairs(CacKhoiDangChon) do
+			if Khoi and Khoi.Parent then
+				ToggleGheAo(Khoi)
+			end
+		end
+		HuyChon()
 	end)
 
 	NutMoRong.MouseButton1Click:Connect(function()
 		GiaoDien.DaMoRong = not GiaoDien.DaMoRong
-		local VI_TRI_NUP = 0; local DO_HO_GIUA_HAI_KHUNG = 15; local TOC_DO = 0.35
 		if GiaoDien.DaMoRong then
-			KhungPhu.Visible = true
-			local DoRongKhung = (CAI_DAT.KICH_THUOC_NUT_PHU * 2) + 20; local ViTriMo = -(DoRongKhung + DO_HO_GIUA_HAI_KHUNG)
-			KhungPhu:TweenPosition(UDim2.new(0, ViTriMo, 0.5, 0), "Out", Enum.EasingStyle.Back, TOC_DO)
+			KhungPhu.Visible = true; KhungPhu:TweenPosition(UDim2.new(0, -((CAI_DAT.KICH_THUOC_NUT_PHU * 2) + 35), 0.5, 0), "Out", Enum.EasingStyle.Back, 0.35)
 			DichVuHieuUng:Create(IconMuiTen, CAI_DAT.TWEEN_UI, {Rotation = -90}):Play()
 		else
-			KhungPhu:TweenPosition(UDim2.new(0, VI_TRI_NUP, 0.5, 0), "In", Enum.EasingStyle.Back, TOC_DO, true, function() KhungPhu.Visible = false end)
+			KhungPhu:TweenPosition(UDim2.new(0, 0, 0.5, 0), "In", Enum.EasingStyle.Back, 0.35, true, function() KhungPhu.Visible = false end)
 			DichVuHieuUng:Create(IconMuiTen, CAI_DAT.TWEEN_UI, {Rotation = 90}):Play()
 		end
 	end)
@@ -278,29 +399,24 @@ local function TaoGiaoDien()
 	CapNhatGiaoDien()
 end
 
-local function HienThiUI(Hien)
+HienThiUI = function(Hien)
 	if not GiaoDien.HopChua then return end
 	if Hien then
 		GiaoDien.HopChua.Visible = true; local ChieuCao = 32 + (CAI_DAT.KICH_THUOC_NUT * 3) + 30 + 40
 		GiaoDien.KhungChinh:TweenSize(UDim2.new(1, 0, 0, ChieuCao), "Out", Enum.EasingStyle.Back, 0.35)
 	else
-		GiaoDien.KhungChinh:TweenSize(UDim2.new(1, 0, 0, 0), "In", Enum.EasingStyle.Quart, 0.3, true, function()
-			GiaoDien.HopChua.Visible = false
-		end)
-		if GiaoDien.DaMoRong then
-			GiaoDien.DaMoRong = false; if GiaoDien.KhungPhu then GiaoDien.KhungPhu.Visible = false; GiaoDien.KhungPhu.Position = UDim2.new(0, -10, 0.5, 0) end
-			if GiaoDien.IconMuiTen then DichVuHieuUng:Create(GiaoDien.IconMuiTen, CAI_DAT.TWEEN_UI, {Rotation = 90}):Play() end
-		end
+		GiaoDien.KhungChinh:TweenSize(UDim2.new(1, 0, 0, 0), "In", Enum.EasingStyle.Quart, 0.3, true, function() GiaoDien.HopChua.Visible = false end)
+		if GiaoDien.DaMoRong then GiaoDien.DaMoRong = false; if GiaoDien.KhungPhu then GiaoDien.KhungPhu.Visible = false end; if GiaoDien.IconMuiTen then DichVuHieuUng:Create(GiaoDien.IconMuiTen, CAI_DAT.TWEEN_UI, {Rotation = 90}):Play() end end
 	end
 end
 
-local function XoaTayCam()
+XoaTayCam = function()
 	if TayCam.DiChuyen then TayCam.DiChuyen:Destroy() TayCam.DiChuyen = nil end
 	if TayCam.KeoGian then TayCam.KeoGian:Destroy() TayCam.KeoGian = nil end
 	if TayCam.Xoay then TayCam.Xoay:Destroy() TayCam.Xoay = nil end
 end
 
-local function TaoTayCam(KhoiDuocChon)
+TaoTayCam = function(KhoiDuocChon)
 	XoaTayCam()
 	local ThuMucGizmo = NguoiChoi.PlayerGui:FindFirstChild("Gizmos") or Instance.new("Folder", NguoiChoi.PlayerGui); ThuMucGizmo.Name = "Gizmos"
 	local function GanSuKien(TayCamAo)
@@ -312,6 +428,7 @@ local function TaoTayCam(KhoiDuocChon)
 		local H = Instance.new("Handles", ThuMucGizmo); H.Adornee = KhoiDuocChon; H.Style = Enum.HandlesStyle.Movement; H.Color3 = CAI_DAT.MAU_TAY_CAM_DI_CHUYEN; TayCam.DiChuyen = H; GanSuKien(H)
 		H.MouseButton1Down:Connect(function() DuLieuGoc.CFrame = KhoiDuocChon.CFrame end)
 		H.MouseDrag:Connect(function(Mat, KhoangCach)
+			if KhoiDuocChon:GetAttribute("KhoaDiChuyen") then return end
 			if not DuLieuGoc.CFrame then return end
 			local KhoangCachLamTron = LamTron(KhoangCach, CAI_DAT.LUOI_DI_CHUYEN_MAC_DINH); local DoLech = DuLieuGoc.CFrame:VectorToWorldSpace(Vector3.FromNormalId(Mat)) * KhoangCachLamTron
 			KhoiDuocChon.CFrame = DuLieuGoc.CFrame + DoLech
@@ -321,6 +438,7 @@ local function TaoTayCam(KhoiDuocChon)
 		local H = Instance.new("Handles", ThuMucGizmo); H.Adornee = KhoiDuocChon; H.Style = Enum.HandlesStyle.Resize; H.Color3 = CheDoScale == 2 and CAI_DAT.MAU_NUT_SCALE_2 or CAI_DAT.MAU_TAY_CAM_SCALE; TayCam.KeoGian = H; GanSuKien(H)
 		H.MouseButton1Down:Connect(function() DuLieuGoc.Size = KhoiDuocChon.Size; DuLieuGoc.CFrame = KhoiDuocChon.CFrame end)
 		H.MouseDrag:Connect(function(Mat, KhoangCach)
+			if KhoiDuocChon:GetAttribute("KhoaDiChuyen") then return end
 			if not DuLieuGoc.Size then return end
 			local KhoangCachLamTron = LamTron(KhoangCach, CAI_DAT.LUOI_DI_CHUYEN_MAC_DINH); local TrucDiaPhuong = Vector3.FromNormalId(Mat); local TrucTuyetDoi = Vector3.new(math.abs(TrucDiaPhuong.X), math.abs(TrucDiaPhuong.Y), math.abs(TrucDiaPhuong.Z))
 			local KichThuocToiThieu = CAI_DAT.KICH_THUOC_TOI_THIEU
@@ -338,6 +456,7 @@ local function TaoTayCam(KhoiDuocChon)
 		local H = Instance.new("ArcHandles", ThuMucGizmo); H.Adornee = KhoiDuocChon; H.Axes = Axes.new(Enum.Axis.X, Enum.Axis.Y, Enum.Axis.Z); TayCam.Xoay = H; GanSuKien(H)
 		H.MouseButton1Down:Connect(function() DuLieuGoc.CFrame = KhoiDuocChon.CFrame end)
 		H.MouseDrag:Connect(function(Truc, Goc)
+			if KhoiDuocChon:GetAttribute("KhoaDiChuyen") then return end
 			if not DuLieuGoc.CFrame then return end
 			local GocLamTron = LamTron(math.deg(Goc), CAI_DAT.LUOI_XOAY_MAC_DINH); local GocRadian = math.rad(GocLamTron)
 			local Xoay = CFrame.Angles(Truc == Enum.Axis.X and GocRadian or 0, Truc == Enum.Axis.Y and GocRadian or 0, Truc == Enum.Axis.Z and GocRadian or 0)
@@ -347,67 +466,13 @@ local function TaoTayCam(KhoiDuocChon)
 	end
 end
 
-function LogicKhoi.TaoKhoiMau()
-	local NhanVat = NguoiChoi.Character; if not NhanVat then return end
-	local GocNhanVat = NhanVat:FindFirstChild("HumanoidRootPart")
-	local Khoi = Instance.new("Part"); Khoi.Name = "Khoi_" .. math.random(100, 999)
-	Khoi.Size = Vector3.new(4, 1, 4)
-	Khoi.CFrame = GocNhanVat.CFrame * CFrame.new(0, 0, -10); Khoi.Position = Vector3.new(math.round(Khoi.Position.X), math.round(Khoi.Position.Y), math.round(Khoi.Position.Z))
-	Khoi.Color = Color3.new(math.random(), math.random(), math.random())
-	Khoi.Material = Enum.Material.Plastic; Khoi.Anchored = true; Khoi.Parent = KhongGian
-	table.insert(DanhSachKhoi, Khoi); LogicKhoi.SuKienThayDoi:Fire("Them", Khoi); return Khoi.Name
-end
-
-function LogicKhoi.HuyChon()
-	CacKhoiDangChon = {}; HienThiUI(false); XoaTayCam()
-	if GiaoDien.KhungPhu then GiaoDien.KhungPhu.Visible = false end
-	for _, v in ipairs(DanhSachKhoi) do local MucTieu = v:IsA("Model") and v.PrimaryPart or v; if MucTieu and MucTieu:FindFirstChild("HopChon_Hx") then MucTieu.HopChon_Hx:Destroy() end end
-end
-
-function LogicKhoi.ChinhCongCu(MaSo)
-	if MaSo == 2 and CongCuHienTai == 2 then CheDoScale = (CheDoScale == 1) and 2 or 1 else CheDoScale = 1; CongCuHienTai = MaSo end
-	CapNhatGiaoDien()
-	local DanhSach = {}; for k, _ in pairs(CacKhoiDangChon) do table.insert(DanhSach, k) end
-	if #DanhSach == 1 then local MucTieu = DanhSach[1]:IsA("Model") and DanhSach[1].PrimaryPart or DanhSach[1]; TaoTayCam(MucTieu) end
-end
-
-function LogicKhoi.XoaKhoiChon()
-	for Khoi, _ in pairs(CacKhoiDangChon) do
-		LogicKhoi.SuKienThayDoi:Fire("Xoa", Khoi); Khoi:Destroy()
-		for i, v in ipairs(DanhSachKhoi) do if v == Khoi then table.remove(DanhSachKhoi, i) break end end
-	end
-	LogicKhoi.HuyChon()
-end
-
-function LogicKhoi.HanCacKhoi()
-	local CacKhoi = {}; for k, _ in pairs(CacKhoiDangChon) do table.insert(CacKhoi, k) end
-	if #CacKhoi < 2 then return "Cần 2 khối!" end
-	local MoHinh = Instance.new("Model"); MoHinh.Name = "Nhom_" .. math.random(100,999); MoHinh.Parent = KhongGian; local KhoiChinh = CacKhoi[1]
-	for _, p in ipairs(CacKhoi) do
-		LogicKhoi.SuKienThayDoi:Fire("Xoa", p); for i, v in ipairs(DanhSachKhoi) do if v == p then table.remove(DanhSachKhoi, i) break end end
-		p.Parent = MoHinh; if p ~= KhoiChinh then local W = Instance.new("WeldConstraint"); W.Part0 = KhoiChinh; W.Part1 = p; W.Parent = KhoiChinh; p.Anchored = false end
-	end
-	MoHinh.PrimaryPart = KhoiChinh; KhoiChinh.Anchored = true; table.insert(DanhSachKhoi, MoHinh); LogicKhoi.SuKienThayDoi:Fire("Them", MoHinh)
-	CacKhoiDangChon = {[MoHinh] = true}; CongCuHienTai = 1; HienThiUI(true); local MucTieu = MoHinh.PrimaryPart; TaoTayCam(MucTieu); return "Đã hàn nhóm!"
-end
-
-function LogicKhoi.ThaoCacKhoi()
-	local Dem = 0; local CacModel = {}; for k, _ in pairs(CacKhoiDangChon) do if k:IsA("Model") then table.insert(CacModel, k) end end
-	if #CacModel == 0 then return "Không có nhóm!" end
-	for _, M in ipairs(CacModel) do
-		LogicKhoi.SuKienThayDoi:Fire("Xoa", M); for i, v in ipairs(DanhSachKhoi) do if v == M then table.remove(DanhSachKhoi, i) break end end
-		for _, c in ipairs(M:GetChildren()) do if c:IsA("BasePart") then c.Parent = KhongGian; c.Anchored = true; for _, w in ipairs(c:GetChildren()) do if w:IsA("WeldConstraint") then w:Destroy() end end; table.insert(DanhSachKhoi, c); LogicKhoi.SuKienThayDoi:Fire("Them", c); Dem = Dem + 1 end end; M:Destroy()
-	end
-	LogicKhoi.HuyChon(); return "Đã rã nhóm!"
-end
-
 local function LayDoiTuongGoc(Khoi)
 	if not Khoi then return nil end
 	for _, v in ipairs(DanhSachKhoi) do if v == Khoi or Khoi:IsDescendantOf(v) then return v end end
 	return nil
 end
 
-local function CapNhatHienThiChon()
+CapNhatHienThiChon = function()
 	for _, v in ipairs(DanhSachKhoi) do
 		local MucTieu = v:IsA("Model") and v.PrimaryPart or v
 		if MucTieu and MucTieu:FindFirstChild("HopChon_Hx") then MucTieu.HopChon_Hx:Destroy() end
@@ -418,27 +483,42 @@ local function CapNhatHienThiChon()
 		local MucTieu = Khoi:IsA("Model") and Khoi.PrimaryPart or Khoi
 		if MucTieu then
 			local HopChon = Instance.new("SelectionBox"); HopChon.Name = "HopChon_Hx"; HopChon.Adornee = MucTieu
-			HopChon.LineThickness = CAI_DAT.DO_DAY_VIEN_CHON
-			HopChon.Color3 = CAI_DAT.MAU_CHON_BOX; HopChon.Parent = MucTieu
+			HopChon.LineThickness = CAI_DAT.DO_DAY_VIEN_CHON; HopChon.Color3 = CAI_DAT.MAU_CHON_BOX; HopChon.Parent = MucTieu
 		end
 	end
-
 	if #DanhSach > 0 then
 		if not GiaoDien.HopChua or not GiaoDien.HopChua.Visible then HienThiUI(true) end
-		if #DanhSach == 1 then
-			local MucTieu = DanhSach[1]:IsA("Model") and DanhSach[1].PrimaryPart or DanhSach[1]
-			TaoTayCam(MucTieu)
-		else XoaTayCam() end
-	else
-		HienThiUI(false); XoaTayCam()
-	end
+		if #DanhSach == 1 then local MucTieu = DanhSach[1]:IsA("Model") and DanhSach[1].PrimaryPart or DanhSach[1]; TaoTayCam(MucTieu) else XoaTayCam() end
+	else HienThiUI(false); XoaTayCam() end
+end
+
+LogicKhoi.KiemTraHuyChonKhiKhoa = function(DoiTuong) if CacKhoiDangChon[DoiTuong] then CacKhoiDangChon[DoiTuong] = nil; CapNhatHienThiChon(); CapNhatGiaoDien() end end
+LogicKhoi.TaoKhoiMau = function()
+	local NhanVat = NguoiChoi.Character; if not NhanVat then return end; local GocNhanVat = NhanVat:FindFirstChild("HumanoidRootPart")
+	local Khoi = Instance.new("Part"); Khoi.Name = "Khoi_" .. math.random(100, 999); Khoi.Size = Vector3.new(4, 1, 4)
+	Khoi.CFrame = GocNhanVat.CFrame * CFrame.new(0, 0, -10); Khoi.Position = Vector3.new(math.round(Khoi.Position.X), math.round(Khoi.Position.Y), math.round(Khoi.Position.Z))
+	Khoi.Color = Color3.new(math.random(), math.random(), math.random()); Khoi.Material = Enum.Material.Plastic; Khoi.Anchored = true; Khoi.Parent = KhongGian
+	table.insert(DanhSachKhoi, Khoi); LogicKhoi.SuKienThayDoi:Fire("Them", Khoi); return Khoi.Name
+end
+LogicKhoi.HuyChon = HuyChon
+LogicKhoi.ChinhCongCu = ChinhCongCu
+LogicKhoi.XoaKhoiChon = function() for Khoi, _ in pairs(CacKhoiDangChon) do LogicKhoi.SuKienThayDoi:Fire("Xoa", Khoi); Khoi:Destroy(); for i, v in ipairs(DanhSachKhoi) do if v == Khoi then table.remove(DanhSachKhoi, i) break end end end; HuyChon() end
+LogicKhoi.HanCacKhoi = function()
+	local CacKhoi = {}; for k, _ in pairs(CacKhoiDangChon) do table.insert(CacKhoi, k) end; if #CacKhoi < 2 then return "Cần 2 khối!" end
+	local MoHinh = Instance.new("Model"); MoHinh.Name = "Nhom_" .. math.random(100,999); MoHinh.Parent = KhongGian; local KhoiChinh = CacKhoi[1]
+	for _, p in ipairs(CacKhoi) do LogicKhoi.SuKienThayDoi:Fire("Xoa", p); for i, v in ipairs(DanhSachKhoi) do if v == p then table.remove(DanhSachKhoi, i) break end end; p.Parent = MoHinh; if p ~= KhoiChinh then local W = Instance.new("WeldConstraint"); W.Part0 = KhoiChinh; W.Part1 = p; W.Parent = KhoiChinh; p.Anchored = false end end
+	MoHinh.PrimaryPart = KhoiChinh; KhoiChinh.Anchored = true; table.insert(DanhSachKhoi, MoHinh); LogicKhoi.SuKienThayDoi:Fire("Them", MoHinh); CacKhoiDangChon = {[MoHinh] = true}; CongCuHienTai = 1; HienThiUI(true); local MucTieu = MoHinh.PrimaryPart; TaoTayCam(MucTieu); return "Đã hàn nhóm!"
+end
+LogicKhoi.ThaoCacKhoi = function()
+	local Dem = 0; local CacModel = {}; for k, _ in pairs(CacKhoiDangChon) do if k:IsA("Model") then table.insert(CacModel, k) end end; if #CacModel == 0 then return "Không có nhóm!" end
+	for _, M in ipairs(CacModel) do LogicKhoi.SuKienThayDoi:Fire("Xoa", M); for i, v in ipairs(DanhSachKhoi) do if v == M then table.remove(DanhSachKhoi, i) break end end; for _, c in ipairs(M:GetChildren()) do if c:IsA("BasePart") then c.Parent = KhongGian; c.Anchored = true; for _, w in ipairs(c:GetChildren()) do if w:IsA("WeldConstraint") then w:Destroy() end end; table.insert(DanhSachKhoi, c); LogicKhoi.SuKienThayDoi:Fire("Them", c); Dem = Dem + 1 end end; M:Destroy() end; HuyChon(); return "Đã rã nhóm!"
 end
 
 DichVuNhapLieu.InputBegan:Connect(function(DauVao, DaXuLyGame)
 	if DaXuLyGame then return end
-	if DauVao.KeyCode == Enum.KeyCode.One then LogicKhoi.ChinhCongCu(1)
-	elseif DauVao.KeyCode == Enum.KeyCode.Two then LogicKhoi.ChinhCongCu(2)
-	elseif DauVao.KeyCode == Enum.KeyCode.Three then LogicKhoi.ChinhCongCu(3) end
+	if DauVao.KeyCode == Enum.KeyCode.One then ChinhCongCu(1)
+	elseif DauVao.KeyCode == Enum.KeyCode.Two then ChinhCongCu(2)
+	elseif DauVao.KeyCode == Enum.KeyCode.Three then ChinhCongCu(3) end
 end)
 
 local TrangThaiNhap = {ThoiGianNhan = 0, DiemBatDau = Vector2.zero, DangGiu = false}
@@ -460,15 +540,17 @@ DichVuRender.RenderStepped:Connect(function()
 		if (DichVuNhapLieu:GetMouseLocation() - TrangThaiNhap.DiemBatDau).Magnitude > CAI_DAT.KHOANG_CACH_GIU then TrangThaiNhap.DangGiu = false; return end
 		if ThoiGianTroi >= CAI_DAT.THOI_GIAN_GIU then
 			TrangThaiNhap.DangGiu = false
-			local MucTieu = Chuot.Target; local Khoi = LayDoiTuongGoc(MucTieu)
+			local MucTieu = Chuot.Target
+			if MucTieu and MucTieu.Locked then return end
+			local Khoi = LayDoiTuongGoc(MucTieu)
 			if Khoi then
-				if CacKhoiDangChon[Khoi] then LogicKhoi.HuyChon() else
+				if CacKhoiDangChon[Khoi] then HuyChon() else
 					if not (DichVuNhapLieu:IsKeyDown(Enum.KeyCode.LeftControl) or CheDoDaChon) then CacKhoiDangChon = {} end
 					CacKhoiDangChon[Khoi] = true; CongCuHienTai = 1; CheDoScale = 1
 					CapNhatGiaoDien(); HieuUngNhan(Khoi:IsA("Model") and Khoi.PrimaryPart or Khoi); CapNhatHienThiChon()
 				end
 			else
-				if not (DichVuNhapLieu:IsKeyDown(Enum.KeyCode.LeftControl) or CheDoDaChon) then LogicKhoi.HuyChon() end
+				if not (DichVuNhapLieu:IsKeyDown(Enum.KeyCode.LeftControl) or CheDoDaChon) then HuyChon() end
 			end
 		end
 	end
