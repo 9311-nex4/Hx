@@ -61,10 +61,20 @@ local function TaoCauTrucItemChoKhoi(Obj)
 	local TenHienThi = Obj.Name
 	local LaNhom = Obj:IsA("Model")
 
+	local function SetAnchored(TrangThai)
+		if LaNhom then
+			for _, child in pairs(Obj:GetDescendants()) do
+				if child:IsA("BasePart") then child.Anchored = TrangThai end
+			end
+		elseif Obj:IsA("BasePart") then
+			Obj.Anchored = TrangThai
+		end
+	end
+
 	return {
 		Ten = LaNhom and "[NHÓM] " .. TenHienThi or TenHienThi,
 		Loai = "Otich", 
-		HienTai = "Bat",
+		HienTai = "Bat", 
 		SuKien = function(TrangThai)
 			if LaNhom then
 				for _, child in pairs(Obj:GetDescendants()) do
@@ -76,7 +86,7 @@ local function TaoCauTrucItemChoKhoi(Obj)
 		end,
 		CacNutCon = {
 			{
-				Ten = "Cho Phép Chọn",
+				Ten = "Cho Phép Chọn Khối",
 				Loai = "Otich",
 				HienTai = "Bat",
 				CacNutCon = {
@@ -86,19 +96,28 @@ local function TaoCauTrucItemChoKhoi(Obj)
 						HienTai = "Bat",
 						SuKien = function(TrangThai)
 							if TrangThai then
-								ThongBao("Hx Script", "Đã bật di chuyển riêng: " .. TenHienThi, 1)
+								ThongBao("Hx Script", "Đã mở khóa di chuyển: " .. TenHienThi, 2)
 							else
-								ThongBao("Hx Script", "Đã khóa di chuyển riêng: " .. TenHienThi, 1)
+								ThongBao("Hx Script", "Đã khóa vị trí: " .. TenHienThi, 2)
+							end
+						end
+					},
+					{
+						Ten = "Neo Khối",
+						Loai = "Otich",
+						HienTai = "Bat",
+						SuKien = function(TrangThai)
+							SetAnchored(TrangThai)
+							if TrangThai then
+								ThongBao("Hx Script", "Đã Neo khối (Đứng yên)", 2)
+							else
+								ThongBao("Hx Script", "Đã Tháo Neo (Rơi tự do)", 2)
 							end
 						end
 					}
 				},
 				SuKien = function(TrangThai)
-					if TrangThai then
-						ThongBao("Hx Script", "Đã bật chọn riêng: " .. TenHienThi, 1)
-					else
-						ThongBao("Hx Script", "Đã khóa chọn riêng: " .. TenHienThi, 1)
-					end
+					BaoTrangThai("khả năng chọn khối " .. TenHienThi, TrangThai)
 				end
 			}
 		}
@@ -266,12 +285,12 @@ local DanhSachNhom = {
 			},
 			{
 				Loai = "NhieuNut",
-				Ten_1 = "Hàn (Tạo Nhóm)",
+				Ten_1 = "Hàn Khối",
 				SuKien_1 = function()
 					local Msg = Khoi.HanCacKhoi()
 					ThongBao("Hx Build", Msg, 2)
 				end,
-				Ten_2 = "Tháo Hàn (Rã Nhóm)",
+				Ten_2 = "Tháo Hàn",
 				SuKien_2 = function()
 					local Msg = Khoi.ThaoCacKhoi()
 					ThongBao("Hx Build", Msg, 2)
@@ -498,4 +517,6 @@ local function TaoGiaoDien()
 end
 
 if not game:IsLoaded() then game.Loaded:Wait() end
+task.wait(2)
+
 TaoGiaoDien()
