@@ -180,7 +180,10 @@ local function XuLyNgoi(Ghe)
 	KetNoiJumpRequest = DichVuNhapLieu.JumpRequest:Connect(ThoatRa)
 
 	if CheDo == 2 then
-		KetNoiDiChuyen = DichVuRender.Heartbeat:Connect(function()
+		local TOC_DO_BAY = 100 
+		local DO_MUOT_XOAY = 0.15
+
+		KetNoiDiChuyen = DichVuRender.Heartbeat:Connect(function(dt)
 			if not DangHoatDong or not Ghe.Parent or not MoiHan.Parent then 
 				ThoatRa() 
 				return 
@@ -188,13 +191,17 @@ local function XuLyNgoi(Ghe)
 
 			local MoveDir = Humanoid.MoveDirection
 			if MoveDir.Magnitude > 0.1 then
-				local ViTriMoi = Ghe.Position + (MoveDir * (20 * DichVuRender.Heartbeat:Wait()))
-				local LookAt = CFrame.lookAt(Ghe.Position, Vector3.new(ViTriMoi.X, Ghe.Position.Y, ViTriMoi.Z))
-				Ghe.CFrame = Ghe.CFrame:Lerp(LookAt + (MoveDir * 0.5), 0.1)
+				local ViTriHienTai = Ghe.Position
+				local KhoangCachDiChuyen = MoveDir * (TOC_DO_BAY * dt)
+
+				local HuongNhinMoi = CFrame.lookAt(ViTriHienTai, ViTriHienTai + MoveDir)
+
+				local CFrameXoay = Ghe.CFrame:Lerp(HuongNhinMoi, DO_MUOT_XOAY)
+
+				Ghe.CFrame = CFrameXoay - CFrameXoay.Position + (ViTriHienTai + KhoangCachDiChuyen)
 			end
 		end)
 	end
-
 	KetNoiState = Humanoid.StateChanged:Connect(function(old, new)
 		if new == Enum.HumanoidStateType.Dead then
 			ThoatRa()
