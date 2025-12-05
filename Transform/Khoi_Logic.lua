@@ -665,25 +665,77 @@ LogicKhoi.CheckHuy = function(obj)
 end
 
 LogicKhoi.HanKhoi = function()
-	local ds = {}; for k in pairs(State.DangChon) do insert(ds, k) end
-	if #ds < 2 then return end
-	LuuHistory(LayState(), LayState())
-	local g = Instance.new("Model"); g.Name = "Group_"..math.random(999); g.Parent = Workspace
-	local m = ds[1]; local mGhe, spd = m:GetAttribute("ModeGhe"), m:GetAttribute("Speed")
+	local tatCaPart = {}
+	local nhomCuCanXoa = {} 
 
-	for _, p in ipairs(ds) do
+	for obj, _ in pairs(State.DangChon) do
+		if obj:IsA("Model") then
+			table.insert(nhomCuCanXoa, obj) 
+			for _, child in ipairs(obj:GetDescendants()) do
+				if child:IsA("BasePart") then
+					table.insert(tatCaPart, child)
+				end
+			end
+		elseif obj:IsA("BasePart") then
+			table.insert(tatCaPart, obj)
+		end
+	end
+
+	if #tatCaPart < 2 then return end 
+
+	LuuHistory(LayState(), LayState())
+
+	local g = Instance.new("Model") 
+	g.Name = "Group_"..math.random(999) 
+	g.Parent = Workspace
+
+	local m = tatCaPart[1]
+	local mGhe, spd
+
+	for _, p in ipairs(tatCaPart) do
+		if p:GetAttribute("ModeGhe") then
+			m = p 
+			mGhe = p:GetAttribute("ModeGhe")
+			spd = p:GetAttribute("Speed")
+			break
+		end
+	end
+
+	for _, p in ipairs(tatCaPart) do
 		p.Parent = g
+
+		for _, w in ipairs(p:GetChildren()) do
+			if w:IsA("WeldConstraint") then w:Destroy() end
+		end
+
 		if p ~= m then
-			local w = Instance.new("WeldConstraint"); w.Part0 = m; w.Part1 = p; w.Parent = m; p.Anchored = false
+			local w = Instance.new("WeldConstraint") 
+			w.Part0 = m 
+			w.Part1 = p 
+			w.Parent = m 
+			p.Anchored = false
 		end
 		ColService:AddTag(p, CAIDAT.TAG)
 	end
-	g.PrimaryPart = m; m.Anchored = true
-	if mGhe then SetGhe(m, mGhe); if spd then m:SetAttribute("Speed", spd) end end
+
+	g.PrimaryPart = m
+	m.Anchored = true
+
+	if mGhe then 
+		SetGhe(m, mGhe) 
+		if spd then m:SetAttribute("Speed", spd) end 
+	end
 
 	ColService:AddTag(g, CAIDAT.TAG)
+
+	for _, oldM in ipairs(nhomCuCanXoa) do
+		if oldM and oldM.Parent then oldM:Destroy() end
+	end
+
 	State.DangChon = {[g] = true}
-	ToggleUI(true); TaoGizmo(g.PrimaryPart); UpdateBox()
+	ToggleUI(true)
+	TaoGizmo(g.PrimaryPart)
+	UpdateBox()
 end
 
 LogicKhoi.ThaoKhoi = function()
