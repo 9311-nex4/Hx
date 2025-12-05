@@ -1,7 +1,6 @@
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-
 local NguoiChoi = Players.LocalPlayer
 local PlayerGui = NguoiChoi:WaitForChild("PlayerGui")
 local PlayerScripts = NguoiChoi:WaitForChild("PlayerScripts")
@@ -32,46 +31,40 @@ local CauHinh = {
 		Vien = Color3.fromRGB(255, 255, 255)
 	},
 	KichThuoc = {
-		Header = 38,
+		Header = 45,
 		Cach = 8,
-		NutDong = 30,
-		IconLon = UDim2.new(0, 80, 0, 80),
-		IconNho = UDim2.new(0, 35, 0, 35)
+		NutDong = 35,
+		IconLon = UDim2.new(0, 90, 0, 90),
+		IconNho = UDim2.new(0, 40, 0, 40)
 	},
 	Asset = {
 		Icon = "rbxassetid://117118515787811",
 		MuiTenXuong = "rbxassetid://6031091004"
 	},
 	VanBan = {
-		Nut = 18,
-		Nho = 12,
-		TieuDe = 14
+		Nut = 20,
+		Nho = 14,
+		TieuDe = 16
 	}
 }
-
 local function BaoTrangThai(TenChucNang, TrangThai)
 	local NoiDung = TrangThai and "Đã bật " .. TenChucNang or "Đã tắt " .. TenChucNang
 	ThongBao("Hx Script", NoiDung, 2)
 end
-
 local DuLieuDanhSachKhoiUI = {}
 local TaiLaiGiaoDien = nil
-
 local function TaoCauTrucItemChoKhoi(Obj)
 	local TenHienThi = Obj.Name
 	local LaNhom = Obj:IsA("Model")
-
 	local CheckPart = LaNhom and Obj.PrimaryPart or Obj
 	if not CheckPart and LaNhom then
 		for _, v in pairs(Obj:GetChildren()) do
 			if v:IsA("BasePart") then CheckPart = v break end
 		end
 	end
-
 	local IsAnchored = CheckPart and CheckPart.Anchored or true
 	local IsLocked = CheckPart and CheckPart.Locked or false
 	local IsMoveLocked = Obj:GetAttribute("KhoaDiChuyen") == true
-
 	local function SetAnchored(TrangThai)
 		if LaNhom then
 			for _, child in pairs(Obj:GetDescendants()) do
@@ -81,7 +74,6 @@ local function TaoCauTrucItemChoKhoi(Obj)
 			Obj.Anchored = TrangThai
 		end
 	end
-
 	local function SetLocked(TrangThai)
 		local Khoa = not TrangThai
 		if LaNhom then
@@ -92,7 +84,6 @@ local function TaoCauTrucItemChoKhoi(Obj)
 			Obj.Locked = Khoa
 		end
 	end
-
 	return {
 		Ten = LaNhom and "[NHÓM] " .. TenHienThi or TenHienThi,
 		Loai = "Otich",
@@ -150,7 +141,6 @@ local function TaoCauTrucItemChoKhoi(Obj)
 		}
 	}
 end
-
 Khoi.SuKienThayDoi.Event:Connect(function(HanhDong, DoiTuong)
 	if HanhDong == "Them" then
 		table.insert(DuLieuDanhSachKhoiUI, TaoCauTrucItemChoKhoi(DoiTuong))
@@ -164,7 +154,6 @@ Khoi.SuKienThayDoi.Event:Connect(function(HanhDong, DoiTuong)
 	end
 	if TaiLaiGiaoDien then TaiLaiGiaoDien() end
 end)
-
 local DanhSachNhom = {
 	{
 		TieuDe = "Main Transform",
@@ -326,27 +315,22 @@ local DanhSachNhom = {
 		}
 	}
 }
-
 local function TaoGiaoDien()
 	if PlayerGui:FindFirstChild("TransformUI") then PlayerGui.TransformUI:Destroy() end
-
 	local DangHanhDong = false
 	local KiemTraDienThoai = (UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled)
-	local KichThuocMo = UDim2.new(0, 550, 0, 380)
-
+	local KichThuocMo = UDim2.fromScale(0.75, 0.7) 
 	local ManHinhGui = Instance.new("ScreenGui")
 	ManHinhGui.Name = "TransformUI"
 	ManHinhGui.ResetOnSpawn = false
 	ManHinhGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	ManHinhGui.Parent = PlayerGui
-
 	local LopPhu = Instance.new("Frame")
 	LopPhu.Name = "LopPhu"
 	LopPhu.Size = UDim2.fromScale(1, 1)
 	LopPhu.BackgroundTransparency = 1
 	LopPhu.ZIndex = 100
 	LopPhu.Parent = ManHinhGui
-
 	local ClickOutside = Instance.new("TextButton")
 	ClickOutside.Size = UDim2.fromScale(1, 1)
 	ClickOutside.BackgroundTransparency = 1
@@ -354,24 +338,21 @@ local function TaoGiaoDien()
 	ClickOutside.Visible = false
 	ClickOutside.ZIndex = 99
 	ClickOutside.Parent = ManHinhGui
-
 	local function CloseAllDropdowns()
 		for _, c in ipairs(LopPhu:GetChildren()) do c:Destroy() end
 		ClickOutside.Visible = false
 	end
 	ClickOutside.MouseButton1Click:Connect(CloseAllDropdowns)
-
 	local NutMoUI = Instance.new("ImageButton")
 	NutMoUI.Name = "NutMoUI"
-	NutMoUI.Size = UDim2.new(0, 50, 0, 50)
-	NutMoUI.Position = UDim2.new(0, 20, 0.4, 0)
+	NutMoUI.Size = UDim2.new(0, 60, 0, 60) 
+	NutMoUI.Position = UDim2.new(0, 30, 0.4, 0)
 	NutMoUI.Image = CauHinh.Asset.Icon
 	NutMoUI.BackgroundColor3 = CauHinh.Mau.Nen
 	NutMoUI.BackgroundTransparency = 0.2
 	NutMoUI.Parent = ManHinhGui
-	Instance.new("UICorner", NutMoUI).CornerRadius = UDim.new(0, 12)
+	Instance.new("UICorner", NutMoUI).CornerRadius = UDim.new(0, 16)
 	HoatAnh.KeoTha(NutMoUI, NutMoUI)
-
 	local KhungChinh = Instance.new("Frame")
 	KhungChinh.Name = "KhungChinh"
 	KhungChinh.Size = CauHinh.KichThuoc.IconLon
@@ -382,8 +363,10 @@ local function TaoGiaoDien()
 	KhungChinh.ClipsDescendants = true
 	KhungChinh.Visible = false
 	KhungChinh.Parent = ManHinhGui
-	Instance.new("UICorner", KhungChinh).CornerRadius = UDim.new(0, 10)
-
+	Instance.new("UICorner", KhungChinh).CornerRadius = UDim.new(0, 14)
+	local GioiHanKichThuoc = Instance.new("UISizeConstraint")
+	GioiHanKichThuoc.MinSize = Vector2.new(450, 350)
+	GioiHanKichThuoc.Parent = KhungChinh
 	local BieuTuong = Instance.new("ImageLabel")
 	BieuTuong.Size = UDim2.fromOffset(0, 0)
 	BieuTuong.Position = UDim2.new(0.5, 0, 0.5, 0)
@@ -393,61 +376,55 @@ local function TaoGiaoDien()
 	BieuTuong.BackgroundColor3 = Color3.new(0, 0, 0)
 	BieuTuong.ZIndex = 2
 	BieuTuong.Parent = KhungChinh
-	Instance.new("UICorner", BieuTuong).CornerRadius = UDim.new(0, 12)
-
+	Instance.new("UICorner", BieuTuong).CornerRadius = UDim.new(0, 16)
 	local KhungBaoNoiDung = Instance.new("Frame")
 	KhungBaoNoiDung.Name = "KhungBaoNoiDung"
 	KhungBaoNoiDung.Size = UDim2.fromScale(1, 1)
 	KhungBaoNoiDung.BackgroundTransparency = 1
 	KhungBaoNoiDung.ZIndex = 2
 	KhungBaoNoiDung.Parent = KhungChinh
-
 	local TieuDe = Instance.new("TextLabel")
 	TieuDe.Text = "Hx - Transform Script"
-	TieuDe.Size = UDim2.new(1, -80, 0, 40)
-	TieuDe.Position = UDim2.new(0, 50, 0, 5)
+	TieuDe.Size = UDim2.new(1, -90, 0, 50)
+	TieuDe.Position = UDim2.new(0, 60, 0, 5)
 	TieuDe.BackgroundTransparency = 1
 	TieuDe.TextColor3 = CauHinh.Mau.Chu
 	TieuDe.Font = Enum.Font.GothamBold
-	TieuDe.TextSize = 20
+	TieuDe.TextSize = 24 
 	TieuDe.TextXAlignment = Enum.TextXAlignment.Left
 	TieuDe.TextTransparency = 1
 	TieuDe.ZIndex = 5
 	TieuDe.Parent = KhungBaoNoiDung
-
 	local NutDong = Instance.new("TextButton")
 	NutDong.Size = UDim2.fromOffset(CauHinh.KichThuoc.NutDong, CauHinh.KichThuoc.NutDong)
-	NutDong.Position = UDim2.new(1, -25, 0, 25)
+	NutDong.Position = UDim2.new(1, -30, 0, 30)
 	NutDong.AnchorPoint = Vector2.new(0.5, 0.5)
 	NutDong.Text = "X"
-	NutDong.TextSize = 18
+	NutDong.TextSize = 22
 	NutDong.Font = Enum.Font.GothamBlack
 	NutDong.BackgroundColor3 = CauHinh.Mau.NutDong
 	NutDong.TextColor3 = CauHinh.Mau.Chu
 	NutDong.ZIndex = 10
 	NutDong.Transparency = 1
 	NutDong.Parent = KhungChinh
-	Instance.new("UICorner", NutDong).CornerRadius = UDim.new(0, 6)
-
+	Instance.new("UICorner", NutDong).CornerRadius = UDim.new(0, 8)
 	local VienNutDong = Instance.new("UIStroke")
 	VienNutDong.Color = CauHinh.Mau.Vien
 	VienNutDong.Transparency = 1
-	VienNutDong.Thickness = 1.5
+	VienNutDong.Thickness = 2
 	VienNutDong.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	VienNutDong.Parent = NutDong
-
 	local VungCuon = Instance.new("ScrollingFrame")
-	VungCuon.Size = UDim2.new(1, -20, 1, -55)
-	VungCuon.Position = UDim2.new(0.5, 0, 1, -10)
+	VungCuon.Size = UDim2.new(1, -24, 1, -65)
+	VungCuon.Position = UDim2.new(0.5, 0, 1, -12)
 	VungCuon.AnchorPoint = Vector2.new(0.5, 1)
 	VungCuon.BackgroundColor3 = CauHinh.Mau.NenList
 	VungCuon.BackgroundTransparency = 0.6
-	VungCuon.ScrollBarThickness = 4
+	VungCuon.ScrollBarThickness = 6 
 	VungCuon.BorderSizePixel = 0
 	VungCuon.ZIndex = 2
 	VungCuon.Parent = KhungChinh
-	Instance.new("UICorner", VungCuon).CornerRadius = UDim.new(0, 6)
-
+	Instance.new("UICorner", VungCuon).CornerRadius = UDim.new(0, 8)
 	TaiLaiGiaoDien = function()
 		if not VungCuon or not VungCuon.Parent then return end
 		VungCuon:ClearAllChildren()
@@ -456,12 +433,10 @@ local function TaoGiaoDien()
 			ClickOutside.Visible = true
 		end)
 	end
-
 	KhungCuon.Tao(VungCuon, DanhSachNhom, CauHinh, LopPhu, function()
 		CloseAllDropdowns()
 		ClickOutside.Visible = true
 	end)
-
 	local CacPhanTu = {
 		Khung = KhungChinh,
 		Icon = BieuTuong,
@@ -470,20 +445,17 @@ local function TaoGiaoDien()
 		VienNutDong = VienNutDong,
 		KhungNoiDung = VungCuon
 	}
-
 	local CauHinhHieuUng = {
 		IconDau = CauHinh.KichThuoc.IconLon,
 		IconCuoi = CauHinh.KichThuoc.IconNho,
 		ViTriIconDau = UDim2.new(0.5, 0, 0.5, 0),
-		ViTriIconCuoi = UDim2.new(0, 25, 0, 25),
+		ViTriIconCuoi = UDim2.new(0, 30, 0, 30),
 		KhungDau = CauHinh.KichThuoc.IconLon,
 		KhungCuoi = KichThuocMo,
-		KichThuocNutDongNay = UDim2.new(0, 42, 0, 42),
+		KichThuocNutDongNay = UDim2.new(0, 50, 0, 50),
 		DoTrongSuotKhung = 0.15
 	}
-
 	HoatAnh.KeoTha(KhungChinh, KhungChinh)
-
 	local function DongGiaoDien()
 		if DangHanhDong or not KhungChinh.Visible then return end
 		DangHanhDong = true
@@ -492,35 +464,29 @@ local function TaoGiaoDien()
 			DangHanhDong = false
 		end)
 	end
-
 	local function MoGiaoDien()
 		if DangHanhDong or KhungChinh.Visible then return end
 		DangHanhDong = true
 		KhungChinh.Visible = true
-
 		NutDong.Size = UDim2.fromOffset(CauHinh.KichThuoc.NutDong, CauHinh.KichThuoc.NutDong)
 		NutDong.BackgroundColor3 = CauHinh.Mau.NutDong
-
 		HoatAnh.MoGiaoDien(CacPhanTu, CauHinhHieuUng)
-
 		task.delay(0.2, function() DangHanhDong = false end)
 	end
-
 	local NutDongThuong = {
-		Size = UDim2.fromOffset(30, 30),
+		Size = UDim2.fromOffset(35, 35),
 		BackgroundColor3 = CauHinh.Mau.NutDong,
 		BackgroundTransparency = 0.6,
-		TextSize = 18,
+		TextSize = 22,
 		TextColor3 = CauHinh.Mau.Chu
 	}
 	local NutDongLuot = {
-		Size = KiemTraDienThoai and UDim2.fromOffset(30, 30) or UDim2.fromOffset(34, 34),
+		Size = KiemTraDienThoai and UDim2.fromOffset(35, 35) or UDim2.fromOffset(40, 40),
 		BackgroundColor3 = CauHinh.Mau.NutDongLuot,
 		BackgroundTransparency = 0,
-		TextSize = 22,
+		TextSize = 26,
 		TextColor3 = Color3.new(1,1,1)
 	}
-
 	NutDong.MouseEnter:Connect(function()
 		if not DangHanhDong then
 			HoatAnh.LuotChuot(NutDong, true, NutDongLuot, NutDongThuong)
@@ -533,17 +499,13 @@ local function TaoGiaoDien()
 			TweenService:Create(VienNutDong, TweenInfo.new(0.3), {Transparency = 0.8}):Play()
 		end
 	end)
-
 	NutDong.MouseButton1Click:Connect(DongGiaoDien)
 	NutMoUI.MouseButton1Click:Connect(function()
 		HoatAnh.NhanChuot(NutMoUI)
 		if KhungChinh.Visible then DongGiaoDien() else MoGiaoDien() end
 	end)
-
 	MoGiaoDien()
 end
-
 if not game:IsLoaded() then game.Loaded:Wait() end
 task.wait(2)
-
 TaoGiaoDien()
