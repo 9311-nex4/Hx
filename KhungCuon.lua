@@ -1,4 +1,4 @@
-local DichVuTween, DichVuRun = game:GetService("TweenService"), game:GetService("RunService")
+local DichVuTween, DichVuRun, DichVuInput, DichVuText = game:GetService("TweenService"), game:GetService("RunService"), game:GetService("UserInputService"), game:GetService("TextService")
 local Tween_Nhanh = TweenInfo.new(0.08, Enum.EasingStyle.Sine)
 local Tween_Muot = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local Tween_Nay = TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
@@ -31,7 +31,7 @@ local function TaoVien(Cha, Mau, DoTrongSuot, DoDay)
 end
 
 local function TaoGioiHanChu(Cha, KichThuocMax)
-	return TaoDoiTuong("UITextSizeConstraint", {MaxTextSize = KichThuocMax or 14, Parent = Cha})
+	return TaoDoiTuong("UITextSizeConstraint", {MaxTextSize = KichThuocMax or 18, Parent = Cha})
 end
 
 local function TaoNhan(ThuocTinh)
@@ -62,24 +62,62 @@ function ThanhPhan.Otich(Cha, DuLieu, CauHinh, CapNhat, DeQuy)
 		TaoDoiTuong("UIListLayout", {SortOrder = "LayoutOrder"})
 	})
 
-	local HangNgang = TaoDoiTuong("Frame", {LayoutOrder = 1, Size = UDim2.new(1, 0, 0, 36), BackgroundTransparency = 1, ZIndex = 2, Parent = KhungChinh})
+	local HangNgang = TaoDoiTuong("Frame", {LayoutOrder = 1, Size = UDim2.new(1, 0, 0, 45), BackgroundTransparency = 1, ZIndex = 2, Parent = KhungChinh})
 
 	if DuLieu.LoaiNutCon == "CungHang" then
-		TaoDoiTuong("UIListLayout", {FillDirection = "Horizontal", SortOrder = "LayoutOrder", Padding = UDim.new(0, 5), Parent = HangNgang})
+		TaoDoiTuong("UIListLayout", {FillDirection = "Horizontal", SortOrder = "LayoutOrder", Padding = UDim.new(0, 4), Parent = HangNgang})
 	end
 
 	local NutTich = TaoDoiTuong("TextButton", {
 		Name = "NutTich", LayoutOrder = 1, Size = UDim2.new(1, 0, 1, 0),
 		BackgroundColor3 = CauHinh.Mau.NenMuc, Text = "", AutoButtonColor = false, ZIndex = 2, Parent = HangNgang
 	})
-	TaoBoGoc(NutTich, 6)
+	TaoBoGoc(NutTich, 8)
 	TaoVien(NutTich, CauHinh.Mau.VienHop, 0.8)
 
-	local NhanTich = TaoNhan({Text = "  " .. DuLieu.Ten, Size = UDim2.new(0.7, 0, 1, 0), TextColor3 = CauHinh.Mau.Chu, TextXAlignment = "Left", ZIndex = 3, Parent = NutTich})
-	TaoGioiHanChu(NhanTich, CauHinh.VanBan.Nho)
+	local DoDaiChuoi = utf8.len(DuLieu.Ten) or string.len(DuLieu.Ten)
+
+	if DoDaiChuoi > 10 then
+		local VungCuonChu = TaoDoiTuong("ScrollingFrame", {
+			Size = UDim2.new(0.72, -5, 1, 0), 
+			Position = UDim2.new(0, 0, 0, 0),
+			BackgroundTransparency = 1, 
+			ScrollBarThickness = 0, 
+			ScrollingDirection = Enum.ScrollingDirection.X,
+			AutomaticCanvasSize = Enum.AutomaticSize.X, 
+			CanvasSize = UDim2.new(0,0,0,0), 
+			ClipsDescendants = true,
+			ZIndex = 3, 
+			Parent = NutTich
+		})
+
+		local NhanTich = TaoNhan({
+			Text = "  " .. DuLieu.Ten, 
+			Size = UDim2.new(0, 0, 1, 0), 
+			AutomaticSize = Enum.AutomaticSize.X,
+			TextColor3 = CauHinh.Mau.Chu, 
+			TextXAlignment = Enum.TextXAlignment.Left, 
+			ZIndex = 3, 
+			Parent = VungCuonChu
+		})
+		NhanTich.TextScaled = false
+		NhanTich.TextWrapped = false
+		NhanTich.TextSize = CauHinh.VanBan.Nho + 2
+	else
+		local NhanTich = TaoNhan({
+			Text = "  " .. DuLieu.Ten, 
+			Size = UDim2.new(0.72, -5, 1, 0),
+			TextColor3 = CauHinh.Mau.Chu, 
+			TextXAlignment = Enum.TextXAlignment.Left, 
+			TextWrapped = true,
+			ZIndex = 3, 
+			Parent = NutTich
+		})
+		TaoGioiHanChu(NhanTich, CauHinh.VanBan.Nho + 2)
+	end
 
 	local HopVuong = TaoDoiTuong("Frame", {
-		Size = UDim2.fromOffset(20, 20), Position = UDim2.new(1, -10, 0.5, 0), AnchorPoint = Vector2.new(1, 0.5),
+		Size = UDim2.fromOffset(26, 26), Position = UDim2.new(1, -8, 0.5, 0), AnchorPoint = Vector2.new(1, 0.5),
 		BackgroundColor3 = CauHinh.Mau.NenHop, ZIndex = 3, Parent = NutTich
 	})
 	TaoBoGoc(HopVuong, 6)
@@ -87,16 +125,16 @@ function ThanhPhan.Otich(Cha, DuLieu, CauHinh, CapNhat, DeQuy)
 
 	DuLieu.TrangThai = (DuLieu.HienTai == "Bat") or DuLieu.TrangThai or false
 	local DauTich = TaoDoiTuong("Frame", {
-		Size = UDim2.new(1, -10, 1, -10), Position = UDim2.fromScale(0.5, 0.5), AnchorPoint = Vector2.new(0.5, 0.5),
+		Size = UDim2.new(1, -8, 1, -8), Position = UDim2.fromScale(0.5, 0.5), AnchorPoint = Vector2.new(0.5, 0.5),
 		BackgroundColor3 = CauHinh.Mau.TichBat, Visible = DuLieu.TrangThai, ZIndex = 4, Parent = HopVuong
 	})
-	TaoBoGoc(DauTich, 3)
+	TaoBoGoc(DauTich, 4)
 	TaoVien(DauTich, CauHinh.Mau.TichBat, 0.5, 2)
 
 	local NutPhu, CapNhatNutPhu, ChiSoPhu = nil, nil, 1
 	local KhungChuaPhu = TaoDoiTuong("Frame", {LayoutOrder = 2, Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1, AutomaticSize = "Y", Parent = KhungChinh})
 	local Dem = TaoDoiTuong("UIPadding", {Parent = KhungChuaPhu})
-	TaoDoiTuong("UIListLayout", {Padding = UDim.new(0, 5), SortOrder = "LayoutOrder", Parent = KhungChuaPhu})
+	TaoDoiTuong("UIListLayout", {Padding = UDim.new(0, 6), SortOrder = "LayoutOrder", Parent = KhungChuaPhu})
 
 	if DuLieu.LoaiNutCon == "CungHang" then
 		NutPhu = TaoDoiTuong("TextButton", {
@@ -104,10 +142,10 @@ function ThanhPhan.Otich(Cha, DuLieu, CauHinh, CapNhat, DeQuy)
 			Text = "...", TextColor3 = CauHinh.Mau.Chu, Font = "GothamMedium", TextScaled = true,
 			Visible = false, ZIndex = 2, Parent = HangNgang
 		})
-		TaoBoGoc(NutPhu, 6)
+		TaoBoGoc(NutPhu, 8)
 		TaoVien(NutPhu, CauHinh.Mau.VienHop, 0.8)
-		TaoGioiHanChu(NutPhu, CauHinh.VanBan.Nho)
-		TaoDoiTuong("UIPadding", {PaddingLeft = UDim.new(0,5), PaddingRight = UDim.new(0,5), Parent = NutPhu})
+		TaoGioiHanChu(NutPhu, CauHinh.VanBan.Nho + 2)
+		TaoDoiTuong("UIPadding", {PaddingLeft = UDim.new(0,4), PaddingRight = UDim.new(0,4), Parent = NutPhu})
 		TaoHieuUng(NutPhu, nil)
 
 		CapNhatNutPhu = function()
@@ -129,7 +167,7 @@ function ThanhPhan.Otich(Cha, DuLieu, CauHinh, CapNhat, DeQuy)
 	local function LamMoi()
 		if DuLieu.LoaiNutCon == "CungHang" then 
 			if DuLieu.TrangThai then
-				ChayTween(NutTich, Tween_Muot, {Size = UDim2.new(0.7, -5, 1, 0)})
+				ChayTween(NutTich, Tween_Muot, {Size = UDim2.new(0.68, -4, 1, 0)})
 				NutPhu.Visible = true
 				ChayTween(NutPhu, Tween_Muot, {BackgroundTransparency = 0})
 			else
@@ -141,8 +179,8 @@ function ThanhPhan.Otich(Cha, DuLieu, CauHinh, CapNhat, DeQuy)
 
 		for _, c in ipairs(KhungChuaPhu:GetChildren()) do if c:IsA("GuiObject") then c:Destroy() end end
 		if DuLieu.TrangThai and DuLieu.CacNutCon and #DuLieu.CacNutCon > 0 then
-			Dem.PaddingTop = UDim.new(0, 5)
-			Dem.PaddingBottom = UDim.new(0, 5)
+			Dem.PaddingTop = UDim.new(0, 6)
+			Dem.PaddingBottom = UDim.new(0, 6)
 			for k, v in ipairs(DuLieu.CacNutCon) do DeQuy(KhungChuaPhu, v, CapNhat, k) end
 		else
 			Dem.PaddingTop = UDim.new(0, 0)
@@ -161,7 +199,7 @@ function ThanhPhan.Otich(Cha, DuLieu, CauHinh, CapNhat, DeQuy)
 		DauTich.Visible = DuLieu.TrangThai
 		if DuLieu.TrangThai then
 			DauTich.Size = UDim2.fromScale(0, 0)
-			ChayTween(DauTich, Tween_Nay, {Size = UDim2.new(1, -10, 1, -10)})
+			ChayTween(DauTich, Tween_Nay, {Size = UDim2.new(1, -8, 1, -8)})
 		end
 
 		LamMoi()
@@ -171,14 +209,14 @@ end
 
 function ThanhPhan.Nut(Cha, DuLieu, CauHinh, CapNhat, DeQuy)
 	local NutBam = TaoDoiTuong("TextButton", {
-		LayoutOrder = DuLieu.ThuTu, Size = UDim2.new(1, 0, 0, 36), BackgroundColor3 = CauHinh.Mau.NenMuc,
+		LayoutOrder = DuLieu.ThuTu, Size = UDim2.new(1, 0, 0, 45), BackgroundColor3 = CauHinh.Mau.NenMuc,
 		Text = DuLieu.Ten, TextColor3 = CauHinh.Mau.Chu, Font = "GothamMedium", TextScaled = true, ZIndex = 2, Parent = Cha
 	})
-	TaoBoGoc(NutBam, 6)
+	TaoBoGoc(NutBam, 8)
 	TaoVien(NutBam, CauHinh.Mau.VienHop)
-	TaoDoiTuong("UIPadding", {PaddingLeft = UDim.new(0, 5), PaddingRight = UDim.new(0, 5), Parent = NutBam})
+	TaoDoiTuong("UIPadding", {PaddingLeft = UDim.new(0, 6), PaddingRight = UDim.new(0, 6), Parent = NutBam})
 
-	TaoGioiHanChu(NutBam, CauHinh.VanBan.Nut)
+	TaoGioiHanChu(NutBam, CauHinh.VanBan.Nut + 2)
 
 	TaoHieuUng(NutBam, NutBam)
 
@@ -216,22 +254,22 @@ function ThanhPhan.Nut(Cha, DuLieu, CauHinh, CapNhat, DeQuy)
 end
 
 function ThanhPhan.NhieuNut(Cha, DuLieu, CauHinh, CapNhat)
-	local KhungChua = TaoDoiTuong("Frame", {LayoutOrder = DuLieu.ThuTu, Size = UDim2.new(1, 0, 0, 36), BackgroundTransparency = 1, Parent = Cha}, {
-		TaoDoiTuong("UIListLayout", {FillDirection = "Horizontal", SortOrder = "LayoutOrder", Padding = UDim.new(0, 10)})
+	local KhungChua = TaoDoiTuong("Frame", {LayoutOrder = DuLieu.ThuTu, Size = UDim2.new(1, 0, 0, 45), BackgroundTransparency = 1, Parent = Cha}, {
+		TaoDoiTuong("UIListLayout", {FillDirection = "Horizontal", SortOrder = "LayoutOrder", Padding = UDim.new(0, 8)})
 	})
 
 	local function TaoNutNho(Ten, SuKien, ThuTu, TongSo)
 		local DoRong = 1 / (TongSo or 1)
 		local NutBam = TaoDoiTuong("TextButton", {
-			LayoutOrder = ThuTu, Size = UDim2.new(DoRong, -((10 * (TongSo - 1)) / TongSo), 1, 0),
+			LayoutOrder = ThuTu, Size = UDim2.new(DoRong, -((8 * (TongSo - 1)) / TongSo), 1, 0),
 			BackgroundColor3 = CauHinh.Mau.NenMuc, Text = Ten or "Nut", TextColor3 = CauHinh.Mau.Chu,
 			Font = "GothamMedium", TextScaled = true, ZIndex = 2, Parent = KhungChua
 		})
-		TaoBoGoc(NutBam, 6)
+		TaoBoGoc(NutBam, 8)
 		TaoVien(NutBam, CauHinh.Mau.VienHop)
-		TaoDoiTuong("UIPadding", {PaddingLeft = UDim.new(0, 5), PaddingRight = UDim.new(0, 5), Parent = NutBam})
+		TaoDoiTuong("UIPadding", {PaddingLeft = UDim.new(0, 4), PaddingRight = UDim.new(0, 4), Parent = NutBam})
 
-		TaoGioiHanChu(NutBam, CauHinh.VanBan.Nho)
+		TaoGioiHanChu(NutBam, CauHinh.VanBan.Nho + 2)
 
 		TaoHieuUng(NutBam, NutBam)
 		NutBam.MouseButton1Click:Connect(function() if SuKien then task.spawn(SuKien) end end)
@@ -251,33 +289,33 @@ function ThanhPhan.HopXo(Cha, DuLieu, CauHinh, CapNhat, DeQuy, NguCanh)
 	local KhungChinh = TaoDoiTuong("Frame", {LayoutOrder = DuLieu.ThuTu, Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1, AutomaticSize = "Y", Parent = Cha}, {
 		TaoDoiTuong("UIListLayout", {SortOrder = "LayoutOrder"})
 	})
-	local HangNgang = TaoDoiTuong("Frame", {LayoutOrder = 1, Size = UDim2.new(1, 0, 0, 36), BackgroundColor3 = CauHinh.Mau.NenMuc, ZIndex = 2, Parent = KhungChinh})
-	TaoBoGoc(HangNgang, 6)
+	local HangNgang = TaoDoiTuong("Frame", {LayoutOrder = 1, Size = UDim2.new(1, 0, 0, 45), BackgroundColor3 = CauHinh.Mau.NenMuc, ZIndex = 2, Parent = KhungChinh})
+	TaoBoGoc(HangNgang, 8)
 	TaoVien(HangNgang, CauHinh.Mau.VienHop, 0.8, 1)
 
 	local NhanTieuDe = TaoNhan({Text = "  " .. DuLieu.Ten, Size = UDim2.new(0.5, 0, 1, 0), TextColor3 = CauHinh.Mau.Chu, TextXAlignment = "Left", ZIndex = 3, Parent = HangNgang})
-	TaoGioiHanChu(NhanTieuDe, CauHinh.VanBan.Nho)
+	TaoGioiHanChu(NhanTieuDe, CauHinh.VanBan.Nho + 2)
 
 	local HienThi = TaoDoiTuong("TextButton", {
-		Size = UDim2.new(0.45, 0, 0, 24), Position = UDim2.new(1, -6, 0.5, 0), AnchorPoint = Vector2.new(1, 0.5),
+		Size = UDim2.new(0.48, 0, 0, 32), Position = UDim2.new(1, -6, 0.5, 0), AnchorPoint = Vector2.new(1, 0.5),
 		BackgroundColor3 = CauHinh.Mau.NenHop, BackgroundTransparency = 0.5, Text = DuLieu.HienTai or "...",
 		TextColor3 = CauHinh.Mau.Chu, Font = "Gotham", TextScaled = true, ZIndex = 3, Parent = HangNgang
 	})
-	TaoBoGoc(HienThi, 4)
+	TaoBoGoc(HienThi, 6)
 	TaoVien(HienThi, CauHinh.Mau.VienHop, 0.6)
-	TaoGioiHanChu(HienThi, CauHinh.VanBan.Nho)
+	TaoGioiHanChu(HienThi, CauHinh.VanBan.Nho + 2)
 
 	TaoHieuUng(HienThi, nil)
 
 	local KhungPhu = TaoDoiTuong("Frame", {LayoutOrder = 2, Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1, AutomaticSize = "Y", Parent = KhungChinh})
-	local Dem = TaoDoiTuong("UIPadding", {PaddingLeft = UDim.new(0,5), Parent = KhungPhu})
-	TaoDoiTuong("UIListLayout", {Padding = UDim.new(0, 5), SortOrder = "LayoutOrder", Parent = KhungPhu})
+	local Dem = TaoDoiTuong("UIPadding", {PaddingLeft = UDim.new(0,6), Parent = KhungPhu})
+	TaoDoiTuong("UIListLayout", {Padding = UDim.new(0, 6), SortOrder = "LayoutOrder", Parent = KhungPhu})
 
 	local function LamMoiKhungPhu(CacMuc)
 		for _, c in ipairs(KhungPhu:GetChildren()) do if c:IsA("GuiObject") then c:Destroy() end end
 		if CacMuc and #CacMuc > 0 then
-			Dem.PaddingTop = UDim.new(0, 5)
-			Dem.PaddingBottom = UDim.new(0, 5)
+			Dem.PaddingTop = UDim.new(0, 6)
+			Dem.PaddingBottom = UDim.new(0, 6)
 			for k, v in ipairs(CacMuc) do DeQuy(KhungPhu, v, CapNhat, k) end
 		else
 			Dem.PaddingTop = UDim.new(0, 0)
@@ -292,11 +330,17 @@ function ThanhPhan.HopXo(Cha, DuLieu, CauHinh, CapNhat, DeQuy, NguCanh)
 
 	HienThi.MouseButton1Click:Connect(function()
 		if NguCanh.DongMenu then NguCanh.DongMenu() end
+
 		local KhungXo = TaoDoiTuong("Frame", {
-			Size = UDim2.new(0, HienThi.AbsoluteSize.X, 0, 0), Position = UDim2.fromOffset(HienThi.AbsolutePosition.X, HienThi.AbsolutePosition.Y + HienThi.AbsoluteSize.Y + 5),
-			BackgroundColor3 = CauHinh.Mau.NenPhu, ClipsDescendants = true, ZIndex = 105, Parent = NguCanh.LopPhu
+			Size = UDim2.new(0, HienThi.AbsoluteSize.X, 0, 0), 
+			Position = UDim2.fromOffset(HienThi.AbsolutePosition.X, HienThi.AbsolutePosition.Y + HienThi.AbsoluteSize.Y + 6),
+			BackgroundColor3 = CauHinh.Mau.NenPhu, 
+			ClipsDescendants = true, 
+			BorderSizePixel = 0,
+			ZIndex = 105, 
+			Parent = NguCanh.LopPhu
 		})
-		TaoBoGoc(KhungXo, 6)
+		TaoBoGoc(KhungXo, 8)
 		local VienKhung = TaoVien(KhungXo, CauHinh.Mau.VienHop, 1)
 
 		local CapNhatViTri
@@ -313,26 +357,33 @@ function ThanhPhan.HopXo(Cha, DuLieu, CauHinh, CapNhat, DeQuy, NguCanh)
 
 		CapNhatViTri = DichVuRun.RenderStepped:Connect(function()
 			if not HienThi.Parent or not HienThi.Visible then Dong() return end
-			KhungXo.Position = UDim2.fromOffset(HienThi.AbsolutePosition.X, HienThi.AbsolutePosition.Y + HienThi.AbsoluteSize.Y + 5)
+			KhungXo.Position = UDim2.fromOffset(HienThi.AbsolutePosition.X, HienThi.AbsolutePosition.Y + HienThi.AbsoluteSize.Y + 6)
 		end)
 
 		local Cuon = TaoDoiTuong("ScrollingFrame", {
-			Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ScrollBarThickness = 3,
-			ScrollBarImageColor3 = CauHinh.Mau.Chu, AutomaticCanvasSize = "Y", CanvasSize = UDim2.new(), ZIndex = 106, Parent = KhungXo
+			Size = UDim2.fromScale(1, 1), 
+			BackgroundTransparency = 1, 
+			ScrollBarThickness = 4,
+			BorderSizePixel = 0,
+			ScrollBarImageColor3 = CauHinh.Mau.Chu, 
+			AutomaticCanvasSize = "Y", 
+			CanvasSize = UDim2.new(), 
+			ZIndex = 106, 
+			Parent = KhungXo
 		})
-		TaoDoiTuong("UIPadding", {PaddingTop = UDim.new(0,3), PaddingBottom = UDim.new(0,3), PaddingLeft = UDim.new(0,3), PaddingRight = UDim.new(0,3), Parent = Cuon})
-		TaoDoiTuong("UIListLayout", {SortOrder = "LayoutOrder", Padding = UDim.new(0, 2), Parent = Cuon})
+		TaoDoiTuong("UIPadding", {PaddingTop = UDim.new(0,4), PaddingBottom = UDim.new(0,4), PaddingLeft = UDim.new(0,4), PaddingRight = UDim.new(0,4), Parent = Cuon})
+		TaoDoiTuong("UIListLayout", {SortOrder = "LayoutOrder", Padding = UDim.new(0, 3), Parent = Cuon})
 
 		for i, v in ipairs(DuLieu.LuaChon) do
 			local Ten = (type(v) == "table") and v.Ten or v
 			local DuocChon = (Ten == DuLieu.HienTai)
 			local Muc = TaoDoiTuong("TextButton", {
-				LayoutOrder = i, Size = UDim2.new(1, -2, 0, 28), BackgroundColor3 = DuocChon and CauHinh.Mau.ChonPhu or CauHinh.Mau.NenPhu,
+				LayoutOrder = i, Size = UDim2.new(1, -2, 0, 34), BackgroundColor3 = DuocChon and CauHinh.Mau.ChonPhu or CauHinh.Mau.NenPhu,
 				BackgroundTransparency = DuocChon and 0.5 or 1, Text = "  " .. Ten, TextColor3 = DuocChon and CauHinh.Mau.TichBat or CauHinh.Mau.Chu,
 				Font = DuocChon and "GothamBold" or "Gotham", TextScaled = true, TextXAlignment = "Left", ZIndex = 107, AutoButtonColor = false, Parent = Cuon
 			})
-			TaoBoGoc(Muc, 4)
-			TaoGioiHanChu(Muc, CauHinh.VanBan.Nho)
+			TaoBoGoc(Muc, 6)
+			TaoGioiHanChu(Muc, CauHinh.VanBan.Nho + 2)
 
 			Muc.MouseEnter:Connect(function() if not DuocChon then ChayTween(Muc, Tween_Nhanh, {BackgroundTransparency = 0.4, BackgroundColor3 = CauHinh.Mau.ChonPhu}) end end)
 			Muc.MouseLeave:Connect(function() if not DuocChon then ChayTween(Muc, Tween_Nhanh, {BackgroundTransparency = 1}) end end)
@@ -346,7 +397,7 @@ function ThanhPhan.HopXo(Cha, DuLieu, CauHinh, CapNhat, DeQuy, NguCanh)
 		end
 
 		ChayTween(VienKhung, Tween_Muot, {Transparency = 0.5})
-		ChayTween(KhungXo, Tween_Muot, {Size = UDim2.new(0, HienThi.AbsoluteSize.X, 0, math.min(#DuLieu.LuaChon * 30 + 6, 95))})
+		ChayTween(KhungXo, Tween_Muot, {Size = UDim2.new(0, HienThi.AbsoluteSize.X, 0, math.min(#DuLieu.LuaChon * 37 + 8, 110))})
 	end)
 end
 
@@ -354,26 +405,26 @@ function ThanhPhan.Danhsach(Cha, DuLieu, CauHinh, CapNhat, DeQuy)
 	local KhungChinh = TaoDoiTuong("Frame", {LayoutOrder = DuLieu.ThuTu, Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1, AutomaticSize = "Y", Parent = Cha}, {
 		TaoDoiTuong("UIListLayout", {SortOrder = "LayoutOrder"})
 	})
-	local DauMuc = TaoDoiTuong("TextButton", {LayoutOrder = 1, Size = UDim2.new(1, 0, 0, 36), BackgroundColor3 = CauHinh.Mau.NenMuc, Text = "", ZIndex = 2, Parent = KhungChinh})
-	TaoBoGoc(DauMuc, 6)
+	local DauMuc = TaoDoiTuong("TextButton", {LayoutOrder = 1, Size = UDim2.new(1, 0, 0, 45), BackgroundColor3 = CauHinh.Mau.NenMuc, Text = "", ZIndex = 2, Parent = KhungChinh})
+	TaoBoGoc(DauMuc, 8)
 	TaoVien(DauMuc, CauHinh.Mau.VienHop, 0.8)
 
 	local NhanTieuDe = TaoNhan({Text = "  " .. DuLieu.Ten, Size = UDim2.new(0.8, 0, 1, 0), TextColor3 = CauHinh.Mau.Chu, TextXAlignment = "Left", ZIndex = 3, Parent = DauMuc})
-	TaoGioiHanChu(NhanTieuDe, CauHinh.VanBan.Nho)
+	TaoGioiHanChu(NhanTieuDe, CauHinh.VanBan.Nho + 2)
 
 	local MuiTen = TaoDoiTuong("ImageLabel", {
-		Size = UDim2.fromOffset(16, 16), Position = UDim2.new(1, -10, 0.5, 0), AnchorPoint = Vector2.new(1, 0.5),
+		Size = UDim2.fromOffset(20, 20), Position = UDim2.new(1, -12, 0.5, 0), AnchorPoint = Vector2.new(1, 0.5),
 		Image = CauHinh.Asset.MuiTenXuong or "rbxassetid://6031091004", BackgroundTransparency = 1, ZIndex = 3, Parent = DauMuc
 	})
 	TaoHieuUng(DauMuc, nil)
 
 	local KhungChua = TaoDoiTuong("Frame", {LayoutOrder = 2, Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1, ClipsDescendants = true, Parent = KhungChinh})
-	TaoDoiTuong("UIPadding", {PaddingTop = UDim.new(0, 5), PaddingLeft = UDim.new(0, 5), Parent = KhungChua})
-	local BoCuc = TaoDoiTuong("UIListLayout", {Padding = UDim.new(0, 5), SortOrder = "LayoutOrder", Parent = KhungChua})
+	TaoDoiTuong("UIPadding", {PaddingTop = UDim.new(0, 6), PaddingLeft = UDim.new(0, 6), Parent = KhungChua})
+	local BoCuc = TaoDoiTuong("UIListLayout", {Padding = UDim.new(0, 6), SortOrder = "LayoutOrder", Parent = KhungChua})
 
 	local function CapNhatKichThuoc()
 		if DuLieu.DangMo then
-			KhungChua.Size = UDim2.new(1, 0, 0, BoCuc.AbsoluteContentSize.Y + 10)
+			KhungChua.Size = UDim2.new(1, 0, 0, BoCuc.AbsoluteContentSize.Y + 12)
 			CapNhat()
 		end
 	end
@@ -383,23 +434,23 @@ function ThanhPhan.Danhsach(Cha, DuLieu, CauHinh, CapNhat, DeQuy)
 	DuLieu.DangMo = false
 	DauMuc.MouseButton1Click:Connect(function()
 		DuLieu.DangMo = not DuLieu.DangMo
-		ChayTween(KhungChua, Tween_Muot, {Size = UDim2.new(1, 0, 0, DuLieu.DangMo and (BoCuc.AbsoluteContentSize.Y + 10) or 0)})
+		ChayTween(KhungChua, Tween_Muot, {Size = UDim2.new(1, 0, 0, DuLieu.DangMo and (BoCuc.AbsoluteContentSize.Y + 12) or 0)})
 		ChayTween(MuiTen, Tween_Muot, {Rotation = DuLieu.DangMo and 180 or 0})
 		task.delay(0.26, CapNhat)
 	end)
 end
 
 function KhungCuon.Tao(Cuon, DuLieu, CauHinh, LopPhu, DongMenu)
-	local CotTrai = TaoDoiTuong("Frame", {Size = UDim2.new(0.46, 0, 0, 0), Position = UDim2.new(0.02, 0, 0, 5), BackgroundTransparency = 1, AutomaticSize = "Y", Parent = Cuon})
+	local CotTrai = TaoDoiTuong("Frame", {Size = UDim2.new(0.485, 0, 0, 0), Position = UDim2.new(0.01, 0, 0, 6), BackgroundTransparency = 1, AutomaticSize = "Y", Parent = Cuon})
 	local BoCucTrai = TaoDoiTuong("UIListLayout", {Padding = UDim.new(0, 10), SortOrder = "LayoutOrder", Parent = CotTrai})
 
-	local CotPhai = TaoDoiTuong("Frame", {Size = UDim2.new(0.46, 0, 0, 0), Position = UDim2.new(0.98, 0, 0, 5), AnchorPoint = Vector2.new(1, 0), BackgroundTransparency = 1, AutomaticSize = "Y", Parent = Cuon})
+	local CotPhai = TaoDoiTuong("Frame", {Size = UDim2.new(0.485, 0, 0, 0), Position = UDim2.new(0.99, 0, 0, 6), AnchorPoint = Vector2.new(1, 0), BackgroundTransparency = 1, AutomaticSize = "Y", Parent = Cuon})
 	local BoCucPhai = TaoDoiTuong("UIListLayout", {Padding = UDim.new(0, 10), SortOrder = "LayoutOrder", Parent = CotPhai})
 
 	local NguCanh = {LopPhu = LopPhu, DongMenu = DongMenu}
 
 	local function CapNhatCuon()
-		Cuon.CanvasSize = UDim2.new(0, 0, 0, math.max(BoCucTrai.AbsoluteContentSize.Y, BoCucPhai.AbsoluteContentSize.Y) + 20)
+		Cuon.CanvasSize = UDim2.new(0, 0, 0, math.max(BoCucTrai.AbsoluteContentSize.Y, BoCucPhai.AbsoluteContentSize.Y) + 25)
 	end
 	BoCucTrai:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(CapNhatCuon)
 	BoCucPhai:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(CapNhatCuon)
@@ -411,27 +462,27 @@ function KhungCuon.Tao(Cuon, DuLieu, CauHinh, LopPhu, DongMenu)
 	end
 
 	local function TaoKhoi(DuLieuKhoi, Cot)
-		local Khoi = TaoDoiTuong("Frame", {Size = UDim2.new(1, 0, 0, 42), BackgroundColor3 = CauHinh.Mau.NenKhoi, ClipsDescendants = true, ZIndex = 1, Parent = Cot})
-		TaoBoGoc(Khoi, 8)
+		local Khoi = TaoDoiTuong("Frame", {Size = UDim2.new(1, 0, 0, 50), BackgroundColor3 = CauHinh.Mau.NenKhoi, ClipsDescendants = true, ZIndex = 1, Parent = Cot})
+		TaoBoGoc(Khoi, 10)
 		TaoVien(Khoi, CauHinh.Mau.VienHop)
 
-		local DauMuc = TaoDoiTuong("TextButton", {Size = UDim2.new(1, 0, 0, 42), BackgroundTransparency = 1, Text = "", ZIndex = 2, Parent = Khoi})
+		local DauMuc = TaoDoiTuong("TextButton", {Size = UDim2.new(1, 0, 0, 50), BackgroundTransparency = 1, Text = "", ZIndex = 2, Parent = Khoi})
 		local DuongKe = TaoDoiTuong("Frame", {Size = UDim2.new(1, 0, 0, 1), Position = UDim2.new(0, 0, 1, -1), BackgroundColor3 = CauHinh.Mau.VienHop, BorderSizePixel = 0, ZIndex = 2, Parent = DauMuc})
 
-		local TieuDeKhoi = TaoNhan({Text = DuLieuKhoi.TieuDe, Size = UDim2.new(1, -35, 1, 0), Position = UDim2.new(0, 10, 0, 0), TextColor3 = CauHinh.Mau.Chu, Font = "GothamBold", TextScaled = true, TextXAlignment = "Left", ZIndex = 3, Parent = DauMuc})
+		local TieuDeKhoi = TaoNhan({Text = DuLieuKhoi.TieuDe, Size = UDim2.new(1, -40, 1, 0), Position = UDim2.new(0, 12, 0, 0), TextColor3 = CauHinh.Mau.Chu, Font = "GothamBold", TextScaled = true, TextXAlignment = "Left", ZIndex = 3, Parent = DauMuc})
 
-		TaoGioiHanChu(TieuDeKhoi, CauHinh.VanBan.TieuDe)
+		TaoGioiHanChu(TieuDeKhoi, CauHinh.VanBan.TieuDe + 2)
 
-		local MuiTen = TaoDoiTuong("ImageLabel", {Size = UDim2.fromOffset(20, 20), Position = UDim2.new(1, -25, 0.5, 0), AnchorPoint = Vector2.new(0, 0.5), Image = CauHinh.Asset.MuiTenXuong, BackgroundTransparency = 1, ZIndex = 3, Parent = DauMuc})
+		local MuiTen = TaoDoiTuong("ImageLabel", {Size = UDim2.fromOffset(24, 24), Position = UDim2.new(1, -30, 0.5, 0), AnchorPoint = Vector2.new(0, 0.5), Image = CauHinh.Asset.MuiTenXuong, BackgroundTransparency = 1, ZIndex = 3, Parent = DauMuc})
 
-		local ThanKhoi = TaoDoiTuong("Frame", {Position = UDim2.new(0, 0, 0, 57), Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1, Parent = Khoi})
-		local BoCucThan = TaoDoiTuong("UIListLayout", {Padding = UDim.new(0, 5), SortOrder = "LayoutOrder", Parent = ThanKhoi})
-		TaoDoiTuong("UIPadding", {PaddingBottom = UDim.new(0, 8), PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8), Parent = ThanKhoi})
+		local ThanKhoi = TaoDoiTuong("Frame", {Position = UDim2.new(0, 0, 0, 65), Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1, Parent = Khoi})
+		local BoCucThan = TaoDoiTuong("UIListLayout", {Padding = UDim.new(0, 6), SortOrder = "LayoutOrder", Parent = ThanKhoi})
+		TaoDoiTuong("UIPadding", {PaddingBottom = UDim.new(0, 10), PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10), Parent = ThanKhoi})
 
 		local DangMoRong = true
 		local function BatTat()
 			local ChieuCaoNoiDung = BoCucThan.AbsoluteContentSize.Y
-			local ChieuCaoMucTieu = DangMoRong and (42 + ChieuCaoNoiDung + 15) or 42
+			local ChieuCaoMucTieu = DangMoRong and (50 + ChieuCaoNoiDung + 18) or 50
 			ChayTween(Khoi, Tween_Muot, {Size = UDim2.new(1, 0, 0, ChieuCaoMucTieu)})
 			ChayTween(MuiTen, Tween_Muot, {Rotation = DangMoRong and 180 or 0})
 			DuongKe.Visible = DangMoRong
