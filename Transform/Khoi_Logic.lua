@@ -68,7 +68,7 @@ local TrackAnim = nil
 local ListShape = {Enum.PartType.Block, Enum.PartType.Ball, Enum.PartType.Cylinder, Enum.PartType.Wedge, Enum.PartType.CornerWedge}
 local ColorShape = {color3(0, 150, 255), color3(255, 60, 60), color3(60, 255, 60), color3(255, 255, 0), color3(180, 0, 255)}
 
-LogicKhoi.Event = Instance.new("BindableEvent")
+LogicKhoi.SuKienThayDoi = Instance.new("BindableEvent")
 
 local CapNhatUI, UpdateBox, TaoGizmo, HieuUngPop, XoaGizmo, ToggleUI, HuyChon, ToggleSpeed, ToggleProp
 
@@ -651,12 +651,12 @@ LogicKhoi.TaoBlock = function()
 	k.Position = vec3(mRound(k.Position.X), mRound(k.Position.Y), mRound(k.Position.Z))
 	k.Color = Color3.fromHSV(math.random(), 0.6, 0.9); k.Material = "Plastic"; k.Anchored = true; k.Parent = Workspace
 	ColService:AddTag(k, CAIDAT.TAG)
-	LogicKhoi.Event:Fire("Add", k)
+	LogicKhoi.SuKienThayDoi:Fire("Them", k)
 	return k.Name
 end
 
 LogicKhoi.XoaChon = function()
-	for k, _ in pairs(State.DangChon) do LogicKhoi.Event:Fire("Del", k); k:Destroy() end
+	for k, _ in pairs(State.DangChon) do LogicKhoi.SuKienThayDoi:Fire("Xoa", k); k:Destroy() end
 	HuyChon()
 end
 
@@ -702,7 +702,7 @@ LogicKhoi.HanKhoi = function()
 	end
 
 	for _, p in ipairs(tatCaPart) do
-		p.Parent = g
+		p.Parent = g 
 
 		for _, w in ipairs(p:GetChildren()) do
 			if w:IsA("WeldConstraint") then w:Destroy() end
