@@ -142,7 +142,7 @@ local function TaoCauTrucItemChoKhoi(Obj)
 				SuKien = function(TrangThai)
 					SetLocked(TrangThai)
 					if not TrangThai then
-						Khoi.KiemTraHuyChonKhiKhoa(Obj)
+						Khoi.CheckHuy(Obj)
 					end
 					BaoTrangThai("khả năng chọn khối " .. TenHienThi, TrangThai)
 				end
@@ -294,14 +294,14 @@ local DanhSachNhom = {
 				Loai = "NhieuNut",
 				Ten_1 = "Tạo Khối Mẫu",
 				SuKien_1 = function()
-					local TenKhoi = Khoi.TaoKhoiMau()
+					local TenKhoi = Khoi.TaoBlock()
 					if TenKhoi then
 						ThongBao("Hx Script", "Đã tạo: " .. TenKhoi, 1)
 					end
 				end,
 				Ten_2 = "Xóa Khối Chọn",
 				SuKien_2 = function()
-					Khoi.XoaKhoiChon()
+					Khoi.XoaChon()
 					ThongBao("Hx Script", "Đã xóa các khối được chọn!", 1)
 				end,
 			},
@@ -314,12 +314,12 @@ local DanhSachNhom = {
 				Loai = "NhieuNut",
 				Ten_1 = "Hàn Khối",
 				SuKien_1 = function()
-					local Msg = Khoi.HanCacKhoi()
+					local Msg = Khoi.HanKhoi()
 					ThongBao("Hx Build", Msg, 2)
 				end,
 				Ten_2 = "Tháo Hàn",
 				SuKien_2 = function()
-					local Msg = Khoi.ThaoCacKhoi()
+					local Msg = Khoi.ThaoKhoi()
 					ThongBao("Hx Build", Msg, 2)
 				end,
 			}
