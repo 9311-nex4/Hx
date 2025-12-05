@@ -6,7 +6,7 @@ local KhoLuuTruGiaoDien = {}
 
 HoatAnh.Kieu = {
 	Mo = TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-	Dong = TweenInfo.new(0.6, Enum.EasingStyle.Quart, Enum.EasingDirection.InOut),
+	Dong = TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.InOut),
 	Muot = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
 	Nay = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
 	MoDan = TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
@@ -200,7 +200,7 @@ function HoatAnh.DongGiaoDien(CacPhanTu, CauHinh, HamGoiLai)
 
 	if CacPhanTu.KhungNoiDung then XuLyHienThiNoiDung(CacPhanTu.KhungNoiDung, false, true) end
 
-	task.wait(0.2)
+	task.wait(0.1)
 
 	if CacPhanTu.Icon then
 		ChayTween(CacPhanTu.Icon, HoatAnh.Kieu.Dong, {Position = CauHinh.ViTriIconDau, Size = CauHinh.IconDau})
