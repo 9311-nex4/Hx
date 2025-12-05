@@ -27,10 +27,10 @@ local CAIDAT = {
 	C_CHU = color3(255, 255, 255),
 	C_BTN = color3(225, 225, 225),
 	C_ICON = color3(255, 255, 255),
-	C_ACT = color3(0, 150, 255), -- Màu xanh active
+	C_ACT = color3(0, 150, 255),  
 	C_SCALE = color3(255, 160, 0),
-	C_OFF = color3(100, 100, 100), -- Màu xám tắt
-	C_HUY = color3(200, 40, 40),   -- Màu đỏ hủy/chặn
+	C_OFF = color3(100, 100, 100), 
+	C_HUY = color3(200, 40, 40),  
 	C_BOX = color3(255, 255, 255),
 	SIZE_BTN = 44,
 	SIZE_SUB = 36,
@@ -312,14 +312,11 @@ CapNhatUI = function()
 			local isGhost = true
 			local obj = next(State.DangChon)
 			if obj then isGhost = obj:GetAttribute("XuyenTuong") end
-			if isGhost == nil then isGhost = true end -- Mac dinh la xuyen tuong (True)
+			if isGhost == nil then isGhost = true end 
 
 			local ico = bColl:FindFirstChild("Icon")
 			local str = bColl:FindFirstChild("Stroke")
 
-			-- LOGIC MÀU SẮC MỚI:
-			-- XuyenTuong (True) => Màu Xanh (C_ACT) - Cho phép đi qua
-			-- Chan (False) => Màu Đỏ (C_HUY) - Không cho đi qua
 			local cl = isGhost and CAIDAT.C_ACT or CAIDAT.C_HUY 
 
 			if ico then PlayTw(ico, CAIDAT.TW_ICON, {ImageColor3 = cl}) end
@@ -499,7 +496,6 @@ local function TaoUI()
 	local cl = Make("TextButton", {Text="ĐÓNG", Size=udim2(1,-24,0,28), Position=udim2(0.5,0,1,-12), AnchorPoint=Vector2.new(0.5,1), BackgroundColor3=CAIDAT.C_HUY, Font="GothamBlack", TextColor3=color3(255,255,255), TextSize=11, ZIndex=20}, main)
 	Make("UICorner", {CornerRadius=udim(0,6)}, cl); cl.MouseButton1Click:Connect(HuyChon)
 
-	-- Tăng chiều cao lên một chút để chứa đủ 4 hàng
 	local subW = (CAIDAT.SIZE_SUB * 3) + 16 + 10 
 	local subH = (CAIDAT.SIZE_SUB * 4) + 24 + 16 
 
@@ -515,8 +511,6 @@ local function TaoUI()
 		if func then btn.MouseButton1Click:Connect(func) end
 	end
 
-	-- ===== SẮP XẾP LẠI THỨ TỰ CHUẨN =====
-	-- Hàng 1: Block (Shape) - Grid - Prop
 	MakeSub("BtnShape", "rbxassetid://"..CAIDAT.ICONS.SHAPE, 1, function()
 		local old = LayState()
 		State.ShapeIdx = (State.ShapeIdx % #ListShape) + 1
@@ -529,12 +523,10 @@ local function TaoUI()
 	MakeSub("BtnGrid", "rbxassetid://"..CAIDAT.ICONS.GRID, 2, function() State.BatLuoi = not State.BatLuoi; CapNhatUI() end)
 	MakeSub("BtnProp", CAIDAT.ICONS.PROP, 3, ToggleProp)
 
-	-- Hàng 2: Multi - Undo - Redo
 	MakeSub("BtnMulti", "rbxassetid://"..CAIDAT.ICONS.SEL, 4, function() State.DaChon = not State.DaChon; CapNhatUI() end)
 	MakeSub("BtnUndo", "rbxassetid://"..CAIDAT.ICONS.UNDO, 5, function() DoHistory(History.Undo, History.Redo) end)
 	MakeSub("BtnRedo", "rbxassetid://"..CAIDAT.ICONS.REDO, 6, function() DoHistory(History.Redo, History.Undo) end)
 
-	-- Hàng 3: Weld - Seat - Speed
 	MakeSub("BtnWeld", CAIDAT.ICONS.WELD, 7, function()
 		local isM = false; for k in pairs(State.DangChon) do if k:IsA("Model") then isM = true break end end
 		if isM then LogicKhoi.ThaoKhoi() else LogicKhoi.HanKhoi() end
@@ -546,10 +538,8 @@ local function TaoUI()
 	end)
 	MakeSub("BtnSpeed", CAIDAT.ICONS.SPEED, 9, ToggleSpeed)
 
-	-- Hàng 4: Collision (Tường)
 	MakeSub("BtnColl", CAIDAT.ICONS.COLLISION, 10, ToggleXuyenTuong)
 
-	-- Cập nhật màu nút Shape ban đầu
 	local nS = sub:FindFirstChild("BtnShape")
 	if nS then nS.Stroke.Color = ColorShape[State.ShapeIdx]; nS.Stroke.Transparency = 0 end
 
