@@ -27,10 +27,10 @@ local CAIDAT = {
 	C_CHU = color3(255, 255, 255),
 	C_BTN = color3(225, 225, 225),
 	C_ICON = color3(255, 255, 255),
-	C_ACT = color3(0, 150, 255),
+	C_ACT = color3(0, 150, 255), -- Màu xanh active
 	C_SCALE = color3(255, 160, 0),
-	C_OFF = color3(100, 100, 100),
-	C_HUY = color3(200, 40, 40),
+	C_OFF = color3(100, 100, 100), -- Màu xám tắt
+	C_HUY = color3(200, 40, 40),   -- Màu đỏ hủy/chặn
 	C_BOX = color3(255, 255, 255),
 	SIZE_BTN = 44,
 	SIZE_SUB = 36,
@@ -44,6 +44,7 @@ local CAIDAT = {
 		REDO = "124647276241633", ARROW = "rbxassetid://6031091004", SEL = "109826670489779",
 		SEAT = "119465930347884", WELD = "rbxassetid://101608134171705",
 		SPEED = "rbxassetid://107628976464127", PROP = "rbxassetid://115321933884958",
+		COLLISION = "rbxassetid://139998791687076",
 	},
 	ANIM_SIT = "rbxassetid://2506281703",
 }
@@ -70,7 +71,7 @@ local ColorShape = {color3(0, 150, 255), color3(255, 60, 60), color3(60, 255, 60
 
 LogicKhoi.SuKienThayDoi = Instance.new("BindableEvent")
 
-local CapNhatUI, UpdateBox, TaoGizmo, HieuUngPop, XoaGizmo, ToggleUI, HuyChon, ToggleSpeed, ToggleProp
+local CapNhatUI, UpdateBox, TaoGizmo, HieuUngPop, XoaGizmo, ToggleUI, HuyChon, ToggleSpeed, ToggleProp, ToggleXuyenTuong
 
 local function TaoScale(obj)
 	if not obj then return end
@@ -183,16 +184,33 @@ local function XuLyNgoi(ghe)
 	if mode == 2 then
 		local spd = ghe:GetAttribute("Speed") or 20
 		local smooth = 0.15
+
+		local rayParams = RaycastParams.new()
+		rayParams.FilterType = Enum.RaycastFilterType.Exclude
+		rayParams.FilterDescendantsInstances = {char, ghe} 
+
 		cMove = RunService.Heartbeat:Connect(function(dt)
 			if not active or not ghe.Parent or not w.Parent then Exit() return end
 			spd = ghe:GetAttribute("Speed") or 20
+			local isGhost = ghe:GetAttribute("XuyenTuong") 
+			if isGhost == nil then isGhost = true end
+
 			local dir = hum.MoveDirection
 			if dir.Magnitude > 0.1 then
 				local pos = ghe.Position
-				local dist = dir * (spd * dt)
-				local look = CFrame.lookAt(pos, pos + dir)
-				local nCF = ghe.CFrame:Lerp(look, smooth)
-				ghe.CFrame = nCF - nCF.Position + (pos + dist)
+				local moveVec = dir * (spd * dt)
+
+				local choPhepDi = true
+				if not isGhost then
+					local ray = Workspace:Raycast(pos, moveVec.Unit * (moveVec.Magnitude + 2), rayParams) 
+					if ray then choPhepDi = false end
+				end
+
+				if choPhepDi then
+					local look = CFrame.lookAt(pos, pos + dir)
+					local nCF = ghe.CFrame:Lerp(look, smooth)
+					ghe.CFrame = nCF - nCF.Position + (pos + moveVec)
+				end
 			end
 		end)
 	end
@@ -206,7 +224,10 @@ local function SetGhe(khoi, mode)
 	local p = khoi:FindFirstChild("Prompt")
 	khoi:SetAttribute("ModeGhe", mode)
 
-	if mode == 2 and not khoi:GetAttribute("Speed") then khoi:SetAttribute("Speed", 20) end
+	if mode == 2 then
+		if not khoi:GetAttribute("Speed") then khoi:SetAttribute("Speed", 20) end
+		if khoi:GetAttribute("XuyenTuong") == nil then khoi:SetAttribute("XuyenTuong", true) end
+	end
 
 	if mode == 0 then
 		if p then p:Destroy() end
@@ -280,8 +301,30 @@ CapNhatUI = function()
 			PlayTw(bSeat.Icon, CAIDAT.TW_ICON, {ImageColor3 = cIcon})
 			PlayTw(bSeat.Stroke, CAIDAT.TW_ICON, {Color = cStr, Transparency = tr})
 		end
+
 		local bSpeed = UI.Sub:FindFirstChild("BtnSpeed")
 		if bSpeed then bSpeed.Visible = (State.ModeGhe == 2) end
+
+		local bColl = UI.Sub:FindFirstChild("BtnColl")
+		if bColl then 
+			bColl.Visible = (State.ModeGhe == 2) 
+
+			local isGhost = true
+			local obj = next(State.DangChon)
+			if obj then isGhost = obj:GetAttribute("XuyenTuong") end
+			if isGhost == nil then isGhost = true end -- Mac dinh la xuyen tuong (True)
+
+			local ico = bColl:FindFirstChild("Icon")
+			local str = bColl:FindFirstChild("Stroke")
+
+			-- LOGIC MÀU SẮC MỚI:
+			-- XuyenTuong (True) => Màu Xanh (C_ACT) - Cho phép đi qua
+			-- Chan (False) => Màu Đỏ (C_HUY) - Không cho đi qua
+			local cl = isGhost and CAIDAT.C_ACT or CAIDAT.C_HUY 
+
+			if ico then PlayTw(ico, CAIDAT.TW_ICON, {ImageColor3 = cl}) end
+			if str then PlayTw(str, CAIDAT.TW_ICON, {Color = cl, Transparency = 0}) end
+		end
 	end
 end
 
@@ -456,9 +499,14 @@ local function TaoUI()
 	local cl = Make("TextButton", {Text="ĐÓNG", Size=udim2(1,-24,0,28), Position=udim2(0.5,0,1,-12), AnchorPoint=Vector2.new(0.5,1), BackgroundColor3=CAIDAT.C_HUY, Font="GothamBlack", TextColor3=color3(255,255,255), TextSize=11, ZIndex=20}, main)
 	Make("UICorner", {CornerRadius=udim(0,6)}, cl); cl.MouseButton1Click:Connect(HuyChon)
 
-	local sub = Make("Frame", {Name="Sub", AnchorPoint=Vector2.new(0.4,0.85), Position=udim2(0,-10,0.5,0), Size=udim2(0,(CAIDAT.SIZE_SUB*3)+28,0,(CAIDAT.SIZE_SUB*4)+32), BackgroundColor3=CAIDAT.C_NEN_PHU, BackgroundTransparency=0.2, Visible=false, ZIndex=8}, con)
+	-- Tăng chiều cao lên một chút để chứa đủ 4 hàng
+	local subW = (CAIDAT.SIZE_SUB * 3) + 16 + 10 
+	local subH = (CAIDAT.SIZE_SUB * 4) + 24 + 16 
+
+	local sub = Make("ScrollingFrame", {Name="Sub", AnchorPoint=Vector2.new(0.4,0.85), Position=udim2(0,-10,0.5,0), Size=udim2(0, subW, 0, subH), BackgroundColor3=CAIDAT.C_NEN_PHU, BackgroundTransparency=0.2, Visible=false, ZIndex=8, CanvasSize=udim2(0,0,0,0), AutomaticCanvasSize=Enum.AutomaticSize.Y, ScrollBarThickness=4, BorderSizePixel=0}, con)
 	Make("UICorner", {CornerRadius=udim(0,10)}, sub); Make("UIStroke", {Color=CAIDAT.C_VIEN}, sub)
-	Make("UIGridLayout", {CellSize=udim2(0,CAIDAT.SIZE_SUB,0,CAIDAT.SIZE_SUB), CellPadding=udim2(0,8,0,8), HorizontalAlignment="Center", VerticalAlignment="Center"}, sub)
+	Make("UIGridLayout", {CellSize=udim2(0,CAIDAT.SIZE_SUB,0,CAIDAT.SIZE_SUB), CellPadding=udim2(0,8,0,8), HorizontalAlignment="Center", VerticalAlignment="Top", SortOrder="LayoutOrder"}, sub)
+	Make("UIPadding", {PaddingTop=udim(0,8), PaddingBottom=udim(0,8)}, sub)
 
 	local function MakeSub(name, icon, ord, func)
 		local btn = Make("ImageButton", {Name=name, LayoutOrder=ord, BackgroundColor3=CAIDAT.C_BTN, BackgroundTransparency=0.3, ZIndex=12}, sub)
@@ -467,9 +515,9 @@ local function TaoUI()
 		if func then btn.MouseButton1Click:Connect(func) end
 	end
 
-	MakeSub("BtnGrid", "rbxassetid://"..CAIDAT.ICONS.GRID, 1, function() State.BatLuoi = not State.BatLuoi; CapNhatUI() end)
-	MakeSub("BtnMulti", "rbxassetid://"..CAIDAT.ICONS.SEL, 2, function() State.DaChon = not State.DaChon; CapNhatUI() end)
-	MakeSub("BtnShape", "rbxassetid://"..CAIDAT.ICONS.SHAPE, 3, function()
+	-- ===== SẮP XẾP LẠI THỨ TỰ CHUẨN =====
+	-- Hàng 1: Block (Shape) - Grid - Prop
+	MakeSub("BtnShape", "rbxassetid://"..CAIDAT.ICONS.SHAPE, 1, function()
 		local old = LayState()
 		State.ShapeIdx = (State.ShapeIdx % #ListShape) + 1
 		local shp, col = ListShape[State.ShapeIdx], ColorShape[State.ShapeIdx]
@@ -478,20 +526,30 @@ local function TaoUI()
 		local n = UI.Sub:FindFirstChild("BtnShape")
 		if n and n:FindFirstChild("Stroke") then PlayTw(n.Stroke, TweenInfo.new(0.2), {Color=col, Transparency=0}) end
 	end)
-	MakeSub("BtnUndo", "rbxassetid://"..CAIDAT.ICONS.UNDO, 4, function() DoHistory(History.Undo, History.Redo) end)
-	MakeSub("BtnRedo", "rbxassetid://"..CAIDAT.ICONS.REDO, 5, function() DoHistory(History.Redo, History.Undo) end)
-	MakeSub("BtnSeat", "rbxassetid://"..CAIDAT.ICONS.SEAT, 6, function()
-		State.ModeGhe = (State.ModeGhe + 1) % 3
-		for k, _ in pairs(State.DangChon) do SetGhe(k, State.ModeGhe) end
-		CapNhatUI()
-	end)
+	MakeSub("BtnGrid", "rbxassetid://"..CAIDAT.ICONS.GRID, 2, function() State.BatLuoi = not State.BatLuoi; CapNhatUI() end)
+	MakeSub("BtnProp", CAIDAT.ICONS.PROP, 3, ToggleProp)
+
+	-- Hàng 2: Multi - Undo - Redo
+	MakeSub("BtnMulti", "rbxassetid://"..CAIDAT.ICONS.SEL, 4, function() State.DaChon = not State.DaChon; CapNhatUI() end)
+	MakeSub("BtnUndo", "rbxassetid://"..CAIDAT.ICONS.UNDO, 5, function() DoHistory(History.Undo, History.Redo) end)
+	MakeSub("BtnRedo", "rbxassetid://"..CAIDAT.ICONS.REDO, 6, function() DoHistory(History.Redo, History.Undo) end)
+
+	-- Hàng 3: Weld - Seat - Speed
 	MakeSub("BtnWeld", CAIDAT.ICONS.WELD, 7, function()
 		local isM = false; for k in pairs(State.DangChon) do if k:IsA("Model") then isM = true break end end
 		if isM then LogicKhoi.ThaoKhoi() else LogicKhoi.HanKhoi() end
 	end)
-	MakeSub("BtnSpeed", CAIDAT.ICONS.SPEED, 8, ToggleSpeed)
-	MakeSub("BtnProp", CAIDAT.ICONS.PROP, 9, ToggleProp)
+	MakeSub("BtnSeat", "rbxassetid://"..CAIDAT.ICONS.SEAT, 8, function()
+		State.ModeGhe = (State.ModeGhe + 1) % 3
+		for k, _ in pairs(State.DangChon) do SetGhe(k, State.ModeGhe) end
+		CapNhatUI()
+	end)
+	MakeSub("BtnSpeed", CAIDAT.ICONS.SPEED, 9, ToggleSpeed)
 
+	-- Hàng 4: Collision (Tường)
+	MakeSub("BtnColl", CAIDAT.ICONS.COLLISION, 10, ToggleXuyenTuong)
+
+	-- Cập nhật màu nút Shape ban đầu
 	local nS = sub:FindFirstChild("BtnShape")
 	if nS then nS.Stroke.Color = ColorShape[State.ShapeIdx]; nS.Stroke.Transparency = 0 end
 
@@ -501,7 +559,7 @@ local function TaoUI()
 
 	more.MouseButton1Click:Connect(function()
 		UI.MoRong = not UI.MoRong
-		local ps = UI.MoRong and udim2(0, -((CAIDAT.SIZE_SUB * 3) + 38), 0.5, 0) or udim2(0, 0, 0.5, 0)
+		local ps = UI.MoRong and udim2(0, -((subW) + 10), 0.5, 0) or udim2(0, 0, 0.5, 0) 
 		sub.Visible = true
 		sub:TweenPosition(ps, UI.MoRong and "Out" or "In", "Back", 0.35, true, function() if not UI.MoRong then sub.Visible = false end end)
 		PlayTw(arr, CAIDAT.TW_UI, {Rotation = UI.MoRong and -90 or 90})
@@ -509,6 +567,15 @@ local function TaoUI()
 
 	UI.Container = con; UI.Main = main; UI.Sub = sub
 	UI.List = list; UI.Arrow = arr
+	CapNhatUI()
+end
+
+ToggleXuyenTuong = function()
+	for k, _ in pairs(State.DangChon) do
+		local cur = k:GetAttribute("XuyenTuong")
+		if cur == nil then cur = true end
+		k:SetAttribute("XuyenTuong", not cur)
+	end
 	CapNhatUI()
 end
 
@@ -579,7 +646,11 @@ ToggleProp = function()
 	end)
 
 	local t = Instance.new("TextLabel", f); t.Text = "THUỘC TÍNH"; t.Size = udim2(1,0,0,30); t.BackgroundTransparency=1; t.TextColor3 = CAIDAT.C_CHU; t.Font = Enum.Font.GothamBold; t.TextSize = 14
-	local scr = Instance.new("ScrollingFrame", f); scr.Size = udim2(1,-10,1,-40); scr.Position = udim2(0,5,0,35); scr.BackgroundTransparency = 1; scr.ScrollBarThickness = 4
+
+	local scr = Instance.new("ScrollingFrame", f); scr.Size = udim2(1,-10,1,-40); scr.Position = udim2(0,5,0,35); scr.BackgroundTransparency = 1; scr.ScrollBarThickness = 4; scr.BorderSizePixel = 0
+	scr.AutomaticCanvasSize = Enum.AutomaticSize.Y 
+	scr.CanvasSize = udim2(0,0,0,0)
+
 	local lst = Instance.new("UIListLayout", scr); lst.Padding = udim(0,5); lst.HorizontalAlignment = "Center"
 
 	local function Row(name, val, type, cb)
@@ -591,7 +662,12 @@ ToggleProp = function()
 			Instance.new("UICorner", b).CornerRadius = udim(0,4); b.FocusLost:Connect(function() cb(b.Text) end)
 		elseif type == "Bool" then
 			local b = Instance.new("TextButton", d); b.Size = udim2(0.55,0,0.8,0); b.Position = udim2(0.45,0,0.1,0); b.Text = val and "Bật" or "Tắt"; b.BackgroundColor3 = val and CAIDAT.C_ACT or CAIDAT.C_OFF
-			Instance.new("UICorner", b).CornerRadius = udim(0,4); b.MouseButton1Click:Connect(function() local n = not cb(); b.Text = n and "Bật" or "Tắt"; b.BackgroundColor3 = n and CAIDAT.C_ACT or CAIDAT.C_OFF end)
+			Instance.new("UICorner", b).CornerRadius = udim(0,4); 
+			b.MouseButton1Click:Connect(function() 
+				local n = cb(); 
+				b.Text = n and "Bật" or "Tắt"; 
+				b.BackgroundColor3 = n and CAIDAT.C_ACT or CAIDAT.C_OFF 
+			end)
 		elseif type == "Col" then
 			local r, g, bl = math.floor(val.R*255), math.floor(val.G*255), math.floor(val.B*255)
 			local box = Instance.new("Frame", d); box.Size = udim2(0.55,0,0.8,0); box.Position = udim2(0.45,0,0.1,0); box.BackgroundTransparency = 1
@@ -638,7 +714,6 @@ ToggleProp = function()
 		State.ShowProp = false
 		CapNhatUI()
 	end)
-	lst:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() scr.CanvasSize = udim2(0,0,0, lst.AbsoluteContentSize.Y) end)
 	UI.P_Prop = f
 end
 
@@ -690,13 +765,14 @@ LogicKhoi.HanKhoi = function()
 	g.Parent = Workspace
 
 	local m = tatCaPart[1]
-	local mGhe, spd
+	local mGhe, spd, ghost
 
 	for _, p in ipairs(tatCaPart) do
 		if p:GetAttribute("ModeGhe") then
 			m = p 
 			mGhe = p:GetAttribute("ModeGhe")
 			spd = p:GetAttribute("Speed")
+			ghost = p:GetAttribute("XuyenTuong")
 			break
 		end
 	end
@@ -724,6 +800,7 @@ LogicKhoi.HanKhoi = function()
 	if mGhe then 
 		SetGhe(m, mGhe) 
 		if spd then m:SetAttribute("Speed", spd) end 
+		if ghost ~= nil then m:SetAttribute("XuyenTuong", ghost) end
 	end
 
 	ColService:AddTag(g, CAIDAT.TAG)
