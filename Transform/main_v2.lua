@@ -319,7 +319,7 @@ local function TaoGiaoDien()
 	if PlayerGui:FindFirstChild("TransformUI") then PlayerGui.TransformUI:Destroy() end
 	local DangHanhDong = false
 	local KiemTraDienThoai = (UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled)
-	local KichThuocMo = UDim2.fromScale(0.75, 0.7) 
+	local KichThuocMo = UDim2.fromScale(0.7, 0.65) 
 	local ManHinhGui = Instance.new("ScreenGui")
 	ManHinhGui.Name = "TransformUI"
 	ManHinhGui.ResetOnSpawn = false
@@ -345,13 +345,13 @@ local function TaoGiaoDien()
 	ClickOutside.MouseButton1Click:Connect(CloseAllDropdowns)
 	local NutMoUI = Instance.new("ImageButton")
 	NutMoUI.Name = "NutMoUI"
-	NutMoUI.Size = UDim2.new(0, 60, 0, 60) 
+	NutMoUI.Size = UDim2.new(0, 45, 0, 45) 
 	NutMoUI.Position = UDim2.new(0, 30, 0.4, 0)
 	NutMoUI.Image = CauHinh.Asset.Icon
 	NutMoUI.BackgroundColor3 = CauHinh.Mau.Nen
 	NutMoUI.BackgroundTransparency = 0.2
 	NutMoUI.Parent = ManHinhGui
-	Instance.new("UICorner", NutMoUI).CornerRadius = UDim.new(0, 16)
+	Instance.new("UICorner", NutMoUI).CornerRadius = UDim.new(0, 10)
 	HoatAnh.KeoTha(NutMoUI, NutMoUI)
 	local KhungChinh = Instance.new("Frame")
 	KhungChinh.Name = "KhungChinh"
@@ -376,7 +376,7 @@ local function TaoGiaoDien()
 	BieuTuong.BackgroundColor3 = Color3.new(0, 0, 0)
 	BieuTuong.ZIndex = 2
 	BieuTuong.Parent = KhungChinh
-	Instance.new("UICorner", BieuTuong).CornerRadius = UDim.new(0, 16)
+	Instance.new("UICorner", BieuTuong).CornerRadius = UDim.new(0, 10)
 	local KhungBaoNoiDung = Instance.new("Frame")
 	KhungBaoNoiDung.Name = "KhungBaoNoiDung"
 	KhungBaoNoiDung.Size = UDim2.fromScale(1, 1)
