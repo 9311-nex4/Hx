@@ -225,7 +225,7 @@ local function SetGhe(khoi, mode)
 	khoi:SetAttribute("ModeGhe", mode)
 
 	if mode == 2 then
-		if not khoi:GetAttribute("Speed") then khoi:SetAttribute("Speed", 20) end
+		if not khoi:GetAttribute("Speed") then khoi:SetAttribute("Speed", 50) end
 		if khoi:GetAttribute("XuyenTuong") == nil then khoi:SetAttribute("XuyenTuong", true) end
 	end
 
@@ -235,7 +235,7 @@ local function SetGhe(khoi, mode)
 	else
 		if not p then
 			p = Instance.new("ProximityPrompt")
-			p.Name = "Prompt"; p.HoldDuration = 0; p.MaxActivationDistance = 15; p.Parent = khoi
+			p.Name = "Prompt"; p.HoldDuration = 0; p.MaxActivationDistance = 50; p.Parent = khoi
 			p.Triggered:Connect(function() XuLyNgoi(khoi) end)
 		end
 		p.ObjectText = mode == 1 and "Ghế" or "Xe"
