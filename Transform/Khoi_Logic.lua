@@ -27,10 +27,10 @@ local CAIDAT = {
 	C_CHU = color3(255, 255, 255),
 	C_BTN = color3(225, 225, 225),
 	C_ICON = color3(255, 255, 255),
-	C_ACT = color3(0, 150, 255),  
+	C_ACT = color3(0, 150, 255),
 	C_SCALE = color3(255, 160, 0),
-	C_OFF = color3(100, 100, 100), 
-	C_HUY = color3(200, 40, 40),  
+	C_OFF = color3(100, 100, 100),
+	C_HUY = color3(200, 40, 40),
 	C_BOX = color3(255, 255, 255),
 	SIZE_BTN = 44,
 	SIZE_SUB = 36,
@@ -50,12 +50,12 @@ local CAIDAT = {
 }
 
 local State = {
-	DangChon = {}, 
-	Tool = 1, 
+	DangChon = {},
+	Tool = 1,
 	ModeScale = 1,
-	BatLuoi = true, 
-	DaChon = false, 
-	ModeGhe = 0, 
+	BatLuoi = true,
+	DaChon = false,
+	ModeGhe = 0,
 	ShapeIdx = 1,
 	ShowProp = false
 }
@@ -144,9 +144,15 @@ local function XuLyNgoi(ghe)
 	local p = ghe:FindFirstChild("Prompt")
 	if p then p.Enabled = false end
 
+	for _, track in ipairs(hum:GetPlayingAnimationTracks()) do
+		track:Stop()
+	end
+
 	root.CFrame = ghe.CFrame * cf(0, (ghe.Size.Y / 2) + hum.HipHeight, 0)
 	local w = Instance.new("WeldConstraint")
 	w.Part0 = root; w.Part1 = ghe; w.Parent = root
+
+	local seatOffset = ghe.CFrame:Inverse() * root.CFrame
 
 	if TrackAnim then TrackAnim:Stop() end
 	local a = Instance.new("Animation")
@@ -172,6 +178,7 @@ local function XuLyNgoi(ghe)
 
 		task.defer(function()
 			hum.PlatformStand = false; hum.AutoRotate = true
+			hum:ChangeState(Enum.HumanoidStateType.GettingUp)
 			if root and ghe.Parent then
 				root.CFrame = ghe.CFrame * cf(0, (ghe.Size.Y/2) + 4, 0)
 				root.Velocity = vec3(0, 50, 0)
@@ -187,31 +194,65 @@ local function XuLyNgoi(ghe)
 
 		local rayParams = RaycastParams.new()
 		rayParams.FilterType = Enum.RaycastFilterType.Exclude
-		rayParams.FilterDescendantsInstances = {char, ghe} 
+		rayParams.FilterDescendantsInstances = {char, ghe}
+
+		local targetHoverHeight = 2 
+		local startRay = Workspace:Raycast(ghe.Position, vec3(0, -100, 0), rayParams)
+		if startRay then
+			targetHoverHeight = startRay.Distance - (ghe.Size.Y / 2)
+			if targetHoverHeight < 0.2 then targetHoverHeight = 0.2 end
+		end
 
 		cMove = RunService.Heartbeat:Connect(function(dt)
 			if not active or not ghe.Parent or not w.Parent then Exit() return end
 			spd = ghe:GetAttribute("Speed") or 20
-			local isGhost = ghe:GetAttribute("XuyenTuong") 
+			local isGhost = ghe:GetAttribute("XuyenTuong")
 			if isGhost == nil then isGhost = true end
 
 			local dir = hum.MoveDirection
-			if dir.Magnitude > 0.1 then
-				local pos = ghe.Position
-				local moveVec = dir * (spd * dt)
+			local pos = ghe.Position
 
+			local rayDown = Workspace:Raycast(pos, vec3(0, -50, 0), rayParams)
+			local hoverOffset = 0
+
+			if rayDown then
+				local currentDist = rayDown.Distance - (ghe.Size.Y / 2)
+				local canAdjust = true
+
+				if currentDist > targetHoverHeight then
+					if (currentDist - targetHoverHeight) > 8 then
+						canAdjust = false
+					end
+				end
+
+				if canAdjust then
+					local targetY = rayDown.Position.Y + (ghe.Size.Y / 2) + targetHoverHeight
+					hoverOffset = (targetY - pos.Y) * 0.2
+				end
+			end
+
+			if dir.Magnitude > 0.1 then
+				local moveVec = dir * (spd * dt)
 				local choPhepDi = true
 				if not isGhost then
-					local ray = Workspace:Raycast(pos, moveVec.Unit * (moveVec.Magnitude + 2), rayParams) 
+					local ray = Workspace:Raycast(pos, moveVec.Unit * (moveVec.Magnitude + 2), rayParams)
 					if ray then choPhepDi = false end
 				end
 
 				if choPhepDi then
 					local look = CFrame.lookAt(pos, pos + dir)
 					local nCF = ghe.CFrame:Lerp(look, smooth)
-					ghe.CFrame = nCF - nCF.Position + (pos + moveVec)
+					ghe.CFrame = nCF - nCF.Position + (pos + moveVec) + vec3(0, hoverOffset, 0)
+				else
+					ghe.Position = ghe.Position + vec3(0, hoverOffset, 0)
+				end
+			else
+				if math.abs(hoverOffset) > 0.001 then
+					ghe.Position = ghe.Position + vec3(0, hoverOffset, 0)
 				end
 			end
+
+			root.CFrame = ghe.CFrame * seatOffset
 		end)
 	end
 	cState = hum.StateChanged:Connect(function(_, new)
@@ -284,11 +325,11 @@ CapNhatUI = function()
 		SetIcon("BtnProp", State.ShowProp)
 
 		local isModel = false
-		for k in pairs(State.DangChon) do 
-			if k:IsA("Model") then 
-				isModel = true 
-				break 
-			end 
+		for k in pairs(State.DangChon) do
+			if k:IsA("Model") then
+				isModel = true
+				break
+			end
 		end
 		SetIcon("BtnWeld", isModel)
 
@@ -306,18 +347,18 @@ CapNhatUI = function()
 		if bSpeed then bSpeed.Visible = (State.ModeGhe == 2) end
 
 		local bColl = UI.Sub:FindFirstChild("BtnColl")
-		if bColl then 
-			bColl.Visible = (State.ModeGhe == 2) 
+		if bColl then
+			bColl.Visible = (State.ModeGhe == 2)
 
 			local isGhost = true
 			local obj = next(State.DangChon)
 			if obj then isGhost = obj:GetAttribute("XuyenTuong") end
-			if isGhost == nil then isGhost = true end 
+			if isGhost == nil then isGhost = true end
 
 			local ico = bColl:FindFirstChild("Icon")
 			local str = bColl:FindFirstChild("Stroke")
 
-			local cl = isGhost and CAIDAT.C_ACT or CAIDAT.C_HUY 
+			local cl = isGhost and CAIDAT.C_ACT or CAIDAT.C_HUY
 
 			if ico then PlayTw(ico, CAIDAT.TW_ICON, {ImageColor3 = cl}) end
 			if str then PlayTw(str, CAIDAT.TW_ICON, {Color = cl, Transparency = 0}) end
@@ -331,12 +372,12 @@ HuyChon = function()
 
 	if UI.Sub then UI.Sub.Visible = false end
 
-	if UI.P_Speed then 
+	if UI.P_Speed then
 		UI.P_Speed:Destroy()
-		UI.P_Speed = nil 
+		UI.P_Speed = nil
 	end
 
-	if UI.P_Prop then 
+	if UI.P_Prop then
 		UI.P_Prop:Destroy()
 		UI.P_Prop = nil
 		State.ShowProp = false
@@ -458,22 +499,22 @@ local function TaoUI()
 	Make("UICorner", {CornerRadius=udim(0,8)}, drag)
 
 	local isDrag, start, startPos
-	drag.InputBegan:Connect(function(i) 
-		if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then 
-			isDrag=true; start=i.Position; startPos=con.Position 
-		end 
+	drag.InputBegan:Connect(function(i)
+		if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
+			isDrag=true; start=i.Position; startPos=con.Position
+		end
 	end)
-	UIS.InputChanged:Connect(function(i) 
-		if isDrag and (i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch) then 
+	UIS.InputChanged:Connect(function(i)
+		if isDrag and (i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch) then
 			local d=i.Position-start
 			con.Position=udim2(startPos.X.Scale, startPos.X.Offset+d.X, startPos.Y.Scale, startPos.Y.Offset+d.Y)
-			UI.Pos=con.Position 
-		end 
+			UI.Pos=con.Position
+		end
 	end)
-	UIS.InputEnded:Connect(function(i) 
-		if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then 
-			isDrag=false 
-		end 
+	UIS.InputEnded:Connect(function(i)
+		if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
+			isDrag=false
+		end
 	end)
 
 	local main = Make("Frame", {Size=udim2(1,0,0,0), BackgroundColor3=CAIDAT.C_NEN, BackgroundTransparency=0.2, ClipsDescendants=true, ZIndex=10}, con)
@@ -496,8 +537,8 @@ local function TaoUI()
 	local cl = Make("TextButton", {Text="ĐÓNG", Size=udim2(1,-24,0,28), Position=udim2(0.5,0,1,-12), AnchorPoint=Vector2.new(0.5,1), BackgroundColor3=CAIDAT.C_HUY, Font="GothamBlack", TextColor3=color3(255,255,255), TextSize=11, ZIndex=20}, main)
 	Make("UICorner", {CornerRadius=udim(0,6)}, cl); cl.MouseButton1Click:Connect(HuyChon)
 
-	local subW = (CAIDAT.SIZE_SUB * 3) + 16 + 10 
-	local subH = (CAIDAT.SIZE_SUB * 4) + 24 + 16 
+	local subW = (CAIDAT.SIZE_SUB * 3) + 16 + 10
+	local subH = (CAIDAT.SIZE_SUB * 4) + 24 + 16
 
 	local sub = Make("ScrollingFrame", {Name="Sub", AnchorPoint=Vector2.new(0.4,0.85), Position=udim2(0,-10,0.5,0), Size=udim2(0, subW, 0, subH), BackgroundColor3=CAIDAT.C_NEN_PHU, BackgroundTransparency=0.2, Visible=false, ZIndex=8, CanvasSize=udim2(0,0,0,0), AutomaticCanvasSize=Enum.AutomaticSize.Y, ScrollBarThickness=4, BorderSizePixel=0}, con)
 	Make("UICorner", {CornerRadius=udim(0,10)}, sub); Make("UIStroke", {Color=CAIDAT.C_VIEN}, sub)
@@ -549,7 +590,7 @@ local function TaoUI()
 
 	more.MouseButton1Click:Connect(function()
 		UI.MoRong = not UI.MoRong
-		local ps = UI.MoRong and udim2(0, -((subW) + 10), 0.5, 0) or udim2(0, 0, 0.5, 0) 
+		local ps = UI.MoRong and udim2(0, -((subW) + 10), 0.5, 0) or udim2(0, 0, 0.5, 0)
 		sub.Visible = true
 		sub:TweenPosition(ps, UI.MoRong and "Out" or "In", "Back", 0.35, true, function() if not UI.MoRong then sub.Visible = false end end)
 		PlayTw(arr, CAIDAT.TW_UI, {Rotation = UI.MoRong and -90 or 90})
@@ -570,7 +611,7 @@ ToggleXuyenTuong = function()
 end
 
 ToggleSpeed = function()
-	if UI.P_Speed then 
+	if UI.P_Speed then
 		UI.P_Speed:Destroy()
 		UI.P_Speed = nil
 		return
@@ -593,14 +634,14 @@ ToggleSpeed = function()
 		f:Destroy(); UI.P_Speed = nil
 	end)
 	local x = Instance.new("TextButton", f); x.Text="x"; x.Size=udim2(0,25,0,25); x.Position=udim2(1,-25,0,0); x.BackgroundTransparency=1; x.TextColor3=CAIDAT.C_HUY
-	x.MouseButton1Click:Connect(function() 
-		f:Destroy(); UI.P_Speed=nil 
+	x.MouseButton1Click:Connect(function()
+		f:Destroy(); UI.P_Speed=nil
 	end)
 	UI.P_Speed = f
 end
 
 ToggleProp = function()
-	if UI.P_Prop then 
+	if UI.P_Prop then
 		UI.P_Prop:Destroy()
 		UI.P_Prop = nil
 		State.ShowProp = false
@@ -619,26 +660,26 @@ ToggleProp = function()
 	TaoScale(f)
 
 	local drag, start, startP
-	f.InputBegan:Connect(function(i) 
-		if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then 
-			drag=true; start=i.Position; startP=f.Position 
-		end 
+	f.InputBegan:Connect(function(i)
+		if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
+			drag=true; start=i.Position; startP=f.Position
+		end
 	end)
-	UIS.InputChanged:Connect(function(i) 
-		if drag and (i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch) then 
-			local d=i.Position-start; f.Position=udim2(startP.X.Scale, startP.X.Offset+d.X, startP.Y.Scale, startP.Y.Offset+d.Y) 
-		end 
+	UIS.InputChanged:Connect(function(i)
+		if drag and (i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch) then
+			local d=i.Position-start; f.Position=udim2(startP.X.Scale, startP.X.Offset+d.X, startP.Y.Scale, startP.Y.Offset+d.Y)
+		end
 	end)
-	UIS.InputEnded:Connect(function(i) 
-		if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then 
-			drag=false 
-		end 
+	UIS.InputEnded:Connect(function(i)
+		if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
+			drag=false
+		end
 	end)
 
 	local t = Instance.new("TextLabel", f); t.Text = "THUỘC TÍNH"; t.Size = udim2(1,0,0,30); t.BackgroundTransparency=1; t.TextColor3 = CAIDAT.C_CHU; t.Font = Enum.Font.GothamBold; t.TextSize = 14
 
 	local scr = Instance.new("ScrollingFrame", f); scr.Size = udim2(1,-10,1,-40); scr.Position = udim2(0,5,0,35); scr.BackgroundTransparency = 1; scr.ScrollBarThickness = 4; scr.BorderSizePixel = 0
-	scr.AutomaticCanvasSize = Enum.AutomaticSize.Y 
+	scr.AutomaticCanvasSize = Enum.AutomaticSize.Y
 	scr.CanvasSize = udim2(0,0,0,0)
 
 	local lst = Instance.new("UIListLayout", scr); lst.Padding = udim(0,5); lst.HorizontalAlignment = "Center"
@@ -652,11 +693,11 @@ ToggleProp = function()
 			Instance.new("UICorner", b).CornerRadius = udim(0,4); b.FocusLost:Connect(function() cb(b.Text) end)
 		elseif type == "Bool" then
 			local b = Instance.new("TextButton", d); b.Size = udim2(0.55,0,0.8,0); b.Position = udim2(0.45,0,0.1,0); b.Text = val and "Bật" or "Tắt"; b.BackgroundColor3 = val and CAIDAT.C_ACT or CAIDAT.C_OFF
-			Instance.new("UICorner", b).CornerRadius = udim(0,4); 
-			b.MouseButton1Click:Connect(function() 
-				local n = cb(); 
-				b.Text = n and "Bật" or "Tắt"; 
-				b.BackgroundColor3 = n and CAIDAT.C_ACT or CAIDAT.C_OFF 
+			Instance.new("UICorner", b).CornerRadius = udim(0,4);
+			b.MouseButton1Click:Connect(function()
+				local n = cb();
+				b.Text = n and "Bật" or "Tắt";
+				b.BackgroundColor3 = n and CAIDAT.C_ACT or CAIDAT.C_OFF
 			end)
 		elseif type == "Col" then
 			local r, g, bl = math.floor(val.R*255), math.floor(val.G*255), math.floor(val.B*255)
@@ -699,7 +740,7 @@ ToggleProp = function()
 	Row("Đổ bóng", obj.CastShadow, "Bool", function() obj.CastShadow = not obj.CastShadow return obj.CastShadow end)
 
 	local x = Instance.new("TextButton", f); x.Text="X"; x.Size=udim2(0,25,0,25); x.Position=udim2(1,-25,0,0); x.BackgroundTransparency=1; x.TextColor3=CAIDAT.C_HUY
-	x.MouseButton1Click:Connect(function() 
+	x.MouseButton1Click:Connect(function()
 		f:Destroy(); UI.P_Prop=nil
 		State.ShowProp = false
 		CapNhatUI()
@@ -731,11 +772,11 @@ end
 
 LogicKhoi.HanKhoi = function()
 	local tatCaPart = {}
-	local nhomCuCanXoa = {} 
+	local nhomCuCanXoa = {}
 
 	for obj, _ in pairs(State.DangChon) do
 		if obj:IsA("Model") then
-			table.insert(nhomCuCanXoa, obj) 
+			table.insert(nhomCuCanXoa, obj)
 			for _, child in ipairs(obj:GetDescendants()) do
 				if child:IsA("BasePart") then
 					table.insert(tatCaPart, child)
@@ -746,12 +787,12 @@ LogicKhoi.HanKhoi = function()
 		end
 	end
 
-	if #tatCaPart < 2 then return end 
+	if #tatCaPart < 2 then return end
 
 	LuuHistory(LayState(), LayState())
 
-	local g = Instance.new("Model") 
-	g.Name = "Group_"..math.random(999) 
+	local g = Instance.new("Model")
+	g.Name = "Group_"..math.random(999)
 	g.Parent = Workspace
 
 	local m = tatCaPart[1]
@@ -759,7 +800,7 @@ LogicKhoi.HanKhoi = function()
 
 	for _, p in ipairs(tatCaPart) do
 		if p:GetAttribute("ModeGhe") then
-			m = p 
+			m = p
 			mGhe = p:GetAttribute("ModeGhe")
 			spd = p:GetAttribute("Speed")
 			ghost = p:GetAttribute("XuyenTuong")
@@ -768,17 +809,17 @@ LogicKhoi.HanKhoi = function()
 	end
 
 	for _, p in ipairs(tatCaPart) do
-		p.Parent = g 
+		p.Parent = g
 
 		for _, w in ipairs(p:GetChildren()) do
 			if w:IsA("WeldConstraint") then w:Destroy() end
 		end
 
 		if p ~= m then
-			local w = Instance.new("WeldConstraint") 
-			w.Part0 = m 
-			w.Part1 = p 
-			w.Parent = m 
+			local w = Instance.new("WeldConstraint")
+			w.Part0 = m
+			w.Part1 = p
+			w.Parent = m
 			p.Anchored = false
 		end
 		ColService:AddTag(p, CAIDAT.TAG)
@@ -787,9 +828,9 @@ LogicKhoi.HanKhoi = function()
 	g.PrimaryPart = m
 	m.Anchored = true
 
-	if mGhe then 
-		SetGhe(m, mGhe) 
-		if spd then m:SetAttribute("Speed", spd) end 
+	if mGhe then
+		SetGhe(m, mGhe)
+		if spd then m:SetAttribute("Speed", spd) end
 		if ghost ~= nil then m:SetAttribute("XuyenTuong", ghost) end
 	end
 
