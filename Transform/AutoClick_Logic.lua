@@ -1,7 +1,6 @@
-
 local AutoClickLogic = {}
 
-local DichVuAo     = game:GetService("VirtualUser")
+local DichVuAo     = game:GetService("VirtualInputManager")
 local DichVuDauVao = game:GetService("UserInputService")
 local DichVuTween  = game:GetService("TweenService")
 local NguoiChoiSV  = game:GetService("Players")
@@ -143,7 +142,7 @@ function AutoClickLogic.CapNhatDiem(DanhSach)
 		VongNgoai.BackgroundTransparency = 0.7
 		VongNgoai.ZIndex                 = 10
 		Instance.new("UICorner", VongNgoai).CornerRadius = UDim.new(1, 0)
-		
+
 		local VienNgoai = Instance.new("UIStroke", VongNgoai)
 		VienNgoai.Color           = Color3.fromRGB(120, 200, 255)
 		VienNgoai.Thickness       = 2
@@ -159,7 +158,7 @@ function AutoClickLogic.CapNhatDiem(DanhSach)
 		VongTrong.BackgroundTransparency = 0.25
 		VongTrong.ZIndex                 = 11
 		Instance.new("UICorner", VongTrong).CornerRadius = UDim.new(1, 0)
-		
+
 		local VienTrong = Instance.new("UIStroke", VongTrong)
 		VienTrong.Color           = Color3.fromRGB(255, 255, 255)
 		VienTrong.Thickness       = 1.2
@@ -247,20 +246,15 @@ function AutoClickLogic.BatTatAutoClick(TrangThai)
 			for ThuTu, Diem in ipairs(danhSach) do
 				if not AutoClickLogic.DangChay then break end
 
-				if Diem.DaAn then
-					task.wait(AutoClickLogic.TocDo / 1000)
-					continue
-				end
-
 				local ChamUI = DanhSachUICham[ThuTu]
 				if ChamUI and ChamUI.Visible then
 					task.spawn(HieuUngChopSang, ChamUI)
 				end
 
 				pcall(function()
-					DichVuAo:Button1Down(Vector2.new(Diem.X, Diem.Y))
+					DichVuAo:SendMouseButtonEvent(Diem.X, Diem.Y, 0, true, game, 1)
 					task.wait(0.005)
-					DichVuAo:Button1Up(Vector2.new(Diem.X, Diem.Y))
+					DichVuAo:SendMouseButtonEvent(Diem.X, Diem.Y, 0, false, game, 1)
 				end)
 
 				task.wait(AutoClickLogic.TocDo / 1000)
