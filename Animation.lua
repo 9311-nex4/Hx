@@ -34,7 +34,6 @@ local function LayThongSoGoc(DoiTuong)
 		DuLieu.BackgroundTransparency = DoiTuong.BackgroundTransparency
 		if DoiTuong:IsA("TextLabel") or DoiTuong:IsA("TextButton") or DoiTuong:IsA("TextBox") then
 			DuLieu.TextTransparency = DoiTuong.TextTransparency
-			if DoiTuong:IsA("TextBox") then DuLieu.PlaceholderTextTransparency = DoiTuong.PlaceholderTextTransparency end
 		end
 		if DoiTuong:IsA("ImageLabel") or DoiTuong:IsA("ImageButton") then
 			DuLieu.ImageTransparency = DoiTuong.ImageTransparency
