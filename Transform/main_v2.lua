@@ -20,7 +20,9 @@ local CauHinh = {
 		NenKhoi = Color3.fromRGB(45, 45, 45),
 		NenMuc = Color3.fromRGB(60, 60, 60),
 		NenHop = Color3.fromRGB(25, 25, 25),
+		NenDanhSachMo = Color3.fromRGB(80, 80, 80),
 		VienHop = Color3.fromRGB(80, 80, 80),
+		VienNeon = Color3.fromRGB(255, 255, 255),
 		NenPhu = Color3.fromRGB(45, 45, 45),
 		ChonPhu = Color3.fromRGB(60, 60, 60),
 		TichBat = Color3.fromRGB(180, 180, 180),
@@ -191,12 +193,12 @@ local DanhSachNhom = {
 		ChucNang = {
 			{
 				Loai = "NhieuNut",
-				Ten_1 = "Tạo Nhân Vật Mẫu",
-				SuKien_1 = function()
+				Ten1 = "Tạo Nhân Vật Mẫu",
+				SuKien1 = function()
 					ThongBaoLoi("Hx Script", "Tính năng đang phát triển!")
 				end,
-				Ten_2 = "Xóa Nhân Vật Chọn",
-				SuKien_2 = function()
+				Ten2 = "Xóa Nhân Vật Chọn",
+				SuKien2 = function()
 					ThongBaoLoi("Hx Script", "Tính năng đang phát triển!")
 				end,
 			},
@@ -281,15 +283,15 @@ local DanhSachNhom = {
 		ChucNang = {
 			{
 				Loai = "NhieuNut",
-				Ten_1 = "Tạo Khối Mẫu",
-				SuKien_1 = function()
+				Ten1 = "Tạo Khối Mẫu",
+				SuKien1 = function()
 					local TenKhoi = Khoi.TaoBlock()
 					if TenKhoi then
 						ThongBao("Hx Script", "Đã tạo: " .. TenKhoi, 1)
 					end
 				end,
-				Ten_2 = "Xóa Khối Chọn",
-				SuKien_2 = function()
+				Ten2 = "Xóa Khối Chọn",
+				SuKien2 = function()
 					Khoi.XoaChon()
 					ThongBao("Hx Script", "Đã xóa các khối được chọn!", 1)
 				end,
@@ -301,13 +303,13 @@ local DanhSachNhom = {
 			},
 			{
 				Loai = "NhieuNut",
-				Ten_1 = "Hàn Khối",
-				SuKien_1 = function()
+				Ten1 = "Hàn Khối",
+				SuKien1 = function()
 					local Msg = Khoi.HanKhoi()
 					ThongBao("Hx Build", Msg, 2)
 				end,
-				Ten_2 = "Tháo Hàn",
-				SuKien_2 = function()
+				Ten2 = "Tháo Hàn",
+				SuKien2 = function()
 					local Msg = Khoi.ThaoKhoi()
 					ThongBao("Hx Build", Msg, 2)
 				end,
@@ -425,6 +427,11 @@ local function TaoGiaoDien()
 	VungCuon.ZIndex = 2
 	VungCuon.Parent = KhungChinh
 	Instance.new("UICorner", VungCuon).CornerRadius = UDim.new(0, 8)
+	local VienVungCuon = Instance.new("UIStroke", VungCuon)
+	VienVungCuon.Color = CauHinh.Mau.VienNeon
+	VienVungCuon.Transparency = 0.5
+	VienVungCuon.Thickness = 0.5
+	
 	TaiLaiGiaoDien = function()
 		if not VungCuon or not VungCuon.Parent then return end
 		VungCuon:ClearAllChildren()
