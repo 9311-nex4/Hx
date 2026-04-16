@@ -144,7 +144,7 @@ local DanhSachNhom = {
 				end
 			},
 			{
-				Ten = "Speed Click (ms)", Loai = "Odien", HienTai = "2000", GoiY = "Nhập tốc độ...",
+				Ten = "Speed Click (ms)", Loai = "Odien", HienTai = "25", GoiY = "Nhập tốc độ...",
 				SuKien = function(GiaTri)
 					if tonumber(GiaTri) then
 						AutoClickLogic.CaiDatTocDo(GiaTri)
@@ -211,6 +211,7 @@ local function TaoGiaoDien()
 	NutMoUI.Image = CauHinh.Asset.Icon
 	NutMoUI.BackgroundColor3 = CauHinh.Mau.Nen
 	NutMoUI.BackgroundTransparency = 0.2
+	NutMoUI.Active = true
 	Instance.new("UICorner", NutMoUI).CornerRadius = UDim.new(0, 10)
 	HoatAnh.KeoTha(NutMoUI, NutMoUI)
 
@@ -223,6 +224,7 @@ local function TaoGiaoDien()
 	KhungChinh.BackgroundTransparency = 1
 	KhungChinh.ClipsDescendants = true
 	KhungChinh.Visible = false
+	KhungChinh.Active = true
 	Instance.new("UICorner", KhungChinh).CornerRadius = UDim.new(0, 14)
 	local GioiHanKichThuoc = Instance.new("UISizeConstraint", KhungChinh)
 	GioiHanKichThuoc.MinSize = Vector2.new(450, 350)
