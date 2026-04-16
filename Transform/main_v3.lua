@@ -6,13 +6,13 @@ local GiaoDienNguoiChoi = NguoiChoi:WaitForChild("PlayerGui")
 local KichBanNguoiChoi = NguoiChoi:WaitForChild("PlayerScripts")
 local Chuot = NguoiChoi:GetMouse()
 
-local GuiThongBao = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Notify.lua"))()
+local GuiThongBao = require(KichBanNguoiChoi:WaitForChild("Notify"))
 local function ThongBao(TieuDe, NoiDung, ThoiGian) GuiThongBao.thongbao(TieuDe, NoiDung, ThoiGian) end
 local function ThongBaoLoi(TieuDe, NoiDung) GuiThongBao.thongbaoloi(TieuDe, NoiDung) end
 
-local HoatAnh = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Animation.lua"))()
-local KhungCuon = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/KhungCuon.lua"))()
-local AutoClickLogic = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform/AutoClick_Logic.lua"))()
+local HoatAnh = require(KichBanNguoiChoi:WaitForChild("Animation"))
+local KhungCuon = require(KichBanNguoiChoi:WaitForChild("KhungCuon"))
+local AutoClickLogic = require(KichBanNguoiChoi:WaitForChild("AutoClick_Logic"))
 
 local PhimMoMenu = Enum.KeyCode.Insert
 local CauHinh = {
@@ -108,6 +108,14 @@ local function TaoItemClick(ToaDoX, ToaDoY)
 		}
 	}
 	return DuLieuNut
+end
+
+AutoClickLogic.OnToaDoDoi = function(Index, X, Y)
+	if DuLieuDanhSachClick[Index] then
+		DuLieuDanhSachClick[Index].X = X
+		DuLieuDanhSachClick[Index].Y = Y
+		CapNhatDanhSachClick()
+	end
 end
 
 local TrangThaiAnTatCa = false
@@ -272,7 +280,7 @@ local function TaoGiaoDien()
 	Instance.new("UICorner", NutDong).CornerRadius = UDim.new(0, 8)
 	local VienNutDong = Instance.new("UIStroke", NutDong)
 	VienNutDong.Color = CauHinh.Mau.VienNeon
-	VienNutDong.Transparency = 1
+	NutDong.BackgroundTransparency = 1
 	VienNutDong.Thickness = 2
 	VienNutDong.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
