@@ -185,7 +185,7 @@ local function TaoGiaoDien()
 	if GiaoDienNguoiChoi:FindFirstChild("AutoClickUI") then GiaoDienNguoiChoi.AutoClickUI:Destroy() end
 	local DangHanhDong = false
 	local KiemTraDienThoai = (DichVuDauVao.TouchEnabled and not DichVuDauVao.KeyboardEnabled)
-	local KichThuocMo = UDim2.fromScale(0.7, 0.65)
+	local KichThuocMo = UDim2.fromScale(0.5, 0.55)
 
 	local ManHinhGui = Instance.new("ScreenGui")
 	ManHinhGui.Name = "AutoClickUI"
