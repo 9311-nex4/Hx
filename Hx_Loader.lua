@@ -22,8 +22,8 @@ _G.DaKichHoat = _G.DaKichHoat or {}
 
 local DanhSachKichBan = {
 	{ Ten = "Transform", Link = "https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform/main.lua" },
-	{ Ten = "Transform_v2 (Sường)", Link = "https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform/main_v2.lua" },
-	{ Ten = "Example 3", Link = "" },
+	{ Ten = "Transform_v2 (Testing)", Link = "https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform/main_v2.lua" },
+	{ Ten = "Something (Testing)", Link = "https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform/main_v3.lua" },
 	{ Ten = "Example 4", Link = "" },
 	{ Ten = "Example 5", Link = "" },
 }
