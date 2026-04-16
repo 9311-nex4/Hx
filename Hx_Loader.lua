@@ -76,6 +76,7 @@ local function TaoGiaoDien()
 	KhungChinh.BackgroundColor3 = CauHinh.Mau.Nen
 	KhungChinh.BackgroundTransparency = 1
 	KhungChinh.ClipsDescendants = false
+	KhungChinh.Active = true
 	KhungChinh.Parent = ManHinhGui
 	Instance.new("UICorner", KhungChinh).CornerRadius = UDim.new(0, 10)
 
