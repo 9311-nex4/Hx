@@ -514,5 +514,5 @@ local function TaoGiaoDien()
 	MoGiaoDien()
 end
 if not game:IsLoaded() then game.Loaded:Wait() end
-task.wait(2)
+task.wait(1)
 TaoGiaoDien()
