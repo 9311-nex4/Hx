@@ -6,13 +6,13 @@ local GiaoDienNguoiChoi = NguoiChoi:WaitForChild("PlayerGui")
 local KichBanNguoiChoi = NguoiChoi:WaitForChild("PlayerScripts")
 local Chuot = NguoiChoi:GetMouse()
 
-local GuiThongBao = require(KichBanNguoiChoi:WaitForChild("Notify"))
+local GuiThongBao = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Notify.lua"))()
 local function ThongBao(TieuDe, NoiDung, ThoiGian) GuiThongBao.thongbao(TieuDe, NoiDung, ThoiGian) end
 local function ThongBaoLoi(TieuDe, NoiDung) GuiThongBao.thongbaoloi(TieuDe, NoiDung) end
 
-local HoatAnh = require(KichBanNguoiChoi:WaitForChild("Animation"))
-local KhungCuon = require(KichBanNguoiChoi:WaitForChild("KhungCuon"))
-local AutoClickLogic = require(KichBanNguoiChoi:WaitForChild("AutoClick_Logic"))
+local HoatAnh = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Animation.lua"))()
+local KhungCuon = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/KhungCuon.lua"))()
+local AutoClickLogic = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform/AutoClick_Logic.lua"))()
 
 local PhimMoMenu = Enum.KeyCode.Insert
 local CauHinh = {
