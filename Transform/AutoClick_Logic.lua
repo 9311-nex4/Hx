@@ -83,6 +83,7 @@ local function TaoKeoThaChoDiem(ChamUI, DiemData, Index)
 
 				local abs  = ChamUI.AbsolutePosition
 				local siz  = ChamUI.AbsoluteSize
+                -- Ensure integer values when dragging drops / Đảm bảo số nguyên khi thả
 				DiemData.X = math.floor(abs.X + siz.X * 0.5)
 				DiemData.Y = math.floor(abs.Y + siz.Y * 0.5)
 
@@ -126,7 +127,7 @@ function AutoClickLogic.CapNhatDiem(DanhSach)
 		local Cham = Instance.new("Frame")
 		Cham.Name                    = "ClickPoint_" .. ThuTu
 		Cham.Size                    = UDim2.fromOffset(36, 36)
-		Cham.Position                = UDim2.fromOffset(Diem.X, Diem.Y)
+		Cham.Position                = UDim2.fromOffset(math.floor(Diem.X), math.floor(Diem.Y))
 		Cham.AnchorPoint             = Vector2.new(0.5, 0.5)
 		Cham.BackgroundTransparency  = 1
 		Cham.ZIndex                  = 10
@@ -247,17 +248,34 @@ function AutoClickLogic.BatTatAutoClick(TrangThai)
 				if not AutoClickLogic.DangChay then break end
 
 				local ChamUI = DanhSachUICham[ThuTu]
-				if ChamUI and ChamUI.Visible then
-					task.spawn(HieuUngChopSang, ChamUI)
+                -- Đảm bảo VIM nhận số nguyên / Make sure VirtualInputManager receives integers
+                local X = math.floor(Diem.X)
+                local Y = math.floor(Diem.Y)
+
+                -- 1. Tạm ẩn UI đánh dấu để chuột xuyên qua tương tác với thế giới game
+                -- 1. Temporarily hide the visual marker so clicks pass through to the game
+				if ChamUI and ChamUI.Parent then
+					ChamUI.Visible = false
 				end
 
+                -- 2. Thực hiện thao tác click / 2. Perform the click
 				pcall(function()
-					DichVuAo:SendMouseButtonEvent(Diem.X, Diem.Y, 0, true, game, 1)
-					task.wait(0.005)
-					DichVuAo:SendMouseButtonEvent(Diem.X, Diem.Y, 0, false, game, 1)
+					DichVuAo:SendMouseButtonEvent(X, Y, 0, true, game, 1)
+					task.wait(0.015) -- Giữ chuột 15ms để game kịp nhận diện
+					DichVuAo:SendMouseButtonEvent(X, Y, 0, false, game, 1)
 				end)
 
-				task.wait(AutoClickLogic.TocDo / 1000)
+                -- 3. Bật lại UI và kích hoạt hiệu ứng chớp sáng / 3. Show UI and flash
+                if ChamUI and ChamUI.Parent and not AutoClickLogic.AnTatCa and not Diem.DaAn then
+                    ChamUI.Visible = true
+                    task.spawn(HieuUngChopSang, ChamUI)
+                end
+
+                -- 4. Chờ thời gian Delay / 4. Delay interval calculation
+                local delayNguoiDung = AutoClickLogic.TocDo / 1000
+                -- Trừ hao 0.015s do đã delay ở trên lúc giữ chuột / Subtract the 15ms holding time
+                local thoiGianCho = math.max(0.01, delayNguoiDung - 0.015)
+				task.wait(thoiGianCho)
 			end
 		end
 	end)
