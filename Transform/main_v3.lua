@@ -526,7 +526,7 @@ local function TaoGiaoDien()
 		if DauVaoBanPhim.KeyCode == PhimAutoClick then
 			if shared.HxDangChinhPhim then return end
 			if AutoClickLogic and AutoClickLogic.BatTatAutoClick then
-				local TrangThaiMoi = not AutoClickLogic.DangBat()
+				local TrangThaiMoi = not AutoClickLogic.DangChay
 				AutoClickLogic.BatTatAutoClick(TrangThaiMoi)
 				TrangThaiLuu.AutoClick = TrangThaiMoi
 				LuuConfig()
