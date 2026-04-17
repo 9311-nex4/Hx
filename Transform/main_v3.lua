@@ -51,7 +51,6 @@ local DuLieuDanhSachClick = {}
 local TaiLaiGiaoDien = nil
 
 local TrangThaiLuu = {
-	AutoClick = false,
 	TocDoClick = "500",
 	PhimAutoClick = "R",
 	ReduceLags = false,
@@ -284,14 +283,7 @@ end
 
 local function ApDungConfig(cfg)
 	if not cfg then return end
-
-	local cnAutoClick = TimChucNang("Auto Click", "Auto Click")
-	if cnAutoClick and cfg.AutoClick then
-		cnAutoClick.HienTai = "Bat"
-		AutoClickLogic.BatTatAutoClick(true)
-		TrangThaiLuu.AutoClick = true
-	end
-
+	
 	local cnTocDo = TimChucNang("Auto Click", "Speed Click (ms)")
 	if cnTocDo and cfg.TocDoClick then
 		cnTocDo.HienTai = tostring(cfg.TocDoClick)
