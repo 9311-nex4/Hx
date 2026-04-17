@@ -8,7 +8,6 @@ local CoreGui      = game:GetService("CoreGui")
 
 AutoClickLogic.DanhSachDiem = {}
 AutoClickLogic.DangChay     = false
--- FIX: Chỉnh tốc độ mặc định logic thành 500ms
 AutoClickLogic.TocDo        = 500
 AutoClickLogic.AnTatCa      = false
 AutoClickLogic.OnToaDoDoi   = nil
@@ -82,7 +81,6 @@ local function TaoKeoThaChoDiem(ChamUI, DiemData, Index)
 				DiemDangKeo   = nil
 				ChamUI.ZIndex = 10
 
-				-- FIX 1: Lấy trực tiếp Offset thay vì AbsolutePosition để không bị nhảy khung UI (GuiInset lệch 36px)
 				DiemData.X = math.floor(ChamUI.Position.X.Offset)
 				DiemData.Y = math.floor(ChamUI.Position.Y.Offset)
 
@@ -237,8 +235,6 @@ function AutoClickLogic.BatTatAutoClick(TrangThai)
 	LuongAutoClick = task.spawn(function()
 		while AutoClickLogic.DangChay do
 
-			-- FIX 4: Nhường quyền cho người chơi. 
-            -- Nếu người dùng bấm chuột trái thật sự (để chỉnh UI), hoặc đang kéo điểm -> Tạm dừng Auto Clicker
 			if DichVuDauVao:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) 
                or DichVuDauVao:IsMouseButtonPressed(Enum.UserInputType.Touch) 
                or DiemDangKeo ~= nil then
