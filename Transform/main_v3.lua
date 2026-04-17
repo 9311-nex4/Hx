@@ -14,6 +14,7 @@ local HoatAnh = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-
 local KhungCuon = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/KhungCuon.lua"))()
 local MenuConfigManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/MenuConfigManager.lua"))()
 local AutoClickLogic = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform/AutoClick_Logic.lua"))()
+local TeleportLogic = require(PlayerScripts:WaitForChild("https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform/Teleport_Logic.lua"))
 
 MenuConfigManager.SetFileName("main_v3")
 
@@ -56,7 +57,11 @@ local TrangThaiLuu = {
 	ReduceLags = false,
 	PhimMoMenu = "Insert",
 	HideAll = false,
-	DanhSachClick = {}
+	DanhSachClick = {},
+	ClickTP = false,
+	PhimClickTP = "T",
+	TargetPlayer = "...",
+	TargetMap = "..."
 }
 
 local function LuuConfig()
@@ -90,7 +95,7 @@ local function TaoItemClick(ToaDoX, ToaDoY, BatTatBanDau, DaAnBanDau)
 	DuLieuNut.Loai = "Otich"
 	DuLieuNut.HienTai = (BatTatBanDau == false) and "Tat" or "Bat"
 	DuLieuNut.SuKien = function(TrangThai)
-		ThongBao("Auto Click", TrangThai and ("Đã bật " .. DuLieuNut.Ten) or ("Đã tắt " .. DuLieuNut.Ten), 1)
+		ThongBao("Hx Script", TrangThai and ("Đã bật " .. DuLieuNut.Ten) or ("Đã tắt " .. DuLieuNut.Ten), 1)
 		LuuConfig()
 	end
 	DuLieuNut.CacNutCon = {
@@ -177,6 +182,8 @@ ChucNangAnTao.SuKien2 = function()
 	if TaiLaiGiaoDien then task.defer(TaiLaiGiaoDien) end
 end
 
+local TimChucNang 
+
 local DanhSachNhom = {
 	{
 		TenTab = "Auto Click",
@@ -220,6 +227,76 @@ local DanhSachNhom = {
 		}
 	},
 	{
+		TenTab = "Teleport Menu",
+		DuLieuKhoi = {
+			{
+				TieuDe = "Game & Player Teleport",
+				ChucNang = {
+					{
+						Ten = "Select Location", Loai = "HopXo", HienTai = "...", LuaChon = TeleportLogic.LayDiaDiemGame(game.PlaceId),
+						SuKien = function(Chon)
+							TrangThaiLuu.TargetMap = Chon
+							LuuConfig()
+							ThongBao("Hx Script", "Mục tiêu Map hiện tại: " .. Chon, 1)
+						end
+					},
+					{
+						Ten = "Refresh Player List", Loai = "Nut",
+						SuKien = function()
+							local cn = TimChucNang("Teleport Menu", "Select Player")
+							if cn then
+								cn.LuaChon = TeleportLogic.GetPlayers()
+								ThongBao("Hx Script", "Đã làm mới danh sách người chơi", 1.5)
+							end
+						end
+					},
+					{
+						Ten = "Select Player", Loai = "HopXo", HienTai = "...", LuaChon = TeleportLogic.GetPlayers(),
+						SuKien = function(Chon)
+							TrangThaiLuu.TargetPlayer = Chon
+							LuuConfig()
+						end
+					},
+					{
+						Ten = "Teleport To Player", Loai = "Nut",
+						SuKien = function()
+							local cn = TimChucNang("Teleport Menu", "Select Player")
+							if cn and cn.HienTai and cn.HienTai ~= "..." then
+								TeleportLogic.TeleportToPlayer(cn.HienTai)
+								ThongBao("Hx Script", "Đang bay tới vị trí của: " .. cn.HienTai, 1.5)
+							else
+								ThongBaoLoi("Hx Script", "Lỗi: Bạn chưa chọn mục tiêu nào!")
+							end
+						end
+					}
+				}
+			},
+			{
+				TieuDe = "Click Teleport Settings",
+				ChucNang = {
+					{
+						Ten = "Enable Click TP", Loai = "Otich", HienTai = "Tat",
+						SuKien = function(TrangThai)
+							TeleportLogic.SetClickTP(TrangThai)
+							TrangThaiLuu.ClickTP = TrangThai
+							LuuConfig()
+							ThongBao("Hx Script", TrangThai and "Đã BẬT Click TP (Giữ phím + Click trái)" or "Đã TẮT Click TP", 2)
+						end
+					},
+					{
+						Ten = "Click TP Hotkey", Loai = "PhimNong", HienTai = "T",
+						SuKien = function(Phim)
+							TeleportLogic.SetKey(Phim)
+							TrangThaiLuu.PhimClickTP = Phim.Name
+							LuuConfig()
+							ThongBao("Hx Script", "Đổi phím Click TP thành: " .. Phim.Name, 2)
+						end
+					}
+				}
+			}
+		}
+	},
+	{
 		TenTab = "Config Menu",
 		DuLieuKhoi = {
 			{
@@ -234,9 +311,9 @@ local DanhSachNhom = {
 							TrangThaiLuu.ReduceLags = TrangThai
 							LuuConfig()
 							if TrangThai then
-								ThongBao("Hx Optimizer", "Đã tối ưu hóa đồ họa (Potato Mode)", 2)
+								ThongBao("Hx Script", "Đã tối ưu hóa đồ họa (Potato Mode)", 2)
 							else
-								ThongBao("Hx Optimizer", "Đã khôi phục cài đặt ánh sáng", 2)
+								ThongBao("Hx Script", "Đã khôi phục cài đặt ánh sáng", 2)
 							end
 						end
 					},
@@ -268,7 +345,7 @@ local DanhSachNhom = {
 	}
 }
 
-local function TimChucNang(TenTab, TenChucNang)
+function TimChucNang(TenTab, TenChucNang)
 	for _, Nhom in ipairs(DanhSachNhom) do
 		if Nhom.TenTab == TenTab then
 			for _, Khoi in ipairs(Nhom.DuLieuKhoi) do
@@ -283,7 +360,7 @@ end
 
 local function ApDungConfig(cfg)
 	if not cfg then return end
-	
+
 	local cnTocDo = TimChucNang("Auto Click", "Speed Click (ms)")
 	if cnTocDo and cfg.TocDoClick then
 		cnTocDo.HienTai = tostring(cfg.TocDoClick)
@@ -315,6 +392,23 @@ local function ApDungConfig(cfg)
 			TrangThaiLuu.PhimMoMenu = cfg.PhimMoMenu
 			local cnPhimMenu = TimChucNang("Config Menu", "HotKeys Open Menu")
 			if cnPhimMenu then cnPhimMenu.HienTai = cfg.PhimMoMenu end
+		end
+	end
+
+	if cfg.ClickTP then
+		local cn = TimChucNang("Teleport Menu", "Enable Click TP")
+		if cn then cn.HienTai = "Bat" end
+		TeleportLogic.SetClickTP(true)
+		TrangThaiLuu.ClickTP = true
+	end
+
+	if cfg.PhimClickTP then
+		local ok, key = pcall(function() return Enum.KeyCode[cfg.PhimClickTP] end)
+		if ok and key then
+			TeleportLogic.SetKey(key)
+			TrangThaiLuu.PhimClickTP = cfg.PhimClickTP
+			local cn = TimChucNang("Teleport Menu", "Click TP Hotkey")
+			if cn then cn.HienTai = cfg.PhimClickTP end
 		end
 	end
 
