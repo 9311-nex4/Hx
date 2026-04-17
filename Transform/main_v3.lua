@@ -123,7 +123,6 @@ local ChucNangAnTao = { Loai = "NhieuNut", Ten1 = "Create Click", Ten2 = "Hide A
 
 ChucNangAnTao.SuKien1 = function()
 	local KichThuocManHinh = workspace.CurrentCamera.ViewportSize
-    -- Fix: Ensure coordinates are integers / Đảm bảo tọa độ là số nguyên để không bị lỗi VIM
 	local ToaDoX = math.floor(KichThuocManHinh.X * 0.5)
 	local ToaDoY = math.floor(KichThuocManHinh.Y * 0.5)
 
@@ -153,7 +152,8 @@ local DanhSachNhom = {
 				end
 			},
 			{
-				Ten = "Speed Click (ms)", Loai = "Odien", HienTai = "2000", GoiY = "Nhập tốc độ...",
+				-- FIX: Chỉnh tốc độ mặc định thành 500ms
+				Ten = "Speed Click (ms)", Loai = "Odien", HienTai = "500", GoiY = "Nhập tốc độ...",
 				SuKien = function(GiaTri)
 					if tonumber(GiaTri) then
 						AutoClickLogic.CaiDatTocDo(GiaTri)
@@ -177,7 +177,24 @@ local DanhSachNhom = {
 					elseif GiaTri == "Ctrl Right" then PhimMoMenu = Enum.KeyCode.RightControl end
 					ThongBao("Hx Script", "Đổi phím tắt: " .. GiaTri, 2)
 				end
-			}
+			},
+            -- FIX: Thêm nút Destroy UI
+            {
+                Ten = "Destroy UI", Loai = "Nut",
+                SuKien = function()
+                    -- Tắt click và xóa UI điểm
+                    AutoClickLogic.Destroy()
+                    -- Xóa UI Chính
+                    if GiaoDienNguoiChoi:FindFirstChild("AutoClickUI") then
+                        GiaoDienNguoiChoi.AutoClickUI:Destroy()
+                    end
+                    -- Xóa phím tắt
+                    if shared.HxKeybindEvent then
+                        shared.HxKeybindEvent:Disconnect()
+                    end
+                    ThongBao("Hx Script", "Đã xóa toàn bộ UI!", 2)
+                end
+            }
 		}
 	}
 }
@@ -185,7 +202,6 @@ local DanhSachNhom = {
 local function TaoGiaoDien()
 	if GiaoDienNguoiChoi:FindFirstChild("AutoClickUI") then GiaoDienNguoiChoi.AutoClickUI:Destroy() end
 	local DangHanhDong = false
-    -- Check Responsive: Mobile vs PC
 	local KiemTraDienThoai = (DichVuDauVao.TouchEnabled and not DichVuDauVao.KeyboardEnabled)
 	local KichThuocMo = UDim2.fromScale(0.5, 0.55)
 
