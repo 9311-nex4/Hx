@@ -235,9 +235,19 @@ function AutoClickLogic.BatTatAutoClick(TrangThai)
 	LuongAutoClick = task.spawn(function()
 		while AutoClickLogic.DangChay do
 
-			if DichVuDauVao:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) 
-				or DichVuDauVao:IsMouseButtonPressed(Enum.UserInputType.Touch) 
-				or DiemDangKeo ~= nil then
+			local dangNhan = false
+			pcall(function()
+				if DichVuDauVao:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
+					dangNhan = true
+				end
+			end)
+			pcall(function()
+				if #DichVuDauVao:GetTouches() > 0 then
+					dangNhan = true
+				end
+			end)
+
+			if dangNhan or DiemDangKeo ~= nil then
 				task.wait(0.1)
 				continue
 			end
@@ -261,14 +271,25 @@ function AutoClickLogic.BatTatAutoClick(TrangThai)
 				end
 
 				pcall(function()
-					DichVuAo:SendMouseButtonEvent(X, Y, 0, true, game, 1)
-					task.wait(0.015)
-					DichVuAo:SendMouseButtonEvent(X, Y, 0, false, game, 1)
+					if DichVuAo and type(DichVuAo.SendMouseButtonEvent) == "function" then
+						DichVuAo:SendMouseButtonEvent(X, Y, 0, true, game, 1)
+						task.wait(0.015)
+						DichVuAo:SendMouseButtonEvent(X, Y, 0, false, game, 1)
+					else
+						local vu = game:GetService("VirtualUser")
+						if vu then
+							vu:Button1Down(Vector2.new(X, Y))
+							task.wait(0.015)
+							vu:Button1Up(Vector2.new(X, Y))
+						end
+					end
 				end)
 
 				if ChamUI and ChamUI.Parent and not AutoClickLogic.AnTatCa and not Diem.DaAn then
 					ChamUI.Visible = true
-					task.spawn(HieuUngChopSang, ChamUI)
+					task.spawn(function()
+						pcall(function() HieuUngChopSang(ChamUI) end)
+					end)
 				end
 
 				local delayNguoiDung = AutoClickLogic.TocDo / 1000
