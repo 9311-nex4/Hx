@@ -4,7 +4,6 @@ local UserInputService = game:GetService("UserInputService")
 local NguoiChoi = Players.LocalPlayer
 local PlayerGui = NguoiChoi:WaitForChild("PlayerGui")
 local PlayerScripts = NguoiChoi:WaitForChild("PlayerScripts")
-local Chuot = NguoiChoi:GetMouse()
 
 local GuiThongBao = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Notify.lua"))()
 local function ThongBao(TieuDe, NoiDung, ThoiGian) GuiThongBao.thongbao(TieuDe, NoiDung, ThoiGian) end
