@@ -123,13 +123,14 @@ local ChucNangAnTao = { Loai = "NhieuNut", Ten1 = "Create Click", Ten2 = "Hide A
 
 ChucNangAnTao.SuKien1 = function()
 	local KichThuocManHinh = workspace.CurrentCamera.ViewportSize
-	local ToaDoX = KichThuocManHinh.X * 0.5
-	local ToaDoY = KichThuocManHinh.Y * 0.5
+    -- Fix: Ensure coordinates are integers / Đảm bảo tọa độ là số nguyên để không bị lỗi VIM
+	local ToaDoX = math.floor(KichThuocManHinh.X * 0.5)
+	local ToaDoY = math.floor(KichThuocManHinh.Y * 0.5)
 
 	local NutMoi = TaoItemClick(ToaDoX, ToaDoY)
 	table.insert(DuLieuDanhSachClick, NutMoi)
 	CapNhatDanhSachClick()
-	ThongBao("Hx Script", "Đã tạo điểm click tại: " .. math.floor(ToaDoX) .. ", " .. math.floor(ToaDoY), 1.5)
+	ThongBao("Hx Script", "Đã tạo điểm click tại: " .. ToaDoX .. ", " .. ToaDoY, 1.5)
 end
 
 ChucNangAnTao.SuKien2 = function()
@@ -184,6 +185,7 @@ local DanhSachNhom = {
 local function TaoGiaoDien()
 	if GiaoDienNguoiChoi:FindFirstChild("AutoClickUI") then GiaoDienNguoiChoi.AutoClickUI:Destroy() end
 	local DangHanhDong = false
+    -- Check Responsive: Mobile vs PC
 	local KiemTraDienThoai = (DichVuDauVao.TouchEnabled and not DichVuDauVao.KeyboardEnabled)
 	local KichThuocMo = UDim2.fromScale(0.5, 0.55)
 
