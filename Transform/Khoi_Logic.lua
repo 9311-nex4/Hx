@@ -907,5 +907,7 @@ UIS.InputEnded:Connect(function(i, p)
 	end
 end)
 
+LogicKhoi.HuyChon = HuyChon
+
 task.delay(1, TaoUI)
 return LogicKhoi
