@@ -236,8 +236,8 @@ function AutoClickLogic.BatTatAutoClick(TrangThai)
 		while AutoClickLogic.DangChay do
 
 			if DichVuDauVao:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) 
-               or DichVuDauVao:IsMouseButtonPressed(Enum.UserInputType.Touch) 
-               or DiemDangKeo ~= nil then
+				or DichVuDauVao:IsMouseButtonPressed(Enum.UserInputType.Touch) 
+				or DiemDangKeo ~= nil then
 				task.wait(0.1)
 				continue
 			end
@@ -253,8 +253,8 @@ function AutoClickLogic.BatTatAutoClick(TrangThai)
 				if not AutoClickLogic.DangChay then break end
 
 				local ChamUI = DanhSachUICham[ThuTu]
-                local X = math.floor(Diem.X)
-                local Y = math.floor(Diem.Y)
+				local X = math.floor(Diem.X)
+				local Y = math.floor(Diem.Y)
 
 				if ChamUI and ChamUI.Parent then
 					ChamUI.Visible = false
@@ -266,13 +266,13 @@ function AutoClickLogic.BatTatAutoClick(TrangThai)
 					DichVuAo:SendMouseButtonEvent(X, Y, 0, false, game, 1)
 				end)
 
-                if ChamUI and ChamUI.Parent and not AutoClickLogic.AnTatCa and not Diem.DaAn then
-                    ChamUI.Visible = true
-                    task.spawn(HieuUngChopSang, ChamUI)
-                end
+				if ChamUI and ChamUI.Parent and not AutoClickLogic.AnTatCa and not Diem.DaAn then
+					ChamUI.Visible = true
+					task.spawn(HieuUngChopSang, ChamUI)
+				end
 
-                local delayNguoiDung = AutoClickLogic.TocDo / 1000
-                local thoiGianCho = math.max(0.01, delayNguoiDung - 0.015)
+				local delayNguoiDung = AutoClickLogic.TocDo / 1000
+				local thoiGianCho = math.max(0.01, delayNguoiDung - 0.015)
 				task.wait(thoiGianCho)
 			end
 		end
