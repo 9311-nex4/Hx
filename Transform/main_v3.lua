@@ -14,7 +14,7 @@ local HoatAnh = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-
 local KhungCuon = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/KhungCuon.lua"))()
 local MenuConfigManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/MenuConfigManager.lua"))()
 local AutoClickLogic = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform/AutoClick_Logic.lua"))()
-local TeleportLogic = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform/Teleport_Logic.lua"))
+local TeleportLogic = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform/Teleport_Logic.lua"))()
 
 MenuConfigManager.SetFileName("main_v3")
 
