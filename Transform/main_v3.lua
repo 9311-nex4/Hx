@@ -1,9 +1,9 @@
-local DichVuNguoiChoi = game:GetService("Players")
-local DichVuTween = game:GetService("TweenService")
-local DichVuDauVao = game:GetService("UserInputService")
-local NguoiChoi = DichVuNguoiChoi.LocalPlayer
-local GiaoDienNguoiChoi = NguoiChoi:WaitForChild("PlayerGui")
-local KichBanNguoiChoi = NguoiChoi:WaitForChild("PlayerScripts")
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local NguoiChoi = Players.LocalPlayer
+local PlayerGui = NguoiChoi:WaitForChild("PlayerGui")
+local PlayerScripts = NguoiChoi:WaitForChild("PlayerScripts")
 local Chuot = NguoiChoi:GetMouse()
 
 local GuiThongBao = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Notify.lua"))()
@@ -12,11 +12,18 @@ local function ThongBaoLoi(TieuDe, NoiDung) GuiThongBao.thongbaoloi(TieuDe, NoiD
 
 local HoatAnh = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Animation.lua"))()
 local KhungCuon = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/KhungCuon.lua"))()
+local MenuConfigManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/MenuConfigManager.lua"))()
 local AutoClickLogic = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform/AutoClick_Logic.lua"))()
 
+MenuConfigManager.SetFileName("main_v3")
+
 local PhimMoMenu = Enum.KeyCode.Insert
+local PhimAutoClick = Enum.KeyCode.R
+
 local CauHinh = {
-	SoCot = 2,
+	DangTab = true,
+	TabMacDinh = "Auto Click",
+	SoCot = 1,
 	Mau = {
 		Nen = Color3.fromRGB(15, 15, 15),
 		NenList = Color3.fromRGB(25, 25, 25),
@@ -28,7 +35,7 @@ local CauHinh = {
 		VienNeon = Color3.fromRGB(255, 255, 255),
 		NenPhu = Color3.fromRGB(45, 45, 45),
 		ChonPhu = Color3.fromRGB(60, 60, 60),
-		TichBat = Color3.fromRGB(180, 180, 180),
+		TichBat = Color3.fromRGB(255, 255, 255),
 		NutDong = Color3.fromRGB(80, 80, 80),
 		NutDongLuot = Color3.fromRGB(200, 0, 0),
 		Chu = Color3.fromRGB(240, 240, 240),
@@ -43,29 +50,59 @@ local CauHinh = {
 local DuLieuDanhSachClick = {}
 local TaiLaiGiaoDien = nil
 
+local TrangThaiLuu = {
+	AutoClick = false,
+	TocDoClick = "500",
+	PhimAutoClick = "R",
+	ReduceLags = false,
+	PhimMoMenu = "Insert",
+	HideAll = false,
+	DanhSachClick = {}
+}
+
+local function LuuConfig()
+	TrangThaiLuu.DanhSachClick = {}
+	for _, item in ipairs(DuLieuDanhSachClick) do
+		table.insert(TrangThaiLuu.DanhSachClick, {
+			X = item.X,
+			Y = item.Y,
+			BatTat = (item.HienTai == "Bat"),
+			DaAn = item.DaAn or false,
+		})
+	end
+	MenuConfigManager.Save(TrangThaiLuu)
+end
+
+local function DocConfig()
+	return MenuConfigManager.Load()
+end
+
 local function CapNhatDanhSachClick()
 	for ViTri, DuLieuDanhSach in ipairs(DuLieuDanhSachClick) do
 		DuLieuDanhSach.Ten = "Click " .. ViTri .. " (" .. math.floor(DuLieuDanhSach.X) .. "," .. math.floor(DuLieuDanhSach.Y) .. ")"
 	end
 	AutoClickLogic.CapNhatDiem(DuLieuDanhSachClick)
+	LuuConfig()
 	if TaiLaiGiaoDien then task.defer(TaiLaiGiaoDien) end
 end
 
-local function TaoItemClick(ToaDoX, ToaDoY)
-	local DuLieuNut = { X = ToaDoX, Y = ToaDoY, DaAn = false }
+local function TaoItemClick(ToaDoX, ToaDoY, BatTatBanDau, DaAnBanDau)
+	local DuLieuNut = { X = ToaDoX, Y = ToaDoY, DaAn = DaAnBanDau or false }
 	DuLieuNut.Loai = "Otich"
-	DuLieuNut.HienTai = "Bat"
+	DuLieuNut.HienTai = (BatTatBanDau == false) and "Tat" or "Bat"
 	DuLieuNut.SuKien = function(TrangThai)
 		ThongBao("Auto Click", TrangThai and ("Đã bật " .. DuLieuNut.Ten) or ("Đã tắt " .. DuLieuNut.Ten), 1)
+		LuuConfig()
 	end
 	DuLieuNut.CacNutCon = {
 		{
 			Ten = "Hide Click Location",
 			Loai = "Otich",
-			HienTai = "Tat",
+			HienTai = DuLieuNut.DaAn and "Bat" or "Tat",
 			SuKien = function(TrangThai)
 				DuLieuNut.DaAn = TrangThai
 				AutoClickLogic.CapNhatDiem(DuLieuDanhSachClick)
+				LuuConfig()
 				ThongBao("Hx Script", TrangThai and "Đã ẩn UI " .. DuLieuNut.Ten or "Đã hiện UI " .. DuLieuNut.Ten, 1)
 			end
 		},
@@ -125,7 +162,6 @@ ChucNangAnTao.SuKien1 = function()
 	local KichThuocManHinh = workspace.CurrentCamera.ViewportSize
 	local ToaDoX = math.floor(KichThuocManHinh.X * 0.5)
 	local ToaDoY = math.floor(KichThuocManHinh.Y * 0.5)
-
 	local NutMoi = TaoItemClick(ToaDoX, ToaDoY)
 	table.insert(DuLieuDanhSachClick, NutMoi)
 	CapNhatDanhSachClick()
@@ -136,80 +172,199 @@ ChucNangAnTao.SuKien2 = function()
 	TrangThaiAnTatCa = not TrangThaiAnTatCa
 	ChucNangAnTao.Ten2 = TrangThaiAnTatCa and "Hide All: ON" or "Hide All: OFF"
 	AutoClickLogic.BatTatAnToanBo(TrangThaiAnTatCa)
+	TrangThaiLuu.HideAll = TrangThaiAnTatCa
+	LuuConfig()
 	ThongBao("Hx Script", TrangThaiAnTatCa and "Đã ẩn mọi vị trí" or "Đã hiện vị trí", 1)
 	if TaiLaiGiaoDien then task.defer(TaiLaiGiaoDien) end
 end
 
 local DanhSachNhom = {
 	{
-		TieuDe = "Auto Click Config",
-		ChucNang = {
+		TenTab = "Auto Click",
+		DuLieuKhoi = {
 			{
-				Ten = "Auto Click", Loai = "Otich", HienTai = "Tat",
-				SuKien = function(TrangThai)
-					AutoClickLogic.BatTatAutoClick(TrangThai)
-					ThongBao("Hx Script", TrangThai and "Đã BẬT Auto Click" or "Đã TẮT Auto Click", 2)
-				end
-			},
-			{
-				-- FIX: Chỉnh tốc độ mặc định thành 500ms
-				Ten = "Speed Click (ms)", Loai = "Odien", HienTai = "500", GoiY = "Nhập tốc độ...",
-				SuKien = function(GiaTri)
-					if tonumber(GiaTri) then
-						AutoClickLogic.CaiDatTocDo(GiaTri)
-						ThongBao("Hx Script", "Chỉnh tốc độ: " .. GiaTri .. "ms", 1)
-					else ThongBaoLoi("Hx Script", "Tốc độ phải là số!") end
-				end
-			},
-			ChucNangAnTao,
-			{ Ten = "List Of Click Locations", Loai = "Danhsach", DangMo = false, Danhsach = DuLieuDanhSachClick }
+				TieuDe = "Auto Click Config",
+				ChucNang = {
+					{
+						Ten = "Auto Click", Loai = "Otich", HienTai = "Tat",
+						SuKien = function(TrangThai)
+							AutoClickLogic.BatTatAutoClick(TrangThai)
+							TrangThaiLuu.AutoClick = TrangThai
+							LuuConfig()
+							ThongBao("Hx Script", TrangThai and "Đã BẬT Auto Click" or "Đã TẮT Auto Click", 2)
+						end
+					},
+					{
+						Ten = "Speed Click (ms)", Loai = "Odien", HienTai = "500", GoiY = "Nhập tốc độ...",
+						SuKien = function(GiaTri)
+							if tonumber(GiaTri) then
+								AutoClickLogic.CaiDatTocDo(GiaTri)
+								TrangThaiLuu.TocDoClick = GiaTri
+								LuuConfig()
+								ThongBao("Hx Script", "Chỉnh tốc độ: " .. GiaTri .. "ms", 1)
+							else ThongBaoLoi("Hx Script", "Tốc độ phải là số!") end
+						end
+					},
+					{
+						Ten = "Auto Click Hotkey", Loai = "PhimNong", HienTai = "R",
+						SuKien = function(Phim)
+							PhimAutoClick = Phim
+							TrangThaiLuu.PhimAutoClick = Phim.Name
+							LuuConfig()
+							ThongBao("Hx Script", "Đổi phím tắt Auto Click: " .. Phim.Name, 2)
+						end
+					},
+					ChucNangAnTao,
+					{ Ten = "List Of Click Locations", Loai = "Danhsach", DangMo = false, Danhsach = DuLieuDanhSachClick }
+				}
+			}
 		}
 	},
 	{
-		TieuDe = "Config Menu",
-		ChucNang = {
-			{ Ten = "Reduce Lags", Loai = "Otich", HienTai = "Tat", SuKien = function(TrangThai) end },
+		TenTab = "Config Menu",
+		DuLieuKhoi = {
 			{
-				Ten = "HotKeys Open Menu", Loai = "HopXo", HienTai = "Insert", LuaChon = {"Insert", "Shift Right", "Ctrl Right"},
-				SuKien = function(GiaTri)
-					if GiaTri == "Insert" then PhimMoMenu = Enum.KeyCode.Insert
-					elseif GiaTri == "Shift Right" then PhimMoMenu = Enum.KeyCode.RightShift
-					elseif GiaTri == "Ctrl Right" then PhimMoMenu = Enum.KeyCode.RightControl end
-					ThongBao("Hx Script", "Đổi phím tắt: " .. GiaTri, 2)
-				end
-			},
-            -- FIX: Thêm nút Destroy UI
-            {
-                Ten = "Destroy UI", Loai = "Nut",
-                SuKien = function()
-                    -- Tắt click và xóa UI điểm
-                    AutoClickLogic.Destroy()
-                    -- Xóa UI Chính
-                    if GiaoDienNguoiChoi:FindFirstChild("AutoClickUI") then
-                        GiaoDienNguoiChoi.AutoClickUI:Destroy()
-                    end
-                    -- Xóa phím tắt
-                    if shared.HxKeybindEvent then
-                        shared.HxKeybindEvent:Disconnect()
-                    end
-                    ThongBao("Hx Script", "Đã xóa toàn bộ UI!", 2)
-                end
-            }
+				TieuDe = "Config Menu",
+				ChucNang = {
+					{
+						Ten = "Reduce Lags",
+						Loai = "Otich",
+						HienTai = "Tat",
+						SuKien = function(TrangThai)
+							MenuConfigManager.KichHoat(TrangThai)
+							TrangThaiLuu.ReduceLags = TrangThai
+							LuuConfig()
+							if TrangThai then
+								ThongBao("Hx Optimizer", "Đã tối ưu hóa đồ họa (Potato Mode)", 2)
+							else
+								ThongBao("Hx Optimizer", "Đã khôi phục cài đặt ánh sáng", 2)
+							end
+						end
+					},
+					{
+						Ten = "HotKeys Open Menu", Loai = "PhimNong", HienTai = "Insert",
+						SuKien = function(Phim)
+							PhimMoMenu = Phim
+							TrangThaiLuu.PhimMoMenu = Phim.Name
+							LuuConfig()
+							ThongBao("Hx Script", "Đổi phím tắt Menu: " .. Phim.Name, 2)
+						end
+					},
+					{
+						Ten = "Destroy UI", Loai = "Nut",
+						SuKien = function()
+							AutoClickLogic.Destroy()
+							if PlayerGui:FindFirstChild("main_v3") then
+								PlayerGui.main_v3:Destroy()
+							end
+							if shared.HxKeybindEvent then
+								shared.HxKeybindEvent:Disconnect()
+							end
+							ThongBao("Hx Script", "Đã xóa toàn bộ UI!", 2)
+						end
+					}
+				}
+			}
 		}
 	}
 }
 
+local function TimChucNang(TenTab, TenChucNang)
+	for _, Nhom in ipairs(DanhSachNhom) do
+		if Nhom.TenTab == TenTab then
+			for _, Khoi in ipairs(Nhom.DuLieuKhoi) do
+				for _, CN in ipairs(Khoi.ChucNang) do
+					if CN.Ten == TenChucNang then return CN end
+				end
+			end
+		end
+	end
+	return nil
+end
+
+local function ApDungConfig(cfg)
+	if not cfg then return end
+
+	local cnAutoClick = TimChucNang("Auto Click", "Auto Click")
+	if cnAutoClick and cfg.AutoClick then
+		cnAutoClick.HienTai = "Bat"
+		AutoClickLogic.BatTatAutoClick(true)
+		TrangThaiLuu.AutoClick = true
+	end
+
+	local cnTocDo = TimChucNang("Auto Click", "Speed Click (ms)")
+	if cnTocDo and cfg.TocDoClick then
+		cnTocDo.HienTai = tostring(cfg.TocDoClick)
+		AutoClickLogic.CaiDatTocDo(tostring(cfg.TocDoClick))
+		TrangThaiLuu.TocDoClick = tostring(cfg.TocDoClick)
+	end
+
+	if cfg.PhimAutoClick then
+		local ok, key = pcall(function() return Enum.KeyCode[cfg.PhimAutoClick] end)
+		if ok and key then
+			PhimAutoClick = key
+			TrangThaiLuu.PhimAutoClick = cfg.PhimAutoClick
+			local cnPhimAC = TimChucNang("Auto Click", "Auto Click Hotkey")
+			if cnPhimAC then cnPhimAC.HienTai = cfg.PhimAutoClick end
+		end
+	end
+
+	local cnReduceLags = TimChucNang("Config Menu", "Reduce Lags")
+	if cnReduceLags and cfg.ReduceLags then
+		cnReduceLags.HienTai = "Bat"
+		MenuConfigManager.KichHoat(true)
+		TrangThaiLuu.ReduceLags = true
+	end
+
+	if cfg.PhimMoMenu then
+		local ok, key = pcall(function() return Enum.KeyCode[cfg.PhimMoMenu] end)
+		if ok and key then
+			PhimMoMenu = key
+			TrangThaiLuu.PhimMoMenu = cfg.PhimMoMenu
+			local cnPhimMenu = TimChucNang("Config Menu", "HotKeys Open Menu")
+			if cnPhimMenu then cnPhimMenu.HienTai = cfg.PhimMoMenu end
+		end
+	end
+
+	if cfg.HideAll then
+		TrangThaiAnTatCa = true
+		ChucNangAnTao.Ten2 = "Hide All: ON"
+		AutoClickLogic.BatTatAnToanBo(true)
+		TrangThaiLuu.HideAll = true
+	end
+
+	if type(cfg.DanhSachClick) == "table" then
+		for _, saved in ipairs(cfg.DanhSachClick) do
+			if tonumber(saved.X) and tonumber(saved.Y) then
+				local item = TaoItemClick(
+					tonumber(saved.X),
+					tonumber(saved.Y),
+					saved.BatTat ~= false,
+					saved.DaAn == true
+				)
+				table.insert(DuLieuDanhSachClick, item)
+			end
+		end
+		for ViTri, d in ipairs(DuLieuDanhSachClick) do
+			d.Ten = "Click " .. ViTri .. " (" .. math.floor(d.X) .. "," .. math.floor(d.Y) .. ")"
+		end
+		AutoClickLogic.CapNhatDiem(DuLieuDanhSachClick)
+	end
+end
+
+ApDungConfig(DocConfig())
+
 local function TaoGiaoDien()
-	if GiaoDienNguoiChoi:FindFirstChild("AutoClickUI") then GiaoDienNguoiChoi.AutoClickUI:Destroy() end
+	if PlayerGui:FindFirstChild("main_v3") then PlayerGui.main_v3:Destroy() end
 	local DangHanhDong = false
-	local KiemTraDienThoai = (DichVuDauVao.TouchEnabled and not DichVuDauVao.KeyboardEnabled)
+	local KiemTraDienThoai = (UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled)
 	local KichThuocMo = UDim2.fromScale(0.6, 0.55)
 
 	local ManHinhGui = Instance.new("ScreenGui")
-	ManHinhGui.Name = "AutoClickUI"
+	ManHinhGui.Name = "main_v3"
 	ManHinhGui.ResetOnSpawn = false
 	ManHinhGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-	ManHinhGui.Parent = GiaoDienNguoiChoi
+	ManHinhGui.Parent = PlayerGui
 
 	local LopPhu = Instance.new("Frame", ManHinhGui)
 	LopPhu.Name = "LopPhu"
@@ -356,23 +511,35 @@ local function TaoGiaoDien()
 	NutDong.MouseEnter:Connect(function()
 		if not DangHanhDong then
 			HoatAnh.LuotChuot(NutDong, true, NutDongLuot, NutDongThuong)
-			DichVuTween:Create(VienNutDong, TweenInfo.new(0.3), {Transparency = 0}):Play()
+			TweenService:Create(VienNutDong, TweenInfo.new(0.3), {Transparency = 0}):Play()
 		end
 	end)
 	NutDong.MouseLeave:Connect(function()
 		if not DangHanhDong then
 			HoatAnh.LuotChuot(NutDong, false, NutDongLuot, NutDongThuong)
-			DichVuTween:Create(VienNutDong, TweenInfo.new(0.3), {Transparency = 1}):Play()
+			TweenService:Create(VienNutDong, TweenInfo.new(0.3), {Transparency = 1}):Play()
 		end
 	end)
 	NutDong.MouseButton1Click:Connect(DongGiaoDien)
 	NutMoUI.MouseButton1Click:Connect(function() HoatAnh.NhanChuot(NutMoUI) if KhungChinh.Visible then DongGiaoDien() else MoGiaoDien() end end)
 
-	if shared.HxKeybindEvent then shared.HxKeybindEvent:Disconnect() end
-	shared.HxKeybindEvent = DichVuDauVao.InputBegan:Connect(function(DauVaoBanPhim, DaXuLy)
+	UserInputService.InputBegan:Connect(function(DauVaoBanPhim, DaXuLy)
+		if shared.HxDangChinhPhim == true then return end
 		if DaXuLy then return end
-		if DauVaoBanPhim.KeyCode == PhimMoMenu then 
-			if KhungChinh.Visible then DongGiaoDien() else MoGiaoDien() end 
+
+		if DauVaoBanPhim.KeyCode == PhimMoMenu then
+			if KhungChinh.Visible then DongGiaoDien() else MoGiaoDien() end
+		end
+
+		if DauVaoBanPhim.KeyCode == PhimAutoClick then
+			if shared.HxDangChinhPhim then return end
+			if AutoClickLogic and AutoClickLogic.BatTatAutoClick then
+				local TrangThaiMoi = not AutoClickLogic.DangBat()
+				AutoClickLogic.BatTatAutoClick(TrangThaiMoi)
+				TrangThaiLuu.AutoClick = TrangThaiMoi
+				LuuConfig()
+				ThongBao("Hx Script", TrangThaiMoi and "Đã BẬT Auto Click" or "Đã TẮT Auto Click", 1)
+			end
 		end
 	end)
 
