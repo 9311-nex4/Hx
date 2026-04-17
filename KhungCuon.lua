@@ -325,34 +325,36 @@ function ThanhPhan.HopXo(Cha, DuLieu, CauHinh, CapNhat, DeQuy, NguCanh)
 		if type(LuaChon) == "table" and LuaChon.Ten == DuLieu.HienTai then LamMoiKhungPhu(LuaChon.CacNutCon) end
 	end
 
+	local HopXoDangMo = false
+	local AnimDongXoXuong = nil
+
 	HienThi.MouseButton1Click:Connect(function()
-		if NguCanh.DongMenu then NguCanh.DongMenu() end
+		if HopXoDangMo then
+			if AnimDongXoXuong then AnimDongXoXuong() end
+			return
+		end
+
+		if NguCanh and NguCanh.DongMenuAnim then 
+			NguCanh.DongMenuAnim() 
+		elseif NguCanh and NguCanh.DongMenu then 
+			NguCanh.DongMenu() 
+		end
+
+		HopXoDangMo = true
 
 		local KhungXo = TaoDoiTuong("Frame", {
 			Size = UDim2.new(0, HienThi.AbsoluteSize.X, 0, 0), 
 			Position = UDim2.fromOffset(HienThi.AbsolutePosition.X, HienThi.AbsolutePosition.Y + HienThi.AbsoluteSize.Y + 6),
-			BackgroundColor3 = Mau.NenPhu, ClipsDescendants = true, BorderSizePixel = 0, ZIndex = 105, Parent = NguCanh.LopPhu
+			BackgroundColor3 = Mau.NenPhu, ClipsDescendants = true, BorderSizePixel = 0, ZIndex = 105, Parent = NguCanh and NguCanh.LopPhu
 		})
 		TaoBoGoc(KhungXo, 8)
 		local VienKhung = TaoVien(KhungXo, Mau.VienNeon, 0.6)
 
-		local CapNhatViTri = nil
-		local function DongXoXuong()
-			if CapNhatViTri then CapNhatViTri:Disconnect() CapNhatViTri = nil end
-			NguCanh.DongMenu = nil
-			if not KhungXo.Parent then return end
-			ChayTween(VienKhung, TweenNhanh, {Transparency = 1})
-			local HieuUngDong = DichVuTween:Create(KhungXo, TweenNhanh, {Size = UDim2.new(0, HienThi.AbsoluteSize.X, 0, 0)})
-			HieuUngDong:Play()
-			HieuUngDong.Completed:Connect(function() KhungXo:Destroy() end)
+		if NguCanh and NguCanh.LopPhu and NguCanh.LopPhu.Parent then
+			for _, v in ipairs(NguCanh.LopPhu.Parent:GetChildren()) do
+				if v:IsA("TextButton") and v.ZIndex == 99 then v.Visible = true end
+			end
 		end
-
-		NguCanh.DongMenu = DongXoXuong
-
-		CapNhatViTri = DichVuRun.RenderStepped:Connect(function()
-			if not HienThi.Parent or not HienThi.Visible then DongXoXuong() return end
-			KhungXo.Position = UDim2.fromOffset(HienThi.AbsolutePosition.X, HienThi.AbsolutePosition.Y + HienThi.AbsoluteSize.Y + 6)
-		end)
 
 		local Cuon = TaoDoiTuong("ScrollingFrame", {
 			Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ScrollBarThickness = 4, BorderSizePixel = 0,
@@ -360,6 +362,58 @@ function ThanhPhan.HopXo(Cha, DuLieu, CauHinh, CapNhat, DeQuy, NguCanh)
 		})
 		TaoDoiTuong("UIPadding", {PaddingTop = UDim.new(0,4), PaddingBottom = UDim.new(0,4), PaddingLeft = UDim.new(0,4), PaddingRight = UDim.new(0,4), Parent = Cuon})
 		TaoDoiTuong("UIListLayout", {SortOrder = "LayoutOrder", Padding = UDim.new(0, 3), Parent = Cuon})
+
+		local CapNhatViTri = nil
+		AnimDongXoXuong = function()
+			if not HopXoDangMo then return end
+			HopXoDangMo = false
+			if NguCanh and NguCanh.DongMenuAnim == AnimDongXoXuong then NguCanh.DongMenuAnim = nil end
+			if CapNhatViTri then CapNhatViTri:Disconnect() CapNhatViTri = nil end
+			if not KhungXo.Parent then return end
+
+			ChayTween(VienKhung, TweenMuot, {Transparency = 1})
+			for _, child in ipairs(Cuon:GetChildren()) do
+				if child:IsA("TextButton") then
+					ChayTween(child, TweenMuot, {TextTransparency = 1, BackgroundTransparency = 1})
+				end
+			end
+
+			local HieuUngDong = DichVuTween:Create(KhungXo, TweenMuot, {Size = UDim2.new(0, HienThi.AbsoluteSize.X, 0, 0)})
+			HieuUngDong:Play()
+
+			HieuUngDong.Completed:Connect(function() 
+				if KhungXo then KhungXo:Destroy() end
+				if NguCanh and not NguCanh.DongMenuAnim and NguCanh.LopPhu and NguCanh.LopPhu.Parent then
+					for _, v in ipairs(NguCanh.LopPhu.Parent:GetChildren()) do
+						if v:IsA("TextButton") and v.ZIndex == 99 then v.Visible = false end
+					end
+				end
+			end)
+		end
+		if NguCanh then NguCanh.DongMenuAnim = AnimDongXoXuong end
+
+		KhungXo.AncestryChanged:Connect(function(_, parent)
+			if not parent then
+				HopXoDangMo = false
+				if CapNhatViTri then CapNhatViTri:Disconnect() CapNhatViTri = nil end
+				if NguCanh and NguCanh.DongMenuAnim == AnimDongXoXuong then NguCanh.DongMenuAnim = nil end
+			end
+		end)
+
+		local ToaDoYBanDau = HienThi.AbsolutePosition.Y
+		CapNhatViTri = DichVuRun.RenderStepped:Connect(function()
+			if not HienThi.Parent or not HienThi.Visible or not KhungXo.Parent then 
+				if CapNhatViTri then CapNhatViTri:Disconnect() CapNhatViTri = nil end
+				return 
+			end
+
+			if math.abs(HienThi.AbsolutePosition.Y - ToaDoYBanDau) > 2 then
+				AnimDongXoXuong()
+				return
+			end
+
+			KhungXo.Position = UDim2.fromOffset(HienThi.AbsolutePosition.X, HienThi.AbsolutePosition.Y + HienThi.AbsoluteSize.Y + 6)
+		end)
 
 		for ViTriLuaChon, DuLieuLuaChon in ipairs(DuLieu.LuaChon) do
 			local TenLuaChon = (type(DuLieuLuaChon) == "table") and DuLieuLuaChon.Ten or DuLieuLuaChon
@@ -384,7 +438,7 @@ function ThanhPhan.HopXo(Cha, DuLieu, CauHinh, CapNhat, DeQuy, NguCanh)
 				DuLieu.HienTai = TenLuaChon
 				HienThi.Text = TenLuaChon
 				LamMoiKhungPhu((type(DuLieuLuaChon) == "table") and DuLieuLuaChon.CacNutCon or nil)
-				DongXoXuong()
+				AnimDongXoXuong()
 				if type(DuLieu.SuKien) == "function" then task.spawn(DuLieu.SuKien, TenLuaChon) end
 			end)
 		end
@@ -394,7 +448,7 @@ function ThanhPhan.HopXo(Cha, DuLieu, CauHinh, CapNhat, DeQuy, NguCanh)
 	end)
 end
 
-function ThanhPhan.Danhsach(Cha, DuLieu, CauHinh, CapNhat, DeQuy)
+function ThanhPhan.Danhsach(Cha, DuLieu, CauHinh, CapNhat, DeQuy, NguCanh)
 	local Mau = CauHinh.Mau
 	local KhungChinh = TaoDoiTuong("Frame", {LayoutOrder = DuLieu.ThuTu, Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1, AutomaticSize = "Y", Parent = Cha}, {
 		TaoDoiTuong("UIListLayout", {SortOrder = "LayoutOrder"})
@@ -441,6 +495,8 @@ function ThanhPhan.Danhsach(Cha, DuLieu, CauHinh, CapNhat, DeQuy)
 	if DuLieu.DangMo then KhungChua.Size = UDim2.new(1, 0, 0, BoCuc.AbsoluteContentSize.Y + 16) end
 
 	DauMuc.MouseButton1Click:Connect(function()
+		if NguCanh and NguCanh.DongMenuAnim then NguCanh.DongMenuAnim() end
+
 		DuLieu.DangMo = not DuLieu.DangMo
 		ChayTween(KhungChua, TweenMuot, {Size = UDim2.new(1, 0, 0, DuLieu.DangMo and (BoCuc.AbsoluteContentSize.Y + 16) or 0)})
 		ChayTween(MuiTen, TweenMuot, {Rotation = DuLieu.DangMo and 180 or 0})
@@ -535,7 +591,7 @@ end
 
 function KhungCuon.Tao(Cuon, DuLieu, CauHinh, LopPhu, DongMenu)
 	local Mau = CauHinh.Mau
-	local NguCanh = {LopPhu = LopPhu, DongMenu = DongMenu}
+	local NguCanh = {LopPhu = LopPhu, DongMenu = DongMenu, DongMenuAnim = nil}
 
 	if not CauHinh.DangTab then
 		Cuon.ScrollingDirection = Enum.ScrollingDirection.Y
@@ -611,7 +667,11 @@ function KhungCuon.Tao(Cuon, DuLieu, CauHinh, LopPhu, DongMenu)
 			if DuLieuKhoi.ChucNang then
 				for ViTriChucNang, DuLieuChucNang in ipairs(DuLieuKhoi.ChucNang) do TaoMuc(ThanKhoi, DuLieuChucNang, function() if DangMoRong then BatTatThuGon() end end, ViTriChucNang) end
 			end
-			DauMuc.MouseButton1Click:Connect(function() DangMoRong = not DangMoRong BatTatThuGon() end)
+			DauMuc.MouseButton1Click:Connect(function() 
+				if NguCanh and NguCanh.DongMenuAnim then NguCanh.DongMenuAnim() end
+				DangMoRong = not DangMoRong 
+				BatTatThuGon() 
+			end)
 			task.delay(0.1, BatTatThuGon)
 		end
 
@@ -761,6 +821,7 @@ function KhungCuon.Tao(Cuon, DuLieu, CauHinh, LopPhu, DongMenu)
 
 			NutTab.MouseButton1Click:Connect(function()
 				if CurrentTabIndex ~= ViTriTab then
+					if NguCanh and NguCanh.DongMenuAnim then NguCanh.DongMenuAnim() end 
 					CauHinh.TabMacDinh = DuLieuTab.TenTab
 					ChuyenTab(ViTriTab, false)
 				end
