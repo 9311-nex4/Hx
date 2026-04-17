@@ -11,9 +11,16 @@ local function ThongBaoLoi(TieuDe, NoiDung) GuiThongBao.thongbaoloi(TieuDe, NoiD
 
 local HoatAnh = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Animation.lua"))()
 local KhungCuon = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/KhungCuon.lua"))()
+local MenuConfigManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/MenuConfigManager.lua"))()
 local Khoi = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Transform/Khoi_Logic.lua"))()
 
+local PhimMoMenu = Enum.KeyCode.Insert
+MenuConfigManager.SetFileName("main_v2")
+
 local CauHinh = {
+	DangTab = false, 
+	TabMacDinh = "",
+	SoCot = 2,
 	Mau = {
 		Nen = Color3.fromRGB(18, 18, 18),
 		NenList = Color3.fromRGB(35, 35, 35),
@@ -25,7 +32,7 @@ local CauHinh = {
 		VienNeon = Color3.fromRGB(255, 255, 255),
 		NenPhu = Color3.fromRGB(45, 45, 45),
 		ChonPhu = Color3.fromRGB(60, 60, 60),
-		TichBat = Color3.fromRGB(180, 180, 180),
+		TichBat = Color3.fromRGB(255, 255, 255),
 		NutDong = Color3.fromRGB(80, 80, 80),
 		NutDongLuot = Color3.fromRGB(200, 0, 0),
 		Chu = Color3.fromRGB(240, 240, 240),
@@ -49,12 +56,28 @@ local CauHinh = {
 		TieuDe = 16
 	}
 }
+
 local function BaoTrangThai(TenChucNang, TrangThai)
 	local NoiDung = TrangThai and "Đã bật " .. TenChucNang or "Đã tắt " .. TenChucNang
 	ThongBao("Hx Script", NoiDung, 2)
 end
+
 local DuLieuDanhSachKhoiUI = {}
 local TaiLaiGiaoDien = nil
+
+local TrangThaiLuu = {
+	ReduceLags = false,
+	PhimMoMenu = "Insert",
+}
+
+local function LuuConfig()
+	MenuConfigManager.Save(TrangThaiLuu)
+end
+
+local function DocConfig()
+	return MenuConfigManager.Load()
+end
+
 local function TaoCauTrucItemChoKhoi(Obj)
 	local TenHienThi = Obj.Name
 	local LaNhom = Obj:IsA("Model")
@@ -67,6 +90,7 @@ local function TaoCauTrucItemChoKhoi(Obj)
 	local IsAnchored = CheckPart and CheckPart.Anchored or true
 	local IsLocked = CheckPart and CheckPart.Locked or false
 	local IsMoveLocked = Obj:GetAttribute("KhoaDiChuyen") == true
+
 	local function SetAnchored(TrangThai)
 		if LaNhom then
 			for _, child in pairs(Obj:GetDescendants()) do
@@ -76,6 +100,7 @@ local function TaoCauTrucItemChoKhoi(Obj)
 			Obj.Anchored = TrangThai
 		end
 	end
+
 	local function SetLocked(TrangThai)
 		local Khoa = not TrangThai
 		if LaNhom then
@@ -86,6 +111,7 @@ local function TaoCauTrucItemChoKhoi(Obj)
 			Obj.Locked = Khoa
 		end
 	end
+
 	return {
 		Ten = LaNhom and "[NHÓM] " .. TenHienThi or TenHienThi,
 		Loai = "Otich",
@@ -143,6 +169,7 @@ local function TaoCauTrucItemChoKhoi(Obj)
 		}
 	}
 end
+
 Khoi.SuKienThayDoi.Event:Connect(function(HanhDong, DoiTuong)
 	if HanhDong == "Them" then
 		table.insert(DuLieuDanhSachKhoiUI, TaoCauTrucItemChoKhoi(DoiTuong))
@@ -156,6 +183,7 @@ Khoi.SuKienThayDoi.Event:Connect(function(HanhDong, DoiTuong)
 	end
 	if TaiLaiGiaoDien then TaiLaiGiaoDien() end
 end)
+
 local DanhSachNhom = {
 	{
 		TieuDe = "Main Transform",
@@ -315,24 +343,74 @@ local DanhSachNhom = {
 				end,
 			}
 		}
+	},
+	{
+		TieuDe = "Config Menu",
+		ChucNang = {
+			{ 
+				Ten = "Reduce Lags", 
+				Loai = "Otich", 
+				HienTai = "Tat", 
+				SuKien = function(TrangThai) 
+					MenuConfigManager.KichHoat(TrangThai)
+					TrangThaiLuu.ReduceLags = TrangThai
+					LuuConfig()
+					if TrangThai then
+						ThongBao("Hx Optimizer", "Đã tối ưu hóa đồ họa (Potato Mode)", 2)
+					else
+						ThongBao("Hx Optimizer", "Đã khôi phục cài đặt ánh sáng", 2)
+					end
+				end 
+			},				{
+				Ten = "HotKeys Open Menu", Loai = "PhimNong", HienTai = "Insert",
+				SuKien = function(Phim)
+					PhimMoMenu = Phim
+					TrangThaiLuu.PhimMoMenu = Phim.Name
+					LuuConfig()
+					ThongBao("Hx Script", "Đổi phím tắt Menu: " .. Phim.Name, 2)
+				end
+			},
+			{
+				Ten = "Destroy UI", Loai = "Nut",
+				SuKien = function()
+					if Khoi and Khoi.HuyChon then 
+						Khoi.HuyChon() 
+					end
+
+					if PlayerGui:FindFirstChild("main_v2") then
+						PlayerGui.main_v2:Destroy()
+					end
+
+					if shared.HxKeybindEvent then
+						shared.HxKeybindEvent:Disconnect()
+					end
+
+					ThongBao("Hx Script", "Đã đóng UI và dừng biến hình!", 2)
+				end
+			}
+		}
 	}
 }
+
 local function TaoGiaoDien()
-	if PlayerGui:FindFirstChild("TransformUI") then PlayerGui.TransformUI:Destroy() end
+	if PlayerGui:FindFirstChild("main_v2") then PlayerGui.main_v2:Destroy() end
 	local DangHanhDong = false
 	local KiemTraDienThoai = (UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled)
 	local KichThuocMo = UDim2.fromScale(0.7, 0.65) 
+
 	local ManHinhGui = Instance.new("ScreenGui")
-	ManHinhGui.Name = "TransformUI"
+	ManHinhGui.Name = "main_v2"
 	ManHinhGui.ResetOnSpawn = false
 	ManHinhGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	ManHinhGui.Parent = PlayerGui
+
 	local LopPhu = Instance.new("Frame")
 	LopPhu.Name = "LopPhu"
 	LopPhu.Size = UDim2.fromScale(1, 1)
 	LopPhu.BackgroundTransparency = 1
 	LopPhu.ZIndex = 100
 	LopPhu.Parent = ManHinhGui
+
 	local ClickOutside = Instance.new("TextButton")
 	ClickOutside.Size = UDim2.fromScale(1, 1)
 	ClickOutside.BackgroundTransparency = 1
@@ -340,11 +418,13 @@ local function TaoGiaoDien()
 	ClickOutside.Visible = false
 	ClickOutside.ZIndex = 99
 	ClickOutside.Parent = ManHinhGui
+
 	local function CloseAllDropdowns()
 		for _, c in ipairs(LopPhu:GetChildren()) do c:Destroy() end
 		ClickOutside.Visible = false
 	end
 	ClickOutside.MouseButton1Click:Connect(CloseAllDropdowns)
+
 	local NutMoUI = Instance.new("ImageButton")
 	NutMoUI.Name = "NutMoUI"
 	NutMoUI.Size = UDim2.new(0, 45, 0, 45) 
@@ -352,9 +432,12 @@ local function TaoGiaoDien()
 	NutMoUI.Image = CauHinh.Asset.Icon
 	NutMoUI.BackgroundColor3 = CauHinh.Mau.Nen
 	NutMoUI.BackgroundTransparency = 0.2
+	NutMoUI.Active = true
+	NutMoUI.ZIndex = 999
 	NutMoUI.Parent = ManHinhGui
 	Instance.new("UICorner", NutMoUI).CornerRadius = UDim.new(0, 10)
 	HoatAnh.KeoTha(NutMoUI, NutMoUI)
+
 	local KhungChinh = Instance.new("Frame")
 	KhungChinh.Name = "KhungChinh"
 	KhungChinh.Size = CauHinh.KichThuoc.IconLon
@@ -364,11 +447,14 @@ local function TaoGiaoDien()
 	KhungChinh.BackgroundTransparency = 1
 	KhungChinh.ClipsDescendants = true
 	KhungChinh.Visible = false
+	KhungChinh.Active = true
 	KhungChinh.Parent = ManHinhGui
 	Instance.new("UICorner", KhungChinh).CornerRadius = UDim.new(0, 14)
+
 	local GioiHanKichThuoc = Instance.new("UISizeConstraint")
 	GioiHanKichThuoc.MinSize = Vector2.new(450, 350)
 	GioiHanKichThuoc.Parent = KhungChinh
+
 	local BieuTuong = Instance.new("ImageLabel")
 	BieuTuong.Size = UDim2.fromOffset(0, 0)
 	BieuTuong.Position = UDim2.new(0.5, 0, 0.5, 0)
@@ -379,12 +465,14 @@ local function TaoGiaoDien()
 	BieuTuong.ZIndex = 2
 	BieuTuong.Parent = KhungChinh
 	Instance.new("UICorner", BieuTuong).CornerRadius = UDim.new(0, 10)
+
 	local KhungBaoNoiDung = Instance.new("Frame")
 	KhungBaoNoiDung.Name = "KhungBaoNoiDung"
 	KhungBaoNoiDung.Size = UDim2.fromScale(1, 1)
 	KhungBaoNoiDung.BackgroundTransparency = 1
 	KhungBaoNoiDung.ZIndex = 2
 	KhungBaoNoiDung.Parent = KhungChinh
+
 	local TieuDe = Instance.new("TextLabel")
 	TieuDe.Text = "Hx - Transform Script"
 	TieuDe.Size = UDim2.new(1, -90, 0, 50)
@@ -397,6 +485,7 @@ local function TaoGiaoDien()
 	TieuDe.TextTransparency = 1
 	TieuDe.ZIndex = 5
 	TieuDe.Parent = KhungBaoNoiDung
+
 	local NutDong = Instance.new("TextButton")
 	NutDong.Size = UDim2.fromOffset(CauHinh.KichThuoc.NutDong, CauHinh.KichThuoc.NutDong)
 	NutDong.Position = UDim2.new(1, -30, 0, 30)
@@ -410,12 +499,14 @@ local function TaoGiaoDien()
 	NutDong.Transparency = 1
 	NutDong.Parent = KhungChinh
 	Instance.new("UICorner", NutDong).CornerRadius = UDim.new(0, 8)
+
 	local VienNutDong = Instance.new("UIStroke")
 	VienNutDong.Color = CauHinh.Mau.Vien
 	VienNutDong.Transparency = 1
 	VienNutDong.Thickness = 2
 	VienNutDong.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	VienNutDong.Parent = NutDong
+
 	local VungCuon = Instance.new("ScrollingFrame")
 	VungCuon.Size = UDim2.new(1, -24, 1, -65)
 	VungCuon.Position = UDim2.new(0.5, 0, 1, -12)
@@ -427,11 +518,12 @@ local function TaoGiaoDien()
 	VungCuon.ZIndex = 2
 	VungCuon.Parent = KhungChinh
 	Instance.new("UICorner", VungCuon).CornerRadius = UDim.new(0, 8)
+
 	local VienVungCuon = Instance.new("UIStroke", VungCuon)
 	VienVungCuon.Color = CauHinh.Mau.VienNeon
 	VienVungCuon.Transparency = 0.5
 	VienVungCuon.Thickness = 0.5
-	
+
 	TaiLaiGiaoDien = function()
 		if not VungCuon or not VungCuon.Parent then return end
 		VungCuon:ClearAllChildren()
@@ -440,10 +532,12 @@ local function TaoGiaoDien()
 			ClickOutside.Visible = true
 		end)
 	end
+
 	KhungCuon.Tao(VungCuon, DanhSachNhom, CauHinh, LopPhu, function()
 		CloseAllDropdowns()
 		ClickOutside.Visible = true
 	end)
+
 	local CacPhanTu = {
 		Khung = KhungChinh,
 		Icon = BieuTuong,
@@ -452,6 +546,7 @@ local function TaoGiaoDien()
 		VienNutDong = VienNutDong,
 		KhungNoiDung = VungCuon
 	}
+
 	local CauHinhHieuUng = {
 		IconDau = CauHinh.KichThuoc.IconLon,
 		IconCuoi = CauHinh.KichThuoc.IconNho,
@@ -463,6 +558,7 @@ local function TaoGiaoDien()
 		DoTrongSuotKhung = 0.15
 	}
 	HoatAnh.KeoTha(KhungChinh, KhungChinh)
+
 	local function DongGiaoDien()
 		if DangHanhDong or not KhungChinh.Visible then return end
 		DangHanhDong = true
@@ -471,6 +567,7 @@ local function TaoGiaoDien()
 			DangHanhDong = false
 		end)
 	end
+
 	local function MoGiaoDien()
 		if DangHanhDong or KhungChinh.Visible then return end
 		DangHanhDong = true
@@ -480,6 +577,7 @@ local function TaoGiaoDien()
 		HoatAnh.MoGiaoDien(CacPhanTu, CauHinhHieuUng)
 		task.delay(0.2, function() DangHanhDong = false end)
 	end
+
 	local NutDongThuong = {
 		Size = UDim2.fromOffset(35, 35),
 		BackgroundColor3 = CauHinh.Mau.NutDong,
@@ -494,25 +592,57 @@ local function TaoGiaoDien()
 		TextSize = 26,
 		TextColor3 = Color3.new(1,1,1)
 	}
+
 	NutDong.MouseEnter:Connect(function()
 		if not DangHanhDong then
 			HoatAnh.LuotChuot(NutDong, true, NutDongLuot, NutDongThuong)
 			TweenService:Create(VienNutDong, TweenInfo.new(0.3), {Transparency = 0.4}):Play()
 		end
 	end)
+
 	NutDong.MouseLeave:Connect(function()
 		if not DangHanhDong then
 			HoatAnh.LuotChuot(NutDong, false, NutDongLuot, NutDongThuong)
 			TweenService:Create(VienNutDong, TweenInfo.new(0.3), {Transparency = 0.8}):Play()
 		end
 	end)
+
 	NutDong.MouseButton1Click:Connect(DongGiaoDien)
 	NutMoUI.MouseButton1Click:Connect(function()
 		HoatAnh.NhanChuot(NutMoUI)
 		if KhungChinh.Visible then DongGiaoDien() else MoGiaoDien() end
 	end)
+	
+	UserInputService.InputBegan:Connect(function(DauVaoBanPhim, DaXuLy)
+		if shared.HxDangChinhPhim == true then return end 
+		if DaXuLy then return end
+
+		if DauVaoBanPhim.KeyCode == PhimMoMenu then 
+			if KhungChinh.Visible then DongGiaoDien() else MoGiaoDien() end 
+		end
+	end)
+	
 	MoGiaoDien()
 end
+
+local function ApDungConfig(cfg)
+	if not cfg then return end
+	if cfg.ReduceLags then
+		MenuConfigManager.KichHoat(true)
+		for _, Nhom in ipairs(DanhSachNhom) do
+			for _, CN in ipairs(Nhom.ChucNang) do
+				if CN.Ten == "Reduce Lags" then CN.HienTai = "Bat" end
+				if CN.Ten == "HotKeys Open Menu" and cfg.PhimMoMenu then
+					local ok, key = pcall(function() return Enum.KeyCode[cfg.PhimMoMenu] end)
+					if ok and key then PhimMoMenu = key CN.HienTai = cfg.PhimMoMenu end
+				end
+			end
+		end
+	end
+end
+
+ApDungConfig(DocConfig())
+
 if not game:IsLoaded() then game.Loaded:Wait() end
 task.wait(1)
 TaoGiaoDien()
