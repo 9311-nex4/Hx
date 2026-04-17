@@ -1,13 +1,23 @@
-# Hx Script - Roblox UI & Utilities
+# Hx Script / ChaosSystem
 
-A modular script for Roblox containing UI components, AutoClick, Teleport, and graphic optimization (Reduce Lag). 
+A modular, open-source utility and UI library for Roblox. This project includes custom UI components, rendering optimization (Potato Mode), and various logic testing scripts.
 
-## ⚠️ DISCLAIMER (Tuyên bố miễn trừ trách nhiệm)
-**FOR EDUCATIONAL AND RESEARCH PURPOSES ONLY.**
+## Features
+- **Custom UI Library:** Smooth scrolling, animations, notifications, and modular tabs.
+- **Client Optimization:** Reduce lag by optimizing lighting and parts.
+- **Logic Modules:** Examples of teleportation math, auto-clicking mechanics, and part manipulation.
 
-- This repository and its content are provided for educational purposes, to demonstrate Lua programming and UI creation in Roblox.
-- The author is **NOT** responsible for any account bans, suspensions, or any damages resulting from the use of these scripts.
-- Using exploits or injecting scripts into games violates Roblox's Terms of Service. By downloading or using this code, you agree that you are doing so entirely at your own risk.
-- No malicious payloads (loggers, stealers) are included in this code.
+---
 
-Use wisely and at your own risk!
+## ⚠️ DISCLAIMER (FOR EDUCATIONAL PURPOSES ONLY)
+**This repository and its contents are provided strictly for educational and security research purposes.**
+
+- The scripts provided here demonstrate Lua programming, UI engineering, and game mechanics within the Roblox engine.
+- **The author is NOT responsible** for how others choose to use this code. Any damage, account bans, or suspensions resulting from the use of these scripts are entirely the user's responsibility.
+- Using third-party executors or injecting scripts into games violates Roblox's Terms of Service. Use at your own risk.
+- This project does NOT contain any malicious payloads, stealers, or loggers.
+
+## How to use
+Run the loader in your preferred environment:
+```lua
+loadstring(game:HttpGet("[https://raw.githubusercontent.com/](https://raw.githubusercontent.com/)[TÊN-GITHUB-CỦA-BẠN]/Hx/main/Hx_Loader.lua"))()
