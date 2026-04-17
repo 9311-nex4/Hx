@@ -20,4 +20,4 @@ A modular, open-source utility and UI library for Roblox. This project includes 
 ## How to use
 Run the loader in your preferred environment:
 ```lua
-loadstring(game:HttpGet("[https://raw.githubusercontent.com/](https://raw.githubusercontent.com/)[TÊN-GITHUB-CỦA-BẠN]/Hx/main/Hx_Loader.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Hx_Loader.lua"))()
