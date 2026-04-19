@@ -11,16 +11,16 @@ local flyVelocity, flyGyro, flyConnection, noclipConnection, selectionConnection
 local espCache = {}
 local ScannedItems = {}
 
-local DiaDiemGame = { [0] = {"Khu an toan", "Khu farm 1", "Khu boss"} }
+local DiaDiemGame = { [0] = {"1", "2", "3"} }
 local MAX_FORCE = Vector3.new(9e9, 9e9, 9e9)
 local VEC_ZERO = Vector3.zero
 local OFFSET_CFL = CFrame.new(0, 0, 3)
 
-function ETC_Logic.LayDiaDiemGame(PlaceId) return DiaDiemGame[PlaceId] or {"Chưa có dữ liệu map này"} end
+function ETC_Logic.LayDiaDiemGame(PlaceId) return DiaDiemGame[PlaceId] or {"Chưa có"} end
 function ETC_Logic.GetPlayers()
 	local ds = {}
 	for _, plr in ipairs(Players:GetPlayers()) do if plr ~= LocalPlayer then table.insert(ds, plr.Name) end end
-	if #ds == 0 then ds[1] = "Không có ai khác" end return ds
+	if #ds == 0 then ds[1] = "Không có" end return ds
 end
 
 local function TweenBypassFly(TargetCFrame)
