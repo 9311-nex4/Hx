@@ -13,7 +13,7 @@ local HoatAnh = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-
 local ThuVienUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ThuVienUI.lua"))()
 local ChuDe = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ChuDe.lua"))()
 local MenuConfigManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/MenuConfigManager.lua"))()
-local Khoi = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Main_Utilities/Khoi_Logic.lua"))()
+local Khoi = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Main_Script/Main_Utilities/Khoi_Logic.lua"))()
 
 MenuConfigManager.SetFileName("main_v2")
 
