@@ -8,7 +8,7 @@ local PlayerGui = NguoiChoi:WaitForChild("PlayerGui")
 local PlayerScripts = NguoiChoi:WaitForChild("PlayerScripts")
 local Camera = Workspace.CurrentCamera
 
-local GuiThongBao = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Notify.lua"))()
+local GuiThongBao = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ThongBao.lua"))()
 local function ThongBao(TieuDe, NoiDung, ThoiGian)
 	 GuiThongBao.thongbao(TieuDe, NoiDung, ThoiGian)
 end
@@ -16,7 +16,7 @@ local function ThongBaoLoi(TieuDe, NoiDung)
 	 GuiThongBao.thongbaoloi(TieuDe, NoiDung)
 end
 
-local HoatAnh = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Animation.lua"))()
+local HoatAnh = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/Animation.lua"))()
 
 _G.DaKichHoat = _G.DaKichHoat or {}
 
