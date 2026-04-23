@@ -40,6 +40,9 @@ local TimChucNang
 
 local TrangThaiLuu = {
 	ReduceLags = false,
+	RemoveFog = false,
+	FullBright = false,
+	NoShadows = false,
 	PhimMoMenu = "Insert",
 	ChuDeUI = {Ten = "Dark"}
 }
@@ -159,7 +162,10 @@ Khoi.SuKienThayDoi.Event:Connect(function(HanhDong, DoiTuong)
 end)
 
 CauHinh.ExtraConfig = {
-	{ Ten = "Reduce Lags", Loai = "Gat", HienTai = "Tat", SuKien = function(st) MenuConfigManager.KichHoat(st) TrangThaiLuu.ReduceLags = st LuuConfig() end },
+	{ Ten = "Reduce Lags", Loai = "Gat", HienTai = "Tat", SuKien = function(st) MenuConfigManager.ReduceLags(st) TrangThaiLuu.ReduceLags = st LuuConfig() end },
+	{ Ten = "Removes Fog", Loai = "Gat", HienTai = "Tat", SuKien = function(st) MenuConfigManager.RemoveFog(st) TrangThaiLuu.RemoveFog = st LuuConfig() end },
+	{ Ten = "Fully Bright", Loai = "Gat", HienTai = "Tat", SuKien = function(st) MenuConfigManager.FullBright(st) TrangThaiLuu.FullBright = st LuuConfig() end },
+	{ Ten = "No Shadows", Loai = "Gat", HienTai = "Tat", SuKien = function(st) MenuConfigManager.NoShadows(st) TrangThaiLuu.NoShadows = st LuuConfig() end },
 	{ Ten = "HotKeys Open Menu", Loai = "PhimNong", HienTai = "Insert", SuKien = function(key) PhimMoMenu = key TrangThaiLuu.PhimMoMenu = key.Name LuuConfig() end }
 }
 
