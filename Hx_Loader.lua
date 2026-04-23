@@ -5,8 +5,11 @@ local TweenService = game:GetService("TweenService")
 
 local NguoiChoi = Players.LocalPlayer
 local PlayerGui = NguoiChoi:WaitForChild("PlayerGui")
-local PlayerScripts = NguoiChoi:WaitForChild("PlayerScripts")
 local Camera = Workspace.CurrentCamera
+
+if PlayerGui:FindFirstChild("HxInterface") then 
+	PlayerGui.HxInterface:Destroy() 
+end
 
 local GuiThongBao = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ThongBao.lua"))()
 local function ThongBao(TieuDe, NoiDung, ThoiGian)
@@ -18,14 +21,10 @@ end
 
 local HoatAnh = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/Animation.lua"))()
 
-_G.DaKichHoat = _G.DaKichHoat or {}
-
 local DanhSachKichBan = {
 	{ Ten = "Transform", Link = "https://raw.githubusercontent.com/9311-nex4/Hx/main/Main_Script/main_v1.lua" },
 	{ Ten = "Transform_v2 (Testing)", Link = "https://raw.githubusercontent.com/9311-nex4/Hx/main/Main_Script/main_v2.lua" },
 	{ Ten = "Something (Testing)", Link = "https://raw.githubusercontent.com/9311-nex4/Hx/main/Main_Script/main_v3.lua" },
-	{ Ten = "Example 4", Link = "" },
-	{ Ten = "Example 5", Link = "" },
 }
 
 local CauHinh = {
@@ -49,8 +48,6 @@ local CauHinh = {
 }
 
 local function TaoGiaoDien()
-	if PlayerGui:FindFirstChild("HxInterface") then PlayerGui.HxInterface:Destroy() end
-
 	local DangDong = false
 	local ManHinhGui = Instance.new("ScreenGui")
 	ManHinhGui.Name = "HxInterface"
@@ -200,13 +197,7 @@ local function TaoGiaoDien()
 		Nut.MouseButton1Click:Connect(function()
 			HoatAnh.NhanChuot(Nut)
 
-			if _G.DaKichHoat[DuLieu.Ten] then
-				ThongBao("Hx Script", "Đã bật chức năng này rồi!", 2)
-				return
-			end
-
 			if DuLieu.Link ~= "" then
-				_G.DaKichHoat[DuLieu.Ten] = true
 				ThongBao("Hx Script", "Đang tải: " .. DuLieu.Ten, 2)
 
 				task.spawn(function()
@@ -229,7 +220,6 @@ local function TaoGiaoDien()
 			ManHinhGui:Destroy()
 		end)
 	end
-
 
 	local NutDongThuong = {
 		Size = UDim2.fromOffset(30, 30),
