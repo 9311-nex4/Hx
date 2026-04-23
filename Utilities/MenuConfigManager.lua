@@ -26,24 +26,6 @@ function MenuConfigManager.Load()
 	return (ok and type(result) == "table") and result or nil
 end
 
-local function TatHieuUngLighting()
-	for _, v in ipairs(Lighting:GetChildren()) do
-		if v:IsA("BlurEffect") or v:IsA("ColorCorrectionEffect") or v:IsA("SunRaysEffect")
-			or v:IsA("BloomEffect") or v:IsA("DepthOfFieldEffect") then
-			v.Enabled = false
-		end
-	end
-	Lighting.GlobalShadows             = false
-	Lighting.FogEnd                    = 9e9
-	Lighting.FogStart                  = 9e9
-	Lighting.Brightness                = 1
-	Lighting.ShadowSoftness            = 0
-	Lighting.EnvironmentDiffuseScale   = 0
-	Lighting.EnvironmentSpecularScale  = 0
-	Lighting.OutdoorAmbient            = Color3.fromRGB(70, 70, 70)
-	Lighting.Ambient                   = Color3.fromRGB(70, 70, 70)
-end
-
 local function TatHieuUngTerrain()
 	if not Terrain then return end
 	Terrain.WaterWaveSize     = 0
@@ -158,23 +140,33 @@ local function LangNgheCharMoi(charCache)
 	end
 end
 
-function MenuConfigManager.KichHoat(TrangThai)
+local OriginalLighting = {
+	FogEnd = Lighting.FogEnd,
+	FogStart = Lighting.FogStart,
+	Ambient = Lighting.Ambient,
+	Brightness = Lighting.Brightness,
+	ClockTime = Lighting.ClockTime,
+	GlobalShadows = Lighting.GlobalShadows
+}
+local States = { FullBright = false, NoShadows = false }
+local LightingConns = {}
+
+function MenuConfigManager.ReduceLags(TrangThai)
 	if not TrangThai then
 		_DaKichHoat = false
-		for _, c in ipairs(_KetNoiDonDep) do
-			pcall(function() c:Disconnect() end)
-		end
+		for _, c in ipairs(_KetNoiDonDep) do pcall(function() c:Disconnect() end) end
 		_KetNoiDonDep = {}
-		Lighting.GlobalShadows = true
 		return
 	end
-
 	if _DaKichHoat then return end
 	_DaKichHoat = true
 
-	TatHieuUngLighting()
 	TatHieuUngTerrain()
 	ToiUuCaiDat()
+
+	for _, v in ipairs(Lighting:GetChildren()) do
+		if v:IsA("PostEffect") then v.Enabled = false end
+	end
 
 	local charCache = XayDungCacheChar()
 	LangNgheCharMoi(charCache)
@@ -183,6 +175,62 @@ function MenuConfigManager.KichHoat(TrangThai)
 		QuetToanBo(charCache)
 		LangNgheObjMoi(charCache)
 	end)
+end
+
+function MenuConfigManager.RemoveFog(TrangThai)
+	if TrangThai then
+		OriginalLighting.FogEnd = Lighting.FogEnd
+		OriginalLighting.FogStart = Lighting.FogStart
+		Lighting.FogEnd = 9e9
+		Lighting.FogStart = 9e9
+	else
+		Lighting.FogEnd = OriginalLighting.FogEnd
+		Lighting.FogStart = OriginalLighting.FogStart
+	end
+end
+
+function MenuConfigManager.FullBright(TrangThai)
+	States.FullBright = TrangThai
+	if TrangThai then
+		OriginalLighting.Ambient = Lighting.Ambient
+		OriginalLighting.Brightness = Lighting.Brightness
+		OriginalLighting.ClockTime = Lighting.ClockTime
+		
+		Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+		Lighting.Brightness = 2
+		Lighting.ClockTime = 14
+		
+		if not LightingConns.FullBright then
+			LightingConns.FullBright = Lighting.Changed:Connect(function()
+				if States.FullBright then
+					Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+					Lighting.Brightness = 2
+					Lighting.ClockTime = 14
+				end
+			end)
+		end
+	else
+		if LightingConns.FullBright then LightingConns.FullBright:Disconnect() LightingConns.FullBright = nil end
+		Lighting.Ambient = OriginalLighting.Ambient
+		Lighting.Brightness = OriginalLighting.Brightness
+		Lighting.ClockTime = OriginalLighting.ClockTime
+	end
+end
+
+function MenuConfigManager.NoShadows(TrangThai)
+	States.NoShadows = TrangThai
+	if TrangThai then
+		OriginalLighting.GlobalShadows = Lighting.GlobalShadows
+		Lighting.GlobalShadows = false
+		if not LightingConns.NoShadows then
+			LightingConns.NoShadows = Lighting:GetPropertyChangedSignal("GlobalShadows"):Connect(function()
+				if States.NoShadows then Lighting.GlobalShadows = false end
+			end)
+		end
+	else
+		if LightingConns.NoShadows then LightingConns.NoShadows:Disconnect() LightingConns.NoShadows = nil end
+		Lighting.GlobalShadows = OriginalLighting.GlobalShadows
+	end
 end
 
 return MenuConfigManager
