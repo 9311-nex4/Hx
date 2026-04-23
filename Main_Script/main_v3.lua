@@ -36,7 +36,7 @@ for k, v in pairs(ChuDe.MacDinh) do CauHinh.Mau[k] = v end
 local DuLieuDanhSachClick = {}
 local TimChucNang
 
-local TrangThaiLuu = {TocDoClick = "500", PhimAutoClick = "R", PhimMoMenu = "Insert", HideAll = false, DanhSachClick = {}, ReduceLags = false, PhimClickTP = "T", FlyHotkey = "F", ChuDeUI = {Ten = "Dark"}}
+local TrangThaiLuu = {TocDoClick = "500", PhimAutoClick = "R", PhimMoMenu = "Insert", HideAll = false, DanhSachClick = {}, ReduceLags = false, RemoveFog = false, FullBright = false, NoShadows = false, PhimClickTP = "T", FlyHotkey = "F", ChuDeUI = {Ten = "Dark"}}
 
 local function LuuConfig()
 	TrangThaiLuu.DanhSachClick = {}
