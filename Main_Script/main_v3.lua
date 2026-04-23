@@ -99,7 +99,10 @@ local function ThemItemVaoESP(TenItem)
 end
 
 CauHinh.ExtraConfig = {
-	{ Ten = "Reduce Lags", Loai = "Gat", HienTai = "Tat", SuKien = function(st) MenuConfigManager.KichHoat(st) TrangThaiLuu.ReduceLags = st LuuConfig() end },
+	{ Ten = "Reduce Lags", Loai = "Gat", HienTai = "Tat", SuKien = function(st) MenuConfigManager.ReduceLags(st) TrangThaiLuu.ReduceLags = st LuuConfig() end },
+	{ Ten = "Removes Fog", Loai = "Gat", HienTai = "Tat", SuKien = function(st) MenuConfigManager.RemoveFog(st) TrangThaiLuu.RemoveFog = st LuuConfig() end },
+	{ Ten = "Fully Bright", Loai = "Gat", HienTai = "Tat", SuKien = function(st) MenuConfigManager.FullBright(st) TrangThaiLuu.FullBright = st LuuConfig() end },
+	{ Ten = "No Shadows", Loai = "Gat", HienTai = "Tat", SuKien = function(st) MenuConfigManager.NoShadows(st) TrangThaiLuu.NoShadows = st LuuConfig() end },
 	{ Ten = "HotKeys Open Menu", Loai = "PhimNong", HienTai = "Insert", SuKien = function(key) PhimMoMenu = key TrangThaiLuu.PhimMoMenu = key.Name LuuConfig() end }
 }
 
@@ -160,7 +163,10 @@ local function ApDungConfig(cfg)
 	if not cfg then return end
 	if cfg.TocDoClick then AutoClickLogic.CaiDatTocDo(tostring(cfg.TocDoClick)) local cn = TimChucNang("Auto Click", "Speed Click (ms)") if cn then cn.HienTai = tostring(cfg.TocDoClick) end end
 	if cfg.PhimAutoClick then pcall(function() PhimAutoClick = Enum.KeyCode[cfg.PhimAutoClick] end) local cn = TimChucNang("Auto Click", "Auto Click Hotkey") if cn then cn.HienTai = cfg.PhimAutoClick end end
-	if cfg.ReduceLags then MenuConfigManager.KichHoat(true) local cn = TimChucNang("Config Menu", "Reduce Lags") if cn then cn.HienTai = "Bat" end end
+	if cfg.ReduceLags then MenuConfigManager.ReduceLags(true) local cn = TimChucNang("Config Menu", "Reduce Lags") if cn then cn.HienTai = "Bat" end end
+	if cfg.RemoveFog then MenuConfigManager.RemoveFog(true) local cn = TimChucNang("Config Menu", "Removes Fog") if cn then cn.HienTai = "Bat" end end
+	if cfg.FullBright then MenuConfigManager.FullBright(true) local cn = TimChucNang("Config Menu", "Fully Bright") if cn then cn.HienTai = "Bat" end end
+	if cfg.NoShadows then MenuConfigManager.NoShadows(true) local cn = TimChucNang("Config Menu", "No Shadows") if cn then cn.HienTai = "Bat" end end
 	if cfg.PhimMoMenu then pcall(function() PhimMoMenu = Enum.KeyCode[cfg.PhimMoMenu] end) local cn = TimChucNang("Config Menu", "HotKeys Open Menu") if cn then cn.HienTai = cfg.PhimMoMenu end end
 	if cfg.PhimClickTP then pcall(function() ETC_Logic.SetKey(Enum.KeyCode[cfg.PhimClickTP]) end) local cn = TimChucNang("ETC", "Click TP Hotkey") if cn then cn.HienTai = cfg.PhimClickTP end end
 	if cfg.FlyHotkey then pcall(function() ETC_Logic.FlyHotkey = Enum.KeyCode[cfg.FlyHotkey] end) local cn = TimChucNang("ETC", "Hotkey Fly") if cn then cn.HienTai = cfg.FlyHotkey end end
