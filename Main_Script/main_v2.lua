@@ -9,17 +9,18 @@ local GuiThongBao = loadstring(game:HttpGet("https://raw.githubusercontent.com/9
 local function ThongBao(TieuDe, NoiDung, ThoiGian) GuiThongBao.thongbao(TieuDe, NoiDung, ThoiGian) end
 local function ThongBaoLoi(TieuDe, NoiDung) GuiThongBao.thongbaoloi(TieuDe, NoiDung) end
 
+local ChuDe = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ChuDe.lua"))()
 local HoatAnh = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/Animation.lua"))()
 local ThuVienUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ThuVienUI.lua"))()
-local ChuDe = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ChuDe.lua"))()
 local MenuConfigManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/MenuConfigManager.lua"))()
+
 local Khoi = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Main_Script/Main_Utilities/Khoi_Logic.lua"))()
 local Transform_Logic = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Main_Script/Main_Utilities/Transform_Logic.lua"))()
+local NhanVat_Logic = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Main_Script/Main_Utilities/NhanVat_Logic.lua"))()
 
 MenuConfigManager.SetFileName("main_v2")
 
 local PhimMoMenu = Enum.KeyCode.Insert
-
 local CauHinh = {
 	DangTab = false, SoCot = 2,
 	ConfigMenu = true, TimKiem = false,
@@ -46,6 +47,13 @@ local TrangThaiLuu = {
 	PhimMoMenu = "Insert",
 	ChuDeUI = { Ten = "Dark" },
 	KhoiConfig = {},
+	TransformConfig = {
+		Active = false,
+		ShowOutline = true,
+		CanSelect = false,
+		Mode = "ToanThan",
+		ShowHUD = true
+	},
 }
 
 local function LuuConfig()
@@ -168,6 +176,43 @@ CauHinh.ExtraConfig = {
 	{ Ten = "HotKeys Open Menu", Loai = "PhimNong", HienTai = "Insert", SuKien = function(key) PhimMoMenu = key TrangThaiLuu.PhimMoMenu = key.Name LuuConfig() end },
 }
 
+local function LuuTransformConfig(key, value)
+	TrangThaiLuu.TransformConfig[key] = value
+	LuuConfig()
+end
+
+local function TaoPhanTungPhan(tenHienThi, logicName)
+	return {
+		Ten = tenHienThi, Loai = "Gat", HienTai = "Tat", LoaiNutCon = "CungHang",
+		SuKien = function(TrangThai)
+			Transform_Logic.SetPartEnabled(logicName, TrangThai)
+			ThongBao("Hx Script", TrangThai and ("Đã bật " .. tenHienThi) or ("Đã tắt " .. tenHienThi), 1)
+		end,
+		CacNutCon = {
+			{
+				Ten = "Lưu Trữ",
+				SuKien = function()
+					local ok = Transform_Logic.SavePart(logicName)
+					ThongBao("Hx Script", ok and ("Đã lưu " .. tenHienThi .. "!") or "Chưa chọn Part nào!", ok and 2 or 3)
+				end
+			},
+			{
+				Ten = "Xóa Lưu",
+				SuKien = function()
+					Transform_Logic.ClearPart(logicName)
+					ThongBao("Hx Script", "Đã xóa lưu " .. tenHienThi .. "!", 2)
+				end
+			},
+		}
+	}
+end
+
+local ModeMap = {
+	["Toàn Thân"] = "ToanThan",
+	["Từng Phần"] = "TungPhan",
+	["Nhân Vật"]  = "NhanVat",
+}
+
 local DanhSachNhom = {
 	{
 		TieuDe = "Main Transform",
@@ -175,22 +220,73 @@ local DanhSachNhom = {
 			{
 				Ten = "Chức Năng Biến Hình",
 				Loai = "Gat",
-				HienTai = "Bat",
+				HienTai = "Tat",
 				CacNutCon = {
-					{ Ten = "Hiển Thị Nút Chức Năng",        Loai = "Gat", HienTai = "Bat", SuKien = function(TrangThai) BaoTrangThai("hiển thị nút chức năng thành công!", TrangThai) end },
-					{ Ten = "Hiển thị Outline Vùng Chọn",    Loai = "Gat", HienTai = "Bat", SuKien = function(TrangThai) BaoTrangThai("hiển thị outline vùng chọn cho các part.", TrangThai) end },
+					{
+						Ten = "Hiển thị Outline Vùng Chọn",
+						Loai = "Gat",
+						HienTai = "Bat",
+						SuKien = function(TrangThai)
+							Transform_Logic.ToggleOutline(TrangThai)
+							LuuTransformConfig("ShowOutline", TrangThai)
+						end
+					},
+					{
+						Ten = "Hiển Thị Nút Ngoài",
+						Loai = "Gat",
+						HienTai = "Bat",
+						SuKien = function(TrangThai)
+							LuuTransformConfig("ShowHUD", TrangThai)
+							local gui = PlayerGui:FindFirstChild("main_v2")
+							if gui and gui:FindFirstChild("KhungNutNgoai") then
+								gui.KhungNutNgoai.Visible = TrangThai
+							end
+						end
+					}
 				},
-				SuKien = function(TrangThai) BaoTrangThai("chức năng biến hình!", TrangThai) end
+				SuKien = function(TrangThai)
+					Transform_Logic.SetActive(TrangThai)
+					LuuTransformConfig("Active", TrangThai)
+					BaoTrangThai("chức năng biến hình", TrangThai)
+				end
 			}
 		}
 	},
 	{
 		TieuDe = "Nhân Vật Transform",
 		ChucNang = {
-			{ Loai = "NhieuNut", Ten1 = "Tạo Nhân Vật Mẫu", SuKien1 = function() ThongBaoLoi("Hx Script", "Tính năng đang phát triển!") end, Ten2 = "Xóa Nhân Vật Chọn", SuKien2 = function() ThongBaoLoi("Hx Script", "Tính năng đang phát triển!") end },
-			{ Ten = "Cho Phép Di Chuyển", Loai = "Gat", HienTai = "Bat", SuKien = function() ThongBaoLoi("Hx Script", "Tính năng đang phát triển!") end },
-			{ Ten = "Cho Phép Chọn",      Loai = "Gat", HienTai = "Bat", SuKien = function() ThongBaoLoi("Hx Script", "Tính năng đang phát triển!") end },
-			{ Ten = "Transform",          Loai = "Nut",                  SuKien = function() ThongBaoLoi("Hx Script", "Tính năng đang phát triển!") end },
+			{
+				Loai = "NhieuNut",
+				Ten1 = "Tạo Nhân Vật Mẫu",
+				SuKien1 = function()
+					if NhanVat_Logic and NhanVat_Logic.CreateDummy then NhanVat_Logic.CreateDummy() end
+					ThongBao("Hx Script", "Đã tạo nhân vật mẫu!", 2)
+				end,
+				Ten2 = "Xóa Nhân Vật Chọn",
+				SuKien2 = function()
+					if NhanVat_Logic and NhanVat_Logic.RemoveDummy then NhanVat_Logic.RemoveDummy() end
+					ThongBao("Hx Script", "Đã xóa nhân vật mẫu!", 2)
+				end,
+			},
+			{
+				Ten = "Cho Phép Chọn",
+				Loai = "Gat",
+				HienTai = "Tat",
+				SuKien = function(TrangThai)
+					Transform_Logic.SetCharSelect(TrangThai)
+					LuuTransformConfig("CanSelect", TrangThai)
+					BaoTrangThai("chọn part", TrangThai)
+				end
+			},
+			{
+				Ten = "Transform",
+				Loai = "Nut",
+				SuKien = function()
+					local ok, msg = Transform_Logic.DoTransform()
+					if ok then ThongBao("Hx Script", msg, 3)
+					else ThongBaoLoi("Hx Script", msg) end
+				end
+			},
 		}
 	},
 	{
@@ -200,25 +296,23 @@ local DanhSachNhom = {
 				Ten = "Thành Phần",
 				Loai = "HopXo",
 				HienTai = "Toàn Thân",
+				SuKien = function(LuaChonHienTai)
+					local mode = ModeMap[LuaChonHienTai] or "ToanThan"
+					Transform_Logic.SetMode(mode)
+					LuuTransformConfig("Mode", mode)
+					ThongBao("Hx Script", "Chế độ: " .. LuaChonHienTai, 2)
+				end,
 				LuaChon = {
 					"Toàn Thân",
 					{
 						Ten = "Từng Phần",
 						CacNutCon = {
-							{
-								Ten = "Phần Đầu", Loai = "Gat", HienTai = "Bat", LoaiNutCon = "CungHang",
-								CacNutCon = {
-									{ Ten = "Lưu Trữ", SuKien = function() ThongBao("Hx Script", "Đã lưu trữ Phần Đầu!", 3) end },
-									{ Ten = "Xóa Lưu", SuKien = function() ThongBao("Hx Script", "Đã xóa lưu Phần Đầu!", 3) end },
-								}
-							},
-							{
-								Ten = "Phần Thân", Loai = "Gat", HienTai = "Bat", LoaiNutCon = "CungHang",
-								CacNutCon = {
-									{ Ten = "Lưu Trữ", SuKien = function() ThongBao("Hx Script", "Đã lưu trữ Phần Thân!", 3) end },
-									{ Ten = "Xóa Lưu", SuKien = function() ThongBao("Hx Script", "Đã xóa lưu Phần Thân!", 3) end },
-								}
-							},
+							TaoPhanTungPhan("Phần Đầu",     "Head"),
+							TaoPhanTungPhan("Phần Thân",    "Torso"),
+							TaoPhanTungPhan("Tay Phải",     "RightArm"),
+							TaoPhanTungPhan("Tay Trái",     "LeftArm"),
+							TaoPhanTungPhan("Chân Phải",    "RightLeg"),
+							TaoPhanTungPhan("Chân Trái",    "LeftLeg"),
 						}
 					},
 					"Nhân Vật",
@@ -284,6 +378,29 @@ local function ApDungConfig(cfg)
 	end
 	if cfg.ChuDeUI then CauHinh.ChuDeDaLuu = cfg.ChuDeUI end
 	if cfg.KhoiConfig then Khoi.SetConfig(cfg.KhoiConfig) end
+	if cfg.TransformConfig then
+		local tc = cfg.TransformConfig
+		if tc.Active ~= nil      then Transform_Logic.SetActive(tc.Active) end
+		if tc.ShowOutline ~= nil then Transform_Logic.ToggleOutline(tc.ShowOutline) end
+		if tc.CanSelect ~= nil   then Transform_Logic.SetCharSelect(tc.CanSelect) end
+		if tc.Mode               then Transform_Logic.SetMode(tc.Mode) end
+
+		local cnMain = TimChucNang("Chức Năng Biến Hình")
+		if cnMain then cnMain.HienTai = tc.Active and "Bat" or "Tat" end
+
+		local cn = TimChucNang("Hiển thị Outline Vùng Chọn")
+		if cn then cn.HienTai = (tc.ShowOutline ~= false) and "Bat" or "Tat" end
+
+		local cnHUD = TimChucNang("Hiển Thị Nút Ngoài")
+		if cnHUD then cnHUD.HienTai = (tc.ShowHUD ~= false) and "Bat" or "Tat" end
+
+		local cnSel = TimChucNang("Cho Phép Chọn")
+		if cnSel then cnSel.HienTai = tc.CanSelect and "Bat" or "Tat" end
+
+		if PlayerGui:FindFirstChild("main_v2") and PlayerGui.main_v2:FindFirstChild("KhungNutNgoai") then
+			PlayerGui.main_v2.KhungNutNgoai.Visible = (tc.ShowHUD ~= false)
+		end
+	end
 	for k, v in pairs(cfg) do TrangThaiLuu[k] = v end
 end
 
@@ -411,7 +528,35 @@ local function TaoGiaoDien()
 		if shared.HxDangChinhPhim == true or DaXuLy then return end
 		if DauVaoBanPhim.KeyCode == PhimMoMenu then
 			if KhungChinh.Visible then DongGiaoDien() else MoGiaoDien() end
+		elseif DauVaoBanPhim.KeyCode == Enum.KeyCode.R then
+			local ok, msg = Transform_Logic.DoTransform()
+			if msg then ThongBao(ok and "Thành công" or "Lỗi", msg, 2) end
 		end
+	end)
+
+	local KhungNutNgoai = Instance.new("Frame", ManHinhGui)
+	KhungNutNgoai.Name = "KhungNutNgoai"
+	KhungNutNgoai.Size = UDim2.new(0, 50, 0, 50)
+	KhungNutNgoai.Position = UDim2.new(1, -70, 0.6, 0)
+	KhungNutNgoai.AnchorPoint = Vector2.new(1, 1)
+	KhungNutNgoai.BackgroundTransparency = 1
+	KhungNutNgoai.Visible = (TrangThaiLuu.TransformConfig.ShowHUD ~= false)
+
+	local NutBienHinhNgoai = Instance.new("TextButton", KhungNutNgoai)
+	NutBienHinhNgoai.Name = "NutBienHinhNgoai"
+	NutBienHinhNgoai.Size = UDim2.new(1, 0, 1, 0)
+	NutBienHinhNgoai.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+	NutBienHinhNgoai.BackgroundTransparency = 0.3
+	NutBienHinhNgoai.Text = "Biến"
+	NutBienHinhNgoai.TextColor3 = Color3.new(1, 1, 1)
+	NutBienHinhNgoai.Font = Enum.Font.GothamBold
+	NutBienHinhNgoai.TextScaled = true
+	Instance.new("UICorner", NutBienHinhNgoai).CornerRadius = UDim.new(1, 0)
+
+	NutBienHinhNgoai.MouseButton1Click:Connect(function()
+		HoatAnh.NhanChuot(NutBienHinhNgoai)
+		local ok, msg = Transform_Logic.DoTransform()
+		if msg then ThongBao(ok and "Thành công" or "Lỗi", msg, 2) end
 	end)
 
 	MoGiaoDien()
