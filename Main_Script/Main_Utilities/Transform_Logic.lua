@@ -1,25 +1,24 @@
 local Transform = {}
-
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local Debris = game:GetService("Debris")
-local TweenService = game:GetService("TweenService")
-
 local Player = Players.LocalPlayer
-local Mouse = Player:GetMouse()
 local Camera = workspace.CurrentCamera
-local PlayerGui = Player.PlayerGui
+local PlayerGui = Player:WaitForChild("PlayerGui")
 
 local State = {
-	IsActive = true,
-	CanSelect = true,
+	IsActive = false,
+	CanSelect_Main = false,
+	CanSelect_Char = false,
 	CanMove = false,
 	ShowOutline = true,
 	CurrentMode = "ToanThan",
 	SelectedPart = nil,
-	CurrentDummy = nil,
 	DraggingPart = nil,
+	EnabledParts = {
+		Head = false, Torso = false, RightArm = false, LeftArm = false, RightLeg = false, LeftLeg = false
+	}
 }
 
 local Storage = {
@@ -27,6 +26,8 @@ local Storage = {
 	CreatedObjects = {},
 	OrigTransparency = {},
 	OrigCollision = {},
+	OrigTargetModel = nil,
+	OrigTargetCFrame = nil,
 }
 
 local Connections = {
@@ -48,14 +49,8 @@ local PART_MAP = {
 	LeftLeg   = { "Left Leg", "LeftUpperLeg", "LeftLowerLeg", "LeftFoot" },
 }
 
-local DRAG_TWEEN = TweenInfo.new(0.07, Enum.EasingStyle.Linear)
-local DRAG_RAY_PARAMS = RaycastParams.new()
-DRAG_RAY_PARAMS.FilterType = Enum.RaycastFilterType.Blacklist
-
 local SELECT_RAY_PARAMS = RaycastParams.new()
-SELECT_RAY_PARAMS.FilterType = Enum.RaycastFilterType.Blacklist
-
-local V3_ZERO = Vector3.new(0, 0, 0)
+SELECT_RAY_PARAMS.FilterType = Enum.RaycastFilterType.Exclude
 
 local function TaoHieuUng(part)
 	if not part then return end
@@ -68,6 +63,7 @@ local function TaoHieuUng(part)
 	p.Transparency = NumberSequence.new(0, 1)
 	p.Lifetime = NumberRange.new(0.5, 1)
 	p.Speed = NumberRange.new(2, 5)
+	p.SpreadAngle = Vector2.new(360, 360)
 	p.Rate = 0
 	p.Parent = att
 	p:Emit(50)
@@ -78,7 +74,8 @@ local function CapNhatOutline()
 	local old = PlayerGui:FindFirstChild("TransformSelectionBox")
 	if old then old:Destroy() end
 	local sel = State.SelectedPart
-	if State.ShowOutline and sel then
+	local modeValid = (State.CurrentMode == "NhanVat" and State.CanSelect_Char) or (State.CurrentMode ~= "NhanVat" and State.CanSelect_Main)
+	if State.ShowOutline and sel and modeValid then
 		local box = Instance.new("SelectionBox")
 		box.Name = "TransformSelectionBox"
 		box.Color3 = SEL_COLOR
@@ -88,65 +85,96 @@ local function CapNhatOutline()
 	end
 end
 
-local function AnNhanVatThat()
-	local char = Player.Character
-	if not char then return end
-	local origT, origC = Storage.OrigTransparency, Storage.OrigCollision
+local function LuuTrangThai(char)
+	table.clear(Storage.OrigTransparency)
+	table.clear(Storage.OrigCollision)
 	for _, v in ipairs(char:GetDescendants()) do
 		if v:IsA("BasePart") and v.Name ~= "HumanoidRootPart" then
-			origT[v] = v.Transparency
-			origC[v] = v.CanCollide
+			Storage.OrigTransparency[v] = v.Transparency
+			Storage.OrigCollision[v] = v.CanCollide
+		elseif v:IsA("Decal") or v:IsA("Texture") then
+			Storage.OrigTransparency[v] = v.Transparency
+		end
+	end
+end
+
+local function AnToanThan(char)
+	for _, v in ipairs(char:GetDescendants()) do
+		if v:IsA("BasePart") and v.Name ~= "HumanoidRootPart" then
 			v.Transparency = 1
 			v.CanCollide = false
 		elseif v:IsA("Decal") or v:IsA("Texture") then
-			origT[v] = v.Transparency
 			v.Transparency = 1
+		end
+	end
+end
+
+local function AnBoPhan(char, logicName)
+	local realList = PART_MAP[logicName]
+	if not realList then return end
+	for _, realName in ipairs(realList) do
+		local c = char:FindFirstChild(realName)
+		if c then
+			c.Transparency = 1
+			c.CanCollide = false
+			for _, d in ipairs(c:GetDescendants()) do
+				if d:IsA("BasePart") then
+					d.Transparency = 1
+					d.CanCollide = false
+				elseif d:IsA("Decal") or d:IsA("Texture") then
+					d.Transparency = 1
+				end
+			end
 		end
 	end
 end
 
 local function HienNhanVatThat()
 	for obj, t in next, Storage.OrigTransparency do
-		if obj and obj.Parent then obj.Transparency = t end
+		if obj and obj.Parent then pcall(function() obj.Transparency = t end) end
 	end
 	for obj, c in next, Storage.OrigCollision do
-		if obj and obj.Parent then obj.CanCollide = c end
+		if obj and obj.Parent then pcall(function() obj.CanCollide = c end) end
 	end
 	table.clear(Storage.OrigTransparency)
 	table.clear(Storage.OrigCollision)
 end
 
-local function BatDauKeoTha()
-	local conn = Connections.DragListener
-	if conn then conn:Disconnect() end
-
+function Transform.Undo()
+	if Connections.AnimationSync then 
+		Connections.AnimationSync:Disconnect() 
+		Connections.AnimationSync = nil 
+	end
+	HienNhanVatThat()
+	for _, obj in pairs(Storage.CreatedObjects) do
+		if obj then obj:Destroy() end
+	end
+	table.clear(Storage.CreatedObjects)
+	if Storage.OrigTargetModel and Storage.OrigTargetCFrame then
+		pcall(function() Storage.OrigTargetModel:SetPrimaryPartCFrame(Storage.OrigTargetCFrame) end)
+		Storage.OrigTargetModel = nil
+		Storage.OrigTargetCFrame = nil
+	end
 	local char = Player.Character
-	Connections.DragListener = RunService.RenderStepped:Connect(function()
-		local dp = State.DraggingPart
-		if not (State.CanMove and dp and dp.Parent) then return end
-
-		DRAG_RAY_PARAMS.FilterDescendantsInstances = { dp, char or Player.Character }
-		local ray = Mouse.UnitRay
-		local result = workspace:Raycast(ray.Origin, ray.Direction * 100, DRAG_RAY_PARAMS)
-		local targetPos = result
-			and result.Position + Vector3.new(0, dp.Size.Y * 0.5, 0)
-			or ray.Origin + ray.Direction * 20
-
-		dp.Anchored = true
-		TweenService:Create(dp, DRAG_TWEEN, { Position = targetPos }):Play()
-	end)
+	if char then
+		local r = char:FindFirstChild("HumanoidRootPart")
+		if r then TaoHieuUng(r) end
+	end
+	return "Đã hoàn tác!"
 end
 
 local function BienHinh_ToanThan(char, root)
 	local sel = State.SelectedPart
-	if not sel then return false, "Chưa chọn Part!" end
-	AnNhanVatThat()
+	if not sel or not sel.Parent then return false, "Chưa chọn Part!" end
+	LuuTrangThai(char)
+	AnToanThan(char)
 	local clone = sel:Clone()
 	clone.Name = "Morph_FullBody"
 	clone.Anchored = false
 	clone.CanCollide = false
 	clone.Massless = true
-	clone.CFrame = root.CFrame
+	local orientationGoc = sel.CFrame - sel.CFrame.Position
+	clone.CFrame = CFrame.new(root.CFrame.Position) * orientationGoc
 	local w = Instance.new("WeldConstraint")
 	w.Part0 = root; w.Part1 = clone; w.Parent = root
 	clone.Parent = char
@@ -156,91 +184,116 @@ end
 
 local function BienHinh_TungPhan(char)
 	local hasPart = false
-	AnNhanVatThat()
-	local saved = Storage.SavedParts
-	local created = Storage.CreatedObjects
+	local sel = State.SelectedPart
+	local coBoPhanNaoDuocBat = false
+	for _, isOn in pairs(State.EnabledParts) do
+		if isOn then coBoPhanNaoDuocBat = true; break end
+	end
+	if not coBoPhanNaoDuocBat then
+		return false, "Bạn phải bật ít nhất 1 bộ phận để biến hình Từng Phần!"
+	end
+	LuuTrangThai(char)
 	for logicName, realList in next, PART_MAP do
-		local src = saved[logicName]
-		if src then
-			hasPart = true
-			local target
-			for i = 1, #realList do
-				local c = char:FindFirstChild(realList[i])
-				if c then target = c; break end
-			end
-			if target then
-				local clone = src:Clone()
-				clone.Name = "Morph_" .. logicName
-				clone.Anchored = false
-				clone.CanCollide = false
-				clone.Massless = true
-				clone.CFrame = target.CFrame
-				local w = Instance.new("WeldConstraint")
-				w.Part0 = target; w.Part1 = clone; w.Parent = target
-				clone.Parent = char
-				table.insert(created, clone)
+		if State.EnabledParts[logicName] then
+			local partDeBienHinh = Storage.SavedParts[logicName] or sel
+			if partDeBienHinh then
+				local target
+				for _, realName in ipairs(realList) do
+					local c = char:FindFirstChild(realName)
+					if c and c:IsA("BasePart") then target = c; break end
+				end
+				if target then
+					hasPart = true
+					local clone = partDeBienHinh:Clone()
+					clone.Name = "Morph_" .. logicName
+					clone.Anchored = false
+					clone.CanCollide = false
+					clone.Massless = true
+					local orientationGoc = partDeBienHinh.CFrame - partDeBienHinh.CFrame.Position
+					clone.CFrame = CFrame.new(target.CFrame.Position) * orientationGoc
+					local w = Instance.new("WeldConstraint")
+					w.Part0 = target; w.Part1 = clone; w.Parent = target
+					clone.Parent = char
+					table.insert(Storage.CreatedObjects, clone)
+					AnBoPhan(char, logicName)
+				end
 			end
 		end
 	end
-	if not hasPart then HienNhanVatThat(); return false, "Chưa lưu trữ bộ phận nào!" end
+	if not hasPart then 
+		HienNhanVatThat()
+		return false, "Chưa có Part nào được chọn hoặc lưu trữ cho các phần đang bật!" 
+	end
 	return true, "Biến hình từng phần thành công!"
 end
 
 local function BienHinh_NhanVat(char, root)
 	local sel = State.SelectedPart
-	local targetModel = sel and sel:FindFirstAncestorWhichIsA("Model")
-	if not targetModel or not targetModel:FindFirstChild("Humanoid") then
+	if not sel then return false, "Chưa chọn Nhân vật mục tiêu!" end
+	local targetModel = sel:FindFirstAncestorWhichIsA("Model")
+	if not targetModel or not targetModel:FindFirstChildWhichIsA("Humanoid") then
 		return false, "Đối tượng chọn không phải là Nhân Vật!"
 	end
 	if targetModel == char then return false, "Không thể biến thành chính mình!" end
-
-	local myHum = char:FindFirstChild("Humanoid")
-	AnNhanVatThat()
+	local myHum = char:FindFirstChildWhichIsA("Humanoid")
+	if not myHum then return false, "Lỗi: Không tìm thấy Humanoid của bạn!" end
+	LuuTrangThai(char)
+	AnToanThan(char)
+	Storage.OrigTargetModel = targetModel
+	Storage.OrigTargetCFrame = targetModel:GetPrimaryPartCFrame()
 	targetModel.Archivable = true
 	local cloneChar = targetModel:Clone()
 	cloneChar.Name = "Morph_Character"
-
-	for _, v in ipairs(cloneChar:GetDescendants()) do
-		if v:IsA("Script") or (v:IsA("LocalScript") and v.Name ~= "Animate") then
-			v:Destroy()
-		elseif v:IsA("BasePart") then
-			v.Anchored = false
-			v.CanCollide = false
-			v.Massless = true
-		end
-	end
-
+	pcall(function() targetModel:SetPrimaryPartCFrame(CFrame.new(0, -20000, 0)) end)
 	local cloneRoot = cloneChar:FindFirstChild("HumanoidRootPart")
-	local cloneHum = cloneChar:FindFirstChild("Humanoid")
+	local cloneHum = cloneChar:FindFirstChildWhichIsA("Humanoid")
 	if not cloneRoot or not cloneHum then
 		cloneChar:Destroy()
 		HienNhanVatThat()
-		return false, "Nhân vật mục tiêu bị lỗi!"
+		return false, "Nhân vật mục tiêu bị lỗi (Thiếu Root/Humanoid)!"
 	end
-
 	cloneHum.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
 	cloneHum.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOff
-	cloneRoot.CFrame = root.CFrame * CFrame.new(0, myHum.HipHeight - cloneHum.HipHeight, 0)
-
+	cloneHum.NameDisplayDistance = 0
+	pcall(function()
+		local myDesc = myHum:GetAppliedDescription()
+		local cloneDesc = cloneHum:GetAppliedDescription()
+		cloneDesc.BodyDepthScale = myDesc.BodyDepthScale
+		cloneDesc.BodyHeightScale = myDesc.BodyHeightScale
+		cloneDesc.BodyWidthScale = myDesc.BodyWidthScale
+		cloneDesc.HeadScale = myDesc.HeadScale
+		cloneHum:ApplyDescription(cloneDesc)
+	end)
+	task.wait()
+	local doLechDoc = 0
+	pcall(function() doLechDoc = myHum.HipHeight - cloneHum.HipHeight end)
+	for _, v in ipairs(cloneChar:GetDescendants()) do
+		if (v:IsA("Script") or v:IsA("LocalScript")) and v.Name ~= "Animate" then
+			v:Destroy()
+		elseif v:IsA("BasePart") then
+			v.CanCollide = false
+			v.Massless = true
+			if v ~= cloneRoot then v.Anchored = false end
+		end
+	end
+	cloneRoot.Anchored = false
+	cloneRoot.CFrame = root.CFrame * CFrame.new(0, doLechDoc, 0)
 	local w = Instance.new("WeldConstraint")
 	w.Part0 = root; w.Part1 = cloneRoot; w.Parent = root
 	cloneChar.Parent = char
 	table.insert(Storage.CreatedObjects, cloneChar)
-
-	local syncConn = Connections.AnimationSync
-	if syncConn then syncConn:Disconnect() end
-
+	if Connections.AnimationSync then Connections.AnimationSync:Disconnect() end
 	local jumpState = Enum.HumanoidStateType.Jumping
 	Connections.AnimationSync = RunService.RenderStepped:Connect(function()
-		if myHum and cloneHum and cloneHum.Parent then
-			cloneHum:Move(myHum.MoveDirection, false)
-			if myHum:GetState() == jumpState then cloneHum.Jump = true end
+		if myHum and cloneHum and cloneHum.Parent and myHum.Parent then
+			pcall(function()
+				cloneHum:Move(myHum.MoveDirection, false)
+				if myHum:GetState() == jumpState then cloneHum.Jump = true end
+			end)
 		else
-			Connections.AnimationSync:Disconnect()
-			Connections.AnimationSync = nil
+			if Connections.AnimationSync then Connections.AnimationSync:Disconnect() end
 		end
 	end)
-
 	return true, "Biến hình nhân vật thành công!"
 end
 
@@ -249,103 +302,42 @@ function Transform.ToggleOutline(bool)
 	CapNhatOutline()
 end
 
+function Transform.SetPartEnabled(logicName, bool)
+	State.EnabledParts[logicName] = bool
+end
+
 function Transform.SetCharSelect(bool)
-	State.CanSelect = bool
-	if not bool then State.SelectedPart = nil end
+	State.CanSelect_Char = bool
+	if not bool and State.CurrentMode == "NhanVat" then State.SelectedPart = nil end
 	CapNhatOutline()
+end
 
-	local old = Connections.InputListener
-	if old then old:Disconnect(); Connections.InputListener = nil end
-	if not bool then return end
-
-	local MB1 = Enum.UserInputType.MouseButton1
-	local Touch = Enum.UserInputType.Touch
-	local mode = State.CurrentMode
-
+local function SetupInputListener()
+	if Connections.InputListener then return end
 	Connections.InputListener = UserInputService.InputBegan:Connect(function(input, processed)
-		if processed then return end
+		if processed or not State.IsActive then return end
 		local itype = input.UserInputType
-		if itype ~= MB1 and itype ~= Touch then return end
-
+		if itype ~= Enum.UserInputType.MouseButton1 and itype ~= Enum.UserInputType.Touch then return end
+		local mode = State.CurrentMode
+		if mode == "NhanVat" and not State.CanSelect_Char then return end
+		if (mode == "ToanThan" or mode == "TungPhan") and not State.CanSelect_Main then return end
 		local mpos = UserInputService:GetMouseLocation()
 		local ray = Camera:ViewportPointToRay(mpos.X, mpos.Y)
-		SELECT_RAY_PARAMS.FilterDescendantsInstances = { Player.Character }
+		local filterList = {Player.Character}
+		local oldBox = PlayerGui:FindFirstChild("TransformSelectionBox")
+		if oldBox then table.insert(filterList, oldBox) end
+		SELECT_RAY_PARAMS.FilterDescendantsInstances = filterList
 		local result = workspace:Raycast(ray.Origin, ray.Direction * 1000, SELECT_RAY_PARAMS)
-		if not (result and result.Instance) then return end
-
-		local part = result.Instance
-		if not part:IsA("BasePart") or part:IsA("Terrain") then return end
-
-		if State.CanMove then
-			State.DraggingPart = part
-			local upCon
-			upCon = UserInputService.InputEnded:Connect(function(ie)
-				if ie.UserInputType == MB1 or ie.UserInputType == Touch then
-					State.DraggingPart = nil
-					upCon:Disconnect()
-				end
-			end)
-		else
-			local mdl = part:FindFirstAncestorWhichIsA("Model")
-			local isChar = mdl and mdl:FindFirstChild("Humanoid")
-			mode = State.CurrentMode
+		if result and result.Instance then
+			local part = result.Instance
+			if not part:IsA("BasePart") or part:IsA("Terrain") then return end
+			local isChar = part:FindFirstAncestorWhichIsA("Model") and part:FindFirstAncestorWhichIsA("Model"):FindFirstChildWhichIsA("Humanoid")
 			if mode == "NhanVat" and not isChar then return end
 			if (mode == "ToanThan" or mode == "TungPhan") and isChar then return end
 			State.SelectedPart = part
 			CapNhatOutline()
 		end
 	end)
-end
-
-function Transform.SetCharMove(bool)
-	State.CanMove = bool
-	State.DraggingPart = nil
-	Transform.SetCharSelect(bool or State.CanSelect)
-	if bool then BatDauKeoTha()
-	else
-		local d = Connections.DragListener
-		if d then d:Disconnect(); Connections.DragListener = nil end
-	end
-end
-
-function Transform.CreateDummy()
-	if State.CurrentDummy then State.CurrentDummy:Destroy() end
-	local char = Player.Character
-	local refCF = char and char.HumanoidRootPart and char.HumanoidRootPart.CFrame * CFrame.new(0, 0, -5) or CFrame.new()
-
-	local rig = Instance.new("Model"); rig.Name = "Dummy_Mau"
-	Instance.new("Humanoid").Parent = rig
-
-	local root = Instance.new("Part")
-	root.Name = "HumanoidRootPart"; root.Size = Vector3.new(2, 2, 1)
-	root.Transparency = 1; root.Anchored = true; root.CFrame = refCF
-	root.Parent = rig
-
-	local head = Instance.new("Part")
-	head.Name = "Head"; head.Size = Vector3.new(2, 1, 1)
-	head.Color = Color3.fromRGB(255, 255, 0); head.Anchored = true
-	head.CFrame = refCF * CFrame.new(0, 1.5, 0); head.Parent = rig
-
-	local torso = Instance.new("Part")
-	torso.Name = "Torso"; torso.Size = Vector3.new(2, 2, 1)
-	torso.Color = Color3.fromRGB(200, 200, 200); torso.Anchored = true
-	torso.CFrame = refCF; torso.Parent = rig
-
-	rig.PrimaryPart = root
-	rig.Parent = workspace
-	State.CurrentDummy = rig
-	State.SelectedPart = torso
-	CapNhatOutline()
-	return rig
-end
-
-function Transform.RemoveCharacter()
-	if State.CurrentDummy then
-		State.CurrentDummy:Destroy()
-		State.CurrentDummy = nil
-		State.SelectedPart = nil
-		CapNhatOutline()
-	end
 end
 
 function Transform.SetMode(modeName)
@@ -364,57 +356,42 @@ function Transform.ClearPart(partLogicName)
 	Storage.SavedParts[partLogicName] = nil
 end
 
-function Transform.Undo()
-	local objs = Storage.CreatedObjects
-	for i = 1, #objs do
-		local o = objs[i]
-		if o then o:Destroy() end
-	end
-	table.clear(objs)
-
-	local sync = Connections.AnimationSync
-	if sync then sync:Disconnect(); Connections.AnimationSync = nil end
-
-	HienNhanVatThat()
-
-	local char = Player.Character
-	local r = char and char:FindFirstChild("HumanoidRootPart")
-	if r then TaoHieuUng(r) end
-	return "Đã hoàn tác!"
-end
-
 function Transform.DoTransform()
+	if not State.IsActive then return false, "Chức năng Transform đang TẮT!" end
 	local char = Player.Character
 	if not char then return false, "Chưa load nhân vật!" end
 	local root = char:FindFirstChild("HumanoidRootPart")
 	if not root then return false, "Không tìm thấy RootPart!" end
-
 	if next(Storage.CreatedObjects) then
 		Transform.Undo()
 		return true, "Đã hoàn tác trạng thái cũ."
 	end
-
 	TaoHieuUng(root)
-
 	local mode = State.CurrentMode
 	local ok, msg
 	if mode == "ToanThan" then ok, msg = BienHinh_ToanThan(char, root)
 	elseif mode == "TungPhan" then ok, msg = BienHinh_TungPhan(char)
 	elseif mode == "NhanVat" then ok, msg = BienHinh_NhanVat(char, root)
 	else msg = "Chế độ không hợp lệ!" end
-
 	if not ok then Transform.Undo() end
 	return ok, msg
 end
 
-function Transform.ToggleHUD() end
-function Transform.SetActive(bool) State.IsActive = bool end
+function Transform.SetActive(bool) 
+	State.IsActive = bool 
+	State.CanSelect_Main = bool 
+	if bool then SetupInputListener() end
+	if not bool then 
+		Transform.Undo()
+		State.SelectedPart = nil
+		CapNhatOutline()
+	end
+end
 
 local function OnCharacterAdded(char)
 	local hum = char:WaitForChild("Humanoid", 10)
 	if not hum then return end
-	local d = Connections.DeathListener
-	if d then d:Disconnect() end
+	if Connections.DeathListener then Connections.DeathListener:Disconnect() end
 	Connections.DeathListener = hum.Died:Connect(Transform.Undo)
 end
 
