@@ -22,16 +22,16 @@ local CAIDAT = {
 	MAX_HISTORY = 50,
 	LUOI_MOVE = 1,
 	LUOI_ROT = 15,
-	C_NEN = color3(25, 25, 30),
-	C_NEN_PHU = color3(40, 40, 45),
+	C_NEN = color3(20, 20, 25),
+	C_NEN_PHU = color3(35, 35, 40),
 	C_VIEN = color3(255, 255, 255),
-	C_CHU = color3(255, 255, 255),
+	C_CHU = color3(240, 240, 240),
 	C_BTN = color3(225, 225, 225),
 	C_ICON = color3(255, 255, 255),
 	C_ACT = color3(0, 150, 255),
 	C_SCALE = color3(255, 160, 0),
 	C_OFF = color3(100, 100, 100),
-	C_HUY = color3(200, 40, 40),
+	C_HUY = color3(220, 50, 50),
 	C_BOX = color3(255, 255, 255),
 	SIZE_BTN = 44,
 	SIZE_SUB = 36,
@@ -458,13 +458,13 @@ local function MakeDragConn(frame)
 	local drag, start, startP
 	local c1 = frame.InputBegan:Connect(function(i)
 		if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-			drag = true; start = i.Position; startP = frame.Position
+			drag = true; start = i.Position; startP = frame.Parent.Position
 		end
 	end)
 	local c2 = UIS.InputChanged:Connect(function(i)
 		if drag and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
 			local d = i.Position - start
-			frame.Position = udim2(startP.X.Scale, startP.X.Offset + d.X, startP.Y.Scale, startP.Y.Offset + d.Y)
+			frame.Parent.Position = udim2(startP.X.Scale, startP.X.Offset + d.X, startP.Y.Scale, startP.Y.Offset + d.Y)
 		end
 	end)
 	local c3 = UIS.InputEnded:Connect(function(i)
@@ -604,26 +604,93 @@ end
 
 ToggleSpeed = function()
 	if UI.P_Speed then UI.P_Speed:Destroy(); UI.P_Speed = nil; return end
-
 	local par = UI.Container and UI.Container.Parent
 	if not par then return end
+
 	local f = Instance.new("Frame", par)
-	f.Size = udim2(0,200,0,100); f.AnchorPoint = Vector2.new(0.5,0.5); f.Position = udim2(0.5,0,0.5,0); f.BackgroundColor3 = CAIDAT.C_NEN
-	Instance.new("UICorner", f).CornerRadius = udim(0,8); Instance.new("UIStroke", f).Color = CAIDAT.C_VIEN
+	f.Size = udim2(0, 220, 0, 135)
+	f.AnchorPoint = Vector2.new(0.5, 0.5)
+	f.Position = udim2(0.5, 0, 0.5, 0)
+	f.BackgroundColor3 = CAIDAT.C_NEN
+	Instance.new("UICorner", f).CornerRadius = udim(0, 10)
+	local strk = Instance.new("UIStroke", f)
+	strk.Color = CAIDAT.C_VIEN
+	strk.Transparency = 0.5
 	TaoScale(f)
 
-	local t = Instance.new("TextLabel", f); t.Text="TỐC ĐỘ XE"; t.Size=udim2(1,0,0,30); t.BackgroundTransparency=1; t.TextColor3=CAIDAT.C_CHU; t.Font=Enum.Font.GothamBold; t.TextSize=18
-	local ip = Instance.new("TextBox", f); ip.Size=udim2(0.8,0,0,30); ip.Position=udim2(0.1,0,0.35,0); ip.BackgroundColor3=CAIDAT.C_NEN_PHU; ip.TextColor3=color3(255,255,255); ip.Font=Enum.Font.Gotham; ip.TextSize=16; ip.PlaceholderText="Nhập số (VD: 20)"
-	Instance.new("UICorner", ip).CornerRadius = udim(0,6)
-	local g = next_fn(State.DangChon); if g then ip.Text = tostring(g:GetAttribute("Speed") or 50) end
-	local btn = Instance.new("TextButton", f); btn.Text="LƯU"; btn.TextSize=16; btn.Size=udim2(0.4,0,0,25); btn.Position=udim2(0.3,0,0.7,0); btn.BackgroundColor3=CAIDAT.C_ACT; btn.TextColor3=color3(255,255,255); btn.Font=Enum.Font.GothamBold
-	Instance.new("UICorner", btn).CornerRadius = udim(0,6)
+	local header = Instance.new("Frame", f)
+	header.Size = udim2(1, 0, 0, 36)
+	header.BackgroundColor3 = CAIDAT.C_NEN_PHU
+	header.BorderSizePixel = 0
+	Instance.new("UICorner", header).CornerRadius = udim(0, 10)
+	local hFiller = Instance.new("Frame", header)
+	hFiller.Size = udim2(1, 0, 0, 10)
+	hFiller.Position = udim2(0, 0, 1, -10)
+	hFiller.BackgroundColor3 = CAIDAT.C_NEN_PHU
+	hFiller.BorderSizePixel = 0
+
+	local t = Instance.new("TextLabel", header)
+	t.Text = " Tốc Độ Xe"
+	t.Size = udim2(1, -40, 1, 0)
+	t.BackgroundTransparency = 1
+	t.TextColor3 = CAIDAT.C_CHU
+	t.Font = Enum.Font.GothamBold
+	t.TextSize = 13
+	t.TextXAlignment = Enum.TextXAlignment.Left
+
+	local x = Instance.new("TextButton", header)
+	x.Text = "X"
+	x.Size = udim2(0, 24, 0, 24)
+	x.Position = udim2(1, -30, 0.5, -12)
+	x.BackgroundColor3 = CAIDAT.C_HUY
+	x.TextColor3 = color3(255, 255, 255)
+	x.Font = Enum.Font.GothamBlack
+	x.TextSize = 11
+	x.AutoButtonColor = false
+	Instance.new("UICorner", x).CornerRadius = udim(0, 6)
+	x.MouseEnter:Connect(function() PlayTw(x, TweenInfo.new(0.15), {BackgroundColor3 = color3(255, 80, 80)}) end)
+	x.MouseLeave:Connect(function() PlayTw(x, TweenInfo.new(0.15), {BackgroundColor3 = CAIDAT.C_HUY}) end)
+	x.MouseButton1Click:Connect(function() f:Destroy(); UI.P_Speed = nil end)
+
+	local ip = Instance.new("TextBox", f)
+	ip.Size = udim2(0.8, 0, 0, 32)
+	ip.Position = udim2(0.1, 0, 0, 50)
+	ip.BackgroundColor3 = CAIDAT.C_NEN_PHU
+	ip.TextColor3 = color3(255, 255, 255)
+	ip.Font = Enum.Font.Gotham
+	ip.TextSize = 12
+	ip.PlaceholderText = "Nhập số (VD: 20)"
+	ip.ClearTextOnFocus = false
+	Instance.new("UICorner", ip).CornerRadius = udim(0, 6)
+	local ipStrk = Instance.new("UIStroke", ip)
+	ipStrk.Color = CAIDAT.C_VIEN
+	ipStrk.Transparency = 0.6
+
+	local g = next_fn(State.DangChon)
+	if g then ip.Text = tostring(g:GetAttribute("Speed") or 50) end
+
+	local btn = Instance.new("TextButton", f)
+	btn.Text = "LƯU"
+	btn.Size = udim2(0.8, 0, 0, 32)
+	btn.Position = udim2(0.1, 0, 0, 92)
+	btn.BackgroundColor3 = CAIDAT.C_ACT
+	btn.TextColor3 = color3(255, 255, 255)
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 12
+	btn.AutoButtonColor = false
+	Instance.new("UICorner", btn).CornerRadius = udim(0, 6)
+	btn.MouseEnter:Connect(function() PlayTw(btn, TweenInfo.new(0.15), {BackgroundColor3 = color3(0, 180, 255)}) end)
+	btn.MouseLeave:Connect(function() PlayTw(btn, TweenInfo.new(0.15), {BackgroundColor3 = CAIDAT.C_ACT}) end)
+
 	btn.MouseButton1Click:Connect(function()
-		local s = tonumber(ip.Text); if s then for k in next_fn, State.DangChon do k:SetAttribute("Speed", s) end end
+		local s = tonumber(ip.Text)
+		if s then for k in next_fn, State.DangChon do k:SetAttribute("Speed", s) end end
 		f:Destroy(); UI.P_Speed = nil
 	end)
-	local x = Instance.new("TextButton", f); x.Text="x"; x.Size=udim2(0,25,0,25); x.Position=udim2(1,-25,0,0); x.BackgroundTransparency=1; x.TextColor3=CAIDAT.C_HUY
-	x.MouseButton1Click:Connect(function() f:Destroy(); UI.P_Speed = nil end)
+
+	local disconnectDrag = MakeDragConn(header)
+	f.Destroying:Once(disconnectDrag)
+
 	UI.P_Speed = f
 end
 
@@ -638,45 +705,167 @@ ToggleProp = function()
 
 	local par = UI.Container and UI.Container.Parent
 	if not par then return end
+
 	local f = Instance.new("Frame", par)
-	f.Name = "PropPanel"; f.Size = udim2(0,220,0,280); f.AnchorPoint = Vector2.new(1,0.5); f.Position = udim2(0.9,-10,0.75,0); f.BackgroundColor3 = CAIDAT.C_NEN; f.BackgroundTransparency = 0.1
-	Instance.new("UICorner", f).CornerRadius = udim(0,8); Instance.new("UIStroke", f).Color = CAIDAT.C_VIEN
+	f.Name = "PropPanel"
+	f.Size = udim2(0, 260, 0, 380)
+	f.AnchorPoint = Vector2.new(1, 0.5)
+	f.Position = udim2(0.95, 0, 0.5, 0)
+	f.BackgroundColor3 = CAIDAT.C_NEN
+	f.ClipsDescendants = true
+	Instance.new("UICorner", f).CornerRadius = udim(0, 10)
+	local strk = Instance.new("UIStroke", f)
+	strk.Color = CAIDAT.C_VIEN
+	strk.Transparency = 0.5
+	strk.Thickness = 1.2
 	TaoScale(f)
 
-	local disconnectDrag = MakeDragConn(f)
+	local header = Instance.new("Frame", f)
+	header.Size = udim2(1, 0, 0, 40)
+	header.BackgroundColor3 = CAIDAT.C_NEN_PHU
+	header.BorderSizePixel = 0
+	Instance.new("UICorner", header).CornerRadius = udim(0, 10)
+	local hFiller = Instance.new("Frame", header)
+	hFiller.Size = udim2(1, 0, 0, 10)
+	hFiller.Position = udim2(0, 0, 1, -10)
+	hFiller.BackgroundColor3 = CAIDAT.C_NEN_PHU
+	hFiller.BorderSizePixel = 0
+
+	local title = Instance.new("TextLabel", header)
+	title.Text = " Thuộc Tính: " .. (obj.Name:sub(1,10))
+	title.Size = udim2(1, -40, 1, 0)
+	title.BackgroundTransparency = 1
+	title.TextColor3 = CAIDAT.C_CHU
+	title.Font = Enum.Font.GothamBold
+	title.TextSize = 13
+	title.TextXAlignment = Enum.TextXAlignment.Left
+
+	local btnClose = Instance.new("TextButton", header)
+	btnClose.Size = udim2(0, 26, 0, 26)
+	btnClose.Position = udim2(1, -33, 0.5, -13)
+	btnClose.BackgroundColor3 = CAIDAT.C_HUY
+	btnClose.Text = "X"
+	btnClose.TextColor3 = color3(255, 255, 255)
+	btnClose.Font = Enum.Font.GothamBlack
+	btnClose.TextSize = 12
+	btnClose.AutoButtonColor = false
+	Instance.new("UICorner", btnClose).CornerRadius = udim(0, 6)
+	btnClose.MouseEnter:Connect(function() PlayTw(btnClose, TweenInfo.new(0.15), {BackgroundColor3 = color3(255, 80, 80)}) end)
+	btnClose.MouseLeave:Connect(function() PlayTw(btnClose, TweenInfo.new(0.15), {BackgroundColor3 = CAIDAT.C_HUY}) end)
+
+	btnClose.MouseButton1Click:Connect(function()
+		f:Destroy(); UI.P_Prop=nil; State.ShowProp=false; CapNhatUI()
+	end)
+
+	local disconnectDrag = MakeDragConn(header)
 	f.Destroying:Once(disconnectDrag)
 
-	local t = Instance.new("TextLabel", f); t.Text="THUỘC TÍNH"; t.Size=udim2(1,0,0,30); t.BackgroundTransparency=1; t.TextColor3=CAIDAT.C_CHU; t.Font=Enum.Font.GothamBold; t.TextSize=14
+	local scr = Instance.new("ScrollingFrame", f)
+	scr.Size = udim2(1, 0, 1, -40)
+	scr.Position = udim2(0, 0, 0, 40)
+	scr.BackgroundTransparency = 1
+	scr.ScrollBarThickness = 4
+	scr.ScrollBarImageColor3 = CAIDAT.C_OFF
+	scr.BorderSizePixel = 0
+	scr.AutomaticCanvasSize = Enum.AutomaticSize.Y
+	scr.CanvasSize = udim2(0, 0, 0, 0)
 
-	local scr = Instance.new("ScrollingFrame", f); scr.Size=udim2(1,-10,1,-40); scr.Position=udim2(0,5,0,35); scr.BackgroundTransparency=1; scr.ScrollBarThickness=4; scr.BorderSizePixel=0
-	scr.AutomaticCanvasSize = Enum.AutomaticSize.Y; scr.CanvasSize = udim2(0,0,0,0)
-	local lst = Instance.new("UIListLayout", scr); lst.Padding=udim(0,5); lst.HorizontalAlignment="Center"
+	local scrPad = Instance.new("UIPadding", scr)
+	scrPad.PaddingTop = udim(0, 10)
+	scrPad.PaddingBottom = udim(0, 10)
+	scrPad.PaddingLeft = udim(0, 10)
+	scrPad.PaddingRight = udim(0, 10)
+
+	local lst = Instance.new("UIListLayout", scr)
+	lst.Padding = udim(0, 8)
+	lst.SortOrder = Enum.SortOrder.LayoutOrder
 
 	local function Row(name, val, rtype, cb)
-		local d = Instance.new("Frame", scr); d.Size=udim2(1,0,0,30); d.BackgroundTransparency=1
-		local l = Instance.new("TextLabel", d); l.Text=name; l.Size=udim2(0.4,0,1,0); l.TextColor3=CAIDAT.C_CHU; l.BackgroundTransparency=1; l.Font=Enum.Font.Gotham; l.TextXAlignment="Left"; l.TextSize=12
+		local d = Instance.new("Frame", scr)
+		d.Size = udim2(1, 0, 0, 34)
+		d.BackgroundColor3 = CAIDAT.C_NEN_PHU
+		d.BackgroundTransparency = 0.5
+		Instance.new("UICorner", d).CornerRadius = udim(0, 6)
+		local dStrk = Instance.new("UIStroke", d)
+		dStrk.Color = CAIDAT.C_VIEN
+		dStrk.Transparency = 0.7
+
+		local l = Instance.new("TextLabel", d)
+		l.Text = "  " .. name
+		l.Size = udim2(0.4, 0, 1, 0)
+		l.TextColor3 = CAIDAT.C_CHU
+		l.BackgroundTransparency = 1
+		l.Font = Enum.Font.GothamMedium
+		l.TextXAlignment = Enum.TextXAlignment.Left
+		l.TextSize = 11
+
 		if rtype == "Str" or rtype == "Num" then
-			local b = Instance.new("TextBox", d); b.Size=udim2(0.55,0,0.8,0); b.Position=udim2(0.45,0,0.1,0); b.Text=tostring(val); b.BackgroundColor3=CAIDAT.C_NEN_PHU; b.TextColor3=color3(255,255,255)
-			Instance.new("UICorner", b).CornerRadius=udim(0,4); b.FocusLost:Connect(function() cb(b.Text) end)
+			local b = Instance.new("TextBox", d)
+			b.Size = udim2(0.55, 0, 0, 24)
+			b.Position = udim2(0.42, 0, 0.5, -12)
+			b.Text = tostring(val)
+			b.BackgroundColor3 = CAIDAT.C_NEN
+			b.TextColor3 = color3(255, 255, 255)
+			b.Font = Enum.Font.Gotham
+			b.TextSize = 11
+			b.ClearTextOnFocus = false
+			b.ClipsDescendants = true
+			Instance.new("UICorner", b).CornerRadius = udim(0, 4)
+			local bStrk = Instance.new("UIStroke", b)
+			bStrk.Color = CAIDAT.C_VIEN
+			bStrk.Transparency = 0.7
+			b.FocusLost:Connect(function() cb(b.Text) end)
 		elseif rtype == "Bool" then
-			local b = Instance.new("TextButton", d); b.Size=udim2(0.55,0,0.8,0); b.Position=udim2(0.45,0,0.1,0); b.Text=val and "Bật" or "Tắt"; b.BackgroundColor3=val and CAIDAT.C_ACT or CAIDAT.C_OFF
-			Instance.new("UICorner", b).CornerRadius=udim(0,4)
-			b.MouseButton1Click:Connect(function() local n=cb(); b.Text=n and "Bật" or "Tắt"; b.BackgroundColor3=n and CAIDAT.C_ACT or CAIDAT.C_OFF end)
+			local b = Instance.new("TextButton", d)
+			b.Size = udim2(0.55, 0, 0, 24)
+			b.Position = udim2(0.42, 0, 0.5, -12)
+			b.Text = val and "Bật" or "Tắt"
+			b.BackgroundColor3 = val and CAIDAT.C_ACT or CAIDAT.C_NEN
+			b.TextColor3 = color3(255, 255, 255)
+			b.Font = Enum.Font.GothamMedium
+			b.TextSize = 11
+			b.AutoButtonColor = false
+			Instance.new("UICorner", b).CornerRadius = udim(0, 4)
+			local bStrk = Instance.new("UIStroke", b)
+			bStrk.Color = CAIDAT.C_VIEN
+			bStrk.Transparency = 0.7
+			b.MouseButton1Click:Connect(function() 
+				local n = cb()
+				b.Text = n and "Bật" or "Tắt"
+				PlayTw(b, TweenInfo.new(0.2), {BackgroundColor3 = n and CAIDAT.C_ACT or CAIDAT.C_NEN})
+			end)
 		elseif rtype == "Col" then
 			local r, g2, bl = math.floor(val.R*255), math.floor(val.G*255), math.floor(val.B*255)
-			local box = Instance.new("Frame", d); box.Size=udim2(0.55,0,0.8,0); box.Position=udim2(0.45,0,0.1,0); box.BackgroundTransparency=1
-			Instance.new("UIListLayout", box).FillDirection = Enum.FillDirection.Horizontal
+			local box = Instance.new("Frame", d)
+			box.Size = udim2(0.55, 0, 0, 24)
+			box.Position = udim2(0.42, 0, 0.5, -12)
+			box.BackgroundTransparency = 1
+
+			local blist = Instance.new("UIListLayout", box)
+			blist.FillDirection = Enum.FillDirection.Horizontal
+			blist.Padding = udim(0, 4)
+
 			local function Box(v, c, ref)
-				local b = Instance.new("TextBox", box); b.Size=udim2(0.32,0,1,0); b.Text=v; b.BackgroundColor3=c; b.TextColor3=color3(255,255,255); b.Name=ref
-				Instance.new("UICorner", b).CornerRadius=udim(0,4)
+				local b = Instance.new("TextBox", box)
+				b.Size = udim2(0.333, -3, 1, 0)
+				b.Text = v
+				b.BackgroundColor3 = c
+				b.TextColor3 = color3(255, 255, 255)
+				b.Font = Enum.Font.GothamBold
+				b.TextSize = 10
+				b.Name = ref
+				Instance.new("UICorner", b).CornerRadius = udim(0, 4)
+				local bStrk = Instance.new("UIStroke", b)
+				bStrk.Color = CAIDAT.C_VIEN
+				bStrk.Transparency = 0.5
 				b.FocusLost:Connect(function()
-					local rr=math.clamp(tonumber(box.R.Text) or 0,0,255)
-					local gg=math.clamp(tonumber(box.G.Text) or 0,0,255)
-					local bb=math.clamp(tonumber(box.B.Text) or 0,0,255)
+					local rr = math.clamp(tonumber(box.R.Text) or 0, 0, 255)
+					local gg = math.clamp(tonumber(box.G.Text) or 0, 0, 255)
+					local bb = math.clamp(tonumber(box.B.Text) or 0, 0, 255)
 					cb(color3(rr, gg, bb))
 				end)
 			end
-			Box(r, color3(180,50,50), "R"); Box(g2, color3(50,180,50), "G"); Box(bl, color3(50,50,180), "B")
+			Box(r, color3(160, 40, 40), "R"); Box(g2, color3(40, 160, 40), "G"); Box(bl, color3(40, 40, 160), "B")
 		end
 	end
 
@@ -697,8 +886,6 @@ ToggleProp = function()
 	Row("Cố định", obj.Anchored, "Bool", function() obj.Anchored = not obj.Anchored; return obj.Anchored end)
 	Row("Đổ bóng", obj.CastShadow, "Bool", function() obj.CastShadow = not obj.CastShadow; return obj.CastShadow end)
 
-	local x = Instance.new("TextButton", f); x.Text="X"; x.Size=udim2(0,25,0,25); x.Position=udim2(1,-25,0,0); x.BackgroundTransparency=1; x.TextColor3=CAIDAT.C_HUY
-	x.MouseButton1Click:Connect(function() f:Destroy(); UI.P_Prop=nil; State.ShowProp=false; CapNhatUI() end)
 	UI.P_Prop = f
 end
 
