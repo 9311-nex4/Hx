@@ -6,8 +6,14 @@ local PlayerGui = NguoiChoi:WaitForChild("PlayerGui")
 local PlayerScripts = NguoiChoi:WaitForChild("PlayerScripts")
 
 local GuiThongBao = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ThongBao.lua"))()
-local function ThongBao(TieuDe, NoiDung, ThoiGian) GuiThongBao.thongbao(TieuDe, NoiDung, ThoiGian) end
-local function ThongBaoLoi(TieuDe, NoiDung) GuiThongBao.thongbaoloi(TieuDe, NoiDung) end
+local function ThongBao(TieuDe, NoiDung, ThoiGian) GuiThongBao.thongbao("Hx Script | " .. TieuDe, NoiDung, ThoiGian or 2) end
+local function ThongBaoLoi(TieuDe, NoiDung) 
+	if GuiThongBao.thongbaoloi then 
+		GuiThongBao.thongbaoloi("Hx Script | " .. TieuDe, NoiDung) 
+	else 
+		GuiThongBao.thongbao("Hx Script Lỗi | " .. TieuDe, NoiDung, 3) 
+	end 
+end
 
 local ChuDe = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ChuDe.lua"))()
 local HoatAnh = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/Animation.lua"))()
@@ -21,6 +27,7 @@ local NhanVat_Logic = loadstring(game:HttpGet("https://raw.githubusercontent.com
 MenuConfigManager.SetFileName("main_v2")
 
 local PhimMoMenu = Enum.KeyCode.Insert
+
 local CauHinh = {
 	DangTab = false, SoCot = 2,
 	ConfigMenu = true, TimKiem = false,
@@ -33,7 +40,7 @@ local CauHinh = {
 for k, v in pairs(ChuDe.MacDinh) do CauHinh.Mau[k] = v end
 
 local function BaoTrangThai(TenChucNang, TrangThai)
-	ThongBao("Hx Script", TrangThai and "Đã bật " .. TenChucNang or "Đã tắt " .. TenChucNang, 2)
+	ThongBao("Trạng Thái", TrangThai and "Đã bật " .. TenChucNang or "Đã tắt " .. TenChucNang, 2)
 end
 
 local DuLieuDanhSachKhoiUI = {}
@@ -49,10 +56,10 @@ local TrangThaiLuu = {
 	KhoiConfig = {},
 	TransformConfig = {
 		Active = false,
+		ShowHUD = true,
 		ShowOutline = true,
-		CanSelect = false,
+		CanSelectChar = false,
 		Mode = "ToanThan",
-		ShowHUD = true
 	},
 }
 
@@ -67,6 +74,28 @@ CauHinh.LuuTheme = function(duLieuTheme)
 	TrangThaiLuu.ChuDeUI = duLieuTheme
 	LuuConfig()
 end
+
+local function UpdateSubButtonText(rowName, text)
+	local gui = PlayerGui:FindFirstChild("main_v2")
+	if not gui then return end
+	for _, v in ipairs(gui:GetDescendants()) do
+		if v:IsA("TextLabel") and (v.Text == "  " .. rowName or v.Text == rowName) then
+			local nutBam = v.Parent
+			if nutBam and nutBam:IsA("TextButton") then
+				local hangNgang = nutBam.Parent
+				if hangNgang then
+					for _, child in ipairs(hangNgang:GetChildren()) do
+						if child:IsA("TextButton") and child.Name ~= "Theme_HopVuong" and child ~= nutBam then
+							child.Text = text
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+local chonMauState = "Xong"
 
 local function TaoCauTrucItemChoKhoi(Obj)
 	local TenHienThi = Obj.Name
@@ -127,7 +156,7 @@ local function TaoCauTrucItemChoKhoi(Obj)
 						HienTai = not IsMoveLocked and "Bat" or "Tat",
 						SuKien = function(TrangThai)
 							if Obj then Obj:SetAttribute("KhoaDiChuyen", not TrangThai) end
-							ThongBao("Hx Script", TrangThai and "Đã mở khóa di chuyển: " .. TenHienThi or "Đã khóa vị trí: " .. TenHienThi, 2)
+							ThongBao("Hệ Thống", TrangThai and "Đã mở khóa di chuyển: " .. TenHienThi or "Đã khóa vị trí: " .. TenHienThi, 2)
 							LuuConfig()
 						end
 					},
@@ -137,7 +166,7 @@ local function TaoCauTrucItemChoKhoi(Obj)
 						HienTai = IsAnchored and "Bat" or "Tat",
 						SuKien = function(TrangThai)
 							SetAnchored(TrangThai)
-							ThongBao("Hx Script", TrangThai and "Đã Neo khối (Đứng yên)" or "Đã Tháo Neo (Rơi tự do)", 2)
+							ThongBao("Hệ Thống", TrangThai and "Đã Neo khối (Đứng yên)" or "Đã Tháo Neo (Rơi tự do)", 2)
 							LuuConfig()
 						end
 					}
@@ -186,21 +215,22 @@ local function TaoPhanTungPhan(tenHienThi, logicName)
 		Ten = tenHienThi, Loai = "Gat", HienTai = "Tat", LoaiNutCon = "CungHang",
 		SuKien = function(TrangThai)
 			Transform_Logic.SetPartEnabled(logicName, TrangThai)
-			ThongBao("Hx Script", TrangThai and ("Đã bật " .. tenHienThi) or ("Đã tắt " .. tenHienThi), 1)
+			BaoTrangThai(tenHienThi, TrangThai)
 		end,
 		CacNutCon = {
 			{
 				Ten = "Lưu Trữ",
 				SuKien = function()
 					local ok = Transform_Logic.SavePart(logicName)
-					ThongBao("Hx Script", ok and ("Đã lưu " .. tenHienThi .. "!") or "Chưa chọn Part nào!", ok and 2 or 3)
+					if ok then ThongBao("Hệ Thống", "Đã lưu " .. tenHienThi .. "!", 2)
+					else ThongBaoLoi("Lỗi", "Chưa chọn Part nào!") end
 				end
 			},
 			{
 				Ten = "Xóa Lưu",
 				SuKien = function()
 					Transform_Logic.ClearPart(logicName)
-					ThongBao("Hx Script", "Đã xóa lưu " .. tenHienThi .. "!", 2)
+					ThongBao("Hệ Thống", "Đã xóa lưu " .. tenHienThi .. "!", 2)
 				end
 			},
 		}
@@ -223,26 +253,28 @@ local DanhSachNhom = {
 				HienTai = "Tat",
 				CacNutCon = {
 					{
+						Ten = "Hiển Thị Nút Chức Năng",
+						Loai = "Gat",
+						HienTai = "Bat",
+						SuKien = function(TrangThai)
+							local gui = PlayerGui:FindFirstChild("main_v2")
+							if gui and gui:FindFirstChild("KhungNutNgoai") then
+								gui.KhungNutNgoai.Visible = TrangThai
+							end
+							LuuTransformConfig("ShowHUD", TrangThai)
+							BaoTrangThai("hiển thị nút chức năng", TrangThai)
+						end
+					},
+					{
 						Ten = "Hiển thị Outline Vùng Chọn",
 						Loai = "Gat",
 						HienTai = "Bat",
 						SuKien = function(TrangThai)
 							Transform_Logic.ToggleOutline(TrangThai)
 							LuuTransformConfig("ShowOutline", TrangThai)
+							BaoTrangThai("outline vùng chọn", TrangThai)
 						end
 					},
-					{
-						Ten = "Hiển Thị Nút Ngoài",
-						Loai = "Gat",
-						HienTai = "Bat",
-						SuKien = function(TrangThai)
-							LuuTransformConfig("ShowHUD", TrangThai)
-							local gui = PlayerGui:FindFirstChild("main_v2")
-							if gui and gui:FindFirstChild("KhungNutNgoai") then
-								gui.KhungNutNgoai.Visible = TrangThai
-							end
-						end
-					}
 				},
 				SuKien = function(TrangThai)
 					Transform_Logic.SetActive(TrangThai)
@@ -256,26 +288,85 @@ local DanhSachNhom = {
 		TieuDe = "Nhân Vật Transform",
 		ChucNang = {
 			{
-				Loai = "NhieuNut",
-				Ten1 = "Tạo Nhân Vật Mẫu",
-				SuKien1 = function()
-					if NhanVat_Logic and NhanVat_Logic.CreateDummy then NhanVat_Logic.CreateDummy() end
-					ThongBao("Hx Script", "Đã tạo nhân vật mẫu!", 2)
+				Ten = "Tạo Mẫu",
+				Loai = "Gat",
+				HienTai = "Tat",
+				LoaiNutCon = "CungHang",
+				SuKien = function(TrangThai)
+					if TrangThai then
+						NhanVat_Logic.CreateDummy()
+						ThongBao("Hệ Thống", "Đã tạo Mẫu!", 2)
+					else
+						NhanVat_Logic.RemoveDummy()
+						ThongBao("Hệ Thống", "Đã xóa Mẫu!", 2)
+					end
 				end,
-				Ten2 = "Xóa Nhân Vật Chọn",
-				SuKien2 = function()
-					if NhanVat_Logic and NhanVat_Logic.RemoveDummy then NhanVat_Logic.RemoveDummy() end
-					ThongBao("Hx Script", "Đã xóa nhân vật mẫu!", 2)
-				end,
+				CacNutCon = {
+					{
+						Ten = "Tùy Chỉnh",
+						SuKien = function()
+							local dummy = NhanVat_Logic.GetDummy()
+							if dummy then
+								NhanVat_Logic.OpenCustomMenu(dummy)
+							else
+								ThongBaoLoi("Lỗi", "Bạn phải bật Tạo Mẫu trước!")
+							end
+						end
+					}
+				}
 			},
 			{
-				Ten = "Cho Phép Chọn",
+				Ten = "Chọn Mẫu",
+				Loai = "Gat",
+				HienTai = "Tat",
+				LoaiNutCon = "CungHang",
+				SuKien = function(TrangThai)
+					if TrangThai then
+						chonMauState = "Xong"
+						NhanVat_Logic.ToggleSelectMode(true)
+						UpdateSubButtonText("Chọn Mẫu", "Xong")
+						ThongBao("Hệ Thống", "Hãy click vào nhân vật bất kỳ!", 3)
+					else
+						chonMauState = "Xong"
+						NhanVat_Logic.ToggleSelectMode(false)
+						NhanVat_Logic.ClearSelectedModel()
+						UpdateSubButtonText("Chọn Mẫu", "Xong")
+					end
+				end,
+				CacNutCon = {
+					{
+						Ten = "Xong",
+						SuKien = function()
+							if chonMauState == "Xong" then
+								NhanVat_Logic.ToggleSelectMode(false)
+								local sel = NhanVat_Logic.GetSelectedModel()
+								if sel then
+									ThongBao("Hệ Thống", "Đã chốt chọn: " .. sel.Name, 2)
+									chonMauState = "Tùy Chỉnh"
+									UpdateSubButtonText("Chọn Mẫu", "Tùy Chỉnh")
+								else
+									ThongBaoLoi("Lỗi", "Chưa quét được nhân vật nào!")
+								end
+							else
+								local sel = NhanVat_Logic.GetSelectedModel()
+								if sel then
+									NhanVat_Logic.OpenCustomMenu(sel)
+								else
+									ThongBaoLoi("Lỗi", "Không tìm thấy Mẫu đã chọn!")
+								end
+							end
+						end
+					}
+				}
+			},
+			{
+				Ten = "Cho Phép Chọn Mẫu",
 				Loai = "Gat",
 				HienTai = "Tat",
 				SuKien = function(TrangThai)
 					Transform_Logic.SetCharSelect(TrangThai)
-					LuuTransformConfig("CanSelect", TrangThai)
-					BaoTrangThai("chọn part", TrangThai)
+					LuuTransformConfig("CanSelectChar", TrangThai)
+					BaoTrangThai("chọn mẫu biến hình", TrangThai)
 				end
 			},
 			{
@@ -283,8 +374,8 @@ local DanhSachNhom = {
 				Loai = "Nut",
 				SuKien = function()
 					local ok, msg = Transform_Logic.DoTransform()
-					if ok then ThongBao("Hx Script", msg, 3)
-					else ThongBaoLoi("Hx Script", msg) end
+					if ok then ThongBao("Thành công", msg, 3)
+					else ThongBaoLoi("Lỗi", msg) end
 				end
 			},
 		}
@@ -300,7 +391,7 @@ local DanhSachNhom = {
 					local mode = ModeMap[LuaChonHienTai] or "ToanThan"
 					Transform_Logic.SetMode(mode)
 					LuuTransformConfig("Mode", mode)
-					ThongBao("Hx Script", "Chế độ: " .. LuaChonHienTai, 2)
+					ThongBao("Trạng Thái", "Chế độ: " .. LuaChonHienTai, 2)
 				end,
 				LuaChon = {
 					"Toàn Thân",
@@ -325,8 +416,8 @@ local DanhSachNhom = {
 		ChucNang = {
 			{
 				Loai = "NhieuNut",
-				Ten1 = "Tạo Khối Mẫu",  SuKien1 = function() local n = Khoi.TaoBlock() if n then ThongBao("Hx Script", "Đã tạo: " .. n, 1) end end,
-				Ten2 = "Xóa Khối Chọn", SuKien2 = function() Khoi.XoaChon() ThongBao("Hx Script", "Đã xóa các khối được chọn!", 1) end,
+				Ten1 = "Tạo Khối Mẫu",  SuKien1 = function() local n = Khoi.TaoBlock() if n then ThongBao("Hệ Thống", "Đã tạo: " .. n, 1) end end,
+				Ten2 = "Xóa Khối Chọn", SuKien2 = function() Khoi.XoaChon() ThongBao("Hệ Thống", "Đã xóa các khối được chọn!", 1) end,
 			},
 			{ Ten = "Danh Sách", Loai = "Danhsach", Danhsach = DuLieuDanhSachKhoiUI },
 			{
@@ -380,10 +471,10 @@ local function ApDungConfig(cfg)
 	if cfg.KhoiConfig then Khoi.SetConfig(cfg.KhoiConfig) end
 	if cfg.TransformConfig then
 		local tc = cfg.TransformConfig
-		if tc.Active ~= nil      then Transform_Logic.SetActive(tc.Active) end
-		if tc.ShowOutline ~= nil then Transform_Logic.ToggleOutline(tc.ShowOutline) end
-		if tc.CanSelect ~= nil   then Transform_Logic.SetCharSelect(tc.CanSelect) end
-		if tc.Mode               then Transform_Logic.SetMode(tc.Mode) end
+		if tc.Active ~= nil        then Transform_Logic.SetActive(tc.Active) end
+		if tc.ShowOutline ~= nil   then Transform_Logic.ToggleOutline(tc.ShowOutline) end
+		if tc.CanSelectChar ~= nil then Transform_Logic.SetCharSelect(tc.CanSelectChar) end
+		if tc.Mode                 then Transform_Logic.SetMode(tc.Mode) end
 
 		local cnMain = TimChucNang("Chức Năng Biến Hình")
 		if cnMain then cnMain.HienTai = tc.Active and "Bat" or "Tat" end
@@ -391,11 +482,11 @@ local function ApDungConfig(cfg)
 		local cn = TimChucNang("Hiển thị Outline Vùng Chọn")
 		if cn then cn.HienTai = (tc.ShowOutline ~= false) and "Bat" or "Tat" end
 
-		local cnHUD = TimChucNang("Hiển Thị Nút Ngoài")
+		local cnHUD = TimChucNang("Hiển Thị Nút Chức Năng")
 		if cnHUD then cnHUD.HienTai = (tc.ShowHUD ~= false) and "Bat" or "Tat" end
 
-		local cnSel = TimChucNang("Cho Phép Chọn")
-		if cnSel then cnSel.HienTai = tc.CanSelect and "Bat" or "Tat" end
+		local cnMove = TimChucNang("Cho Phép Chọn Mẫu")
+		if cnMove then cnMove.HienTai = tc.CanSelectChar and "Bat" or "Tat" end
 
 		if PlayerGui:FindFirstChild("main_v2") and PlayerGui.main_v2:FindFirstChild("KhungNutNgoai") then
 			PlayerGui.main_v2.KhungNutNgoai.Visible = (tc.ShowHUD ~= false)
