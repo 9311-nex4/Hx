@@ -289,13 +289,13 @@ task.spawn(function()
 			local key2 = randomPair[2]
 			
 			VirtualInputManager:SendKeyEvent(true, key1, false, game)
-			task.wait(0.5)
+			task.wait() 
 			VirtualInputManager:SendKeyEvent(false, key1, false, game)
 			
-			task.wait(0.2)
+			task.wait()
 			
 			VirtualInputManager:SendKeyEvent(true, key2, false, game)
-			task.wait(0.5)
+			task.wait() 
 			VirtualInputManager:SendKeyEvent(false, key2, false, game)
 			
 			isSimulatingKeys = false
