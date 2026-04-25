@@ -6,14 +6,15 @@ local PlayerGui = NguoiChoi:WaitForChild("PlayerGui")
 local PlayerScripts = NguoiChoi:WaitForChild("PlayerScripts")
 
 local GuiThongBao = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ThongBao.lua"))()
-local function ThongBao(TieuDe, NoiDung, ThoiGian) GuiThongBao.thongbao(TieuDe, NoiDung, ThoiGian) end
-local function ThongBaoLoi(TieuDe, NoiDung) GuiThongBao.thongbaoloi(TieuDe, NoiDung) end
+local function ThongBao(TieuDe, NoiDung, ThoiGian) GuiThongBao.thongbao("Hx Script | " .. TieuDe, NoiDung, ThoiGian or 2) end
+local function ThongBaoLoi(TieuDe, NoiDung) GuiThongBao.thongbaoloi("Hx Script | " .. TieuDe, NoiDung) end
 
+local ChuDe = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ChuDe.lua"))()
+local TimKiem = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/TimKiem.lua"))()
 local HoatAnh = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/Animation.lua"))()
 local ThuVienUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ThuVienUI.lua"))()
-local TimKiem = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/TimKiem.lua"))()
-local ChuDe = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ChuDe.lua"))()
 local MenuConfigManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/MenuConfigManager.lua"))()
+
 local AutoClickLogic = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Main_Script/Main_Utilities/AutoClick_Logic.lua"))()
 local ETC_Logic = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Main_Script/Main_Utilities/ETC_Logic.lua"))()
 
@@ -58,17 +59,17 @@ end
 
 local function TaoItemClick(ToaDoX, ToaDoY, BatTatBanDau, DaAnBanDau)
 	local DuLieuNut = { X = ToaDoX, Y = ToaDoY, DaAn = DaAnBanDau or false, Loai = "Gat", HienTai = (BatTatBanDau == false) and "Tat" or "Bat" }
-	DuLieuNut.SuKien = function(TrangThai) ThongBao("Hx Script", TrangThai and ("Đã bật " .. DuLieuNut.Ten) or ("Đã tắt " .. DuLieuNut.Ten), 1) LuuConfig() end
+	DuLieuNut.SuKien = function(TrangThai) ThongBao("Status", TrangThai and ("Đã Bật " .. DuLieuNut.Ten) or ("Đã Tắt " .. DuLieuNut.Ten), 1) LuuConfig() end
 	DuLieuNut.CacNutCon = {
 		{
 			Ten = "Hide Click Location", Loai = "Gat", HienTai = DuLieuNut.DaAn and "Bat" or "Tat",
-			SuKien = function(TrangThai) DuLieuNut.DaAn = TrangThai AutoClickLogic.CapNhatDiem(DuLieuDanhSachClick) LuuConfig() ThongBao("Hx Script", TrangThai and "Đã ẩn UI " .. DuLieuNut.Ten or "Đã hiện UI " .. DuLieuNut.Ten, 1) end
+			SuKien = function(TrangThai) DuLieuNut.DaAn = TrangThai AutoClickLogic.CapNhatDiem(DuLieuDanhSachClick) LuuConfig() ThongBao("Status", TrangThai and "Đã ẩn UI " .. DuLieuNut.Ten or "Đã hiện UI " .. DuLieuNut.Ten, 1) end
 		},
 		{
 			Ten = "DieuKhienItem", Loai = "NhieuNut",
 			DanhSachNut = {
 				{ Ten = "Up", SuKien = function() local ViTriNut = table.find(DuLieuDanhSachClick, DuLieuNut) if ViTriNut and ViTriNut > 1 then DuLieuDanhSachClick[ViTriNut], DuLieuDanhSachClick[ViTriNut - 1] = DuLieuDanhSachClick[ViTriNut - 1], DuLieuDanhSachClick[ViTriNut] CapNhatDanhSachClick() end end },
-				{ Ten = "Delete", SuKien = function() local ViTriXoa = table.find(DuLieuDanhSachClick, DuLieuNut) if ViTriXoa then table.remove(DuLieuDanhSachClick, ViTriXoa) CapNhatDanhSachClick() ThongBao("Hx Script", "Đã xóa 1 vị trí", 1) end end },
+				{ Ten = "Delete", SuKien = function() local ViTriXoa = table.find(DuLieuDanhSachClick, DuLieuNut) if ViTriXoa then table.remove(DuLieuDanhSachClick, ViTriXoa) CapNhatDanhSachClick() ThongBao("Hệ Thống", "Đã xóa 1 vị trí", 1) end end },
 				{ Ten = "Down", SuKien = function() local ViTriNut = table.find(DuLieuDanhSachClick, DuLieuNut) if ViTriNut and ViTriNut < #DuLieuDanhSachClick then DuLieuDanhSachClick[ViTriNut], DuLieuDanhSachClick[ViTriNut + 1] = DuLieuDanhSachClick[ViTriNut + 1], DuLieuDanhSachClick[ViTriNut] CapNhatDanhSachClick() end end }
 			}
 		}
@@ -123,8 +124,8 @@ local DanhSachNhom = {
 		TenTab = "ETC", SoCot = 2, DuLieuKhoi = {
 			{ TieuDe = "Teleport", ChucNang = {
 				{ Ten = "Click TP", Loai = "Gat", HienTai = "Tat", SuKien = function(st) ETC_Logic.SetClickTP(st) end, CacNutCon = { { Ten = "Click TP Hotkey", Loai = "PhimNong", HienTai = "T", SuKien = function(key) ETC_Logic.SetKey(key) TrangThaiLuu.PhimClickTP = key.Name LuuConfig() end } } },
-				{ Ten = "Map Teleport", Loai = "Gat", HienTai = "Tat", SuKien = function() end, CacNutCon = { { Ten = "Select Location", Loai = "HopXo", HienTai = "...", LuaChon = ETC_Logic.LayDiaDiemGame(game.PlaceId), SuKien = function() end }, { Loai = "NhieuNut", DanhSachNut = { { Ten = "TP", SuKien = function() local cn = TimChucNang("ETC", "Select Location") if cn and cn.HienTai ~= "..." then ThongBao("Hx", "Bay tới: " .. cn.HienTai, 1) end end }, { Ten = "Stop", SuKien = function() ETC_Logic.StopTP() ThongBao("Hx", "Dừng Teleport", 1) end } }} }},
-				{ Ten = "Player Teleport", Loai = "Gat", HienTai = "Tat", SuKien = function() end, CacNutCon = { { Ten = "Select Player", Loai = "HopXo", HienTai = "...", LuaChon = ETC_Logic.GetPlayers(), SuKien = function() end }, { Ten = "Target Lock Player", Loai = "Gat", HienTai = "Tat", SuKien = function(st) local cn = TimChucNang("ETC", "Select Player") if cn and cn.HienTai ~= "..." then ETC_Logic.TargetLock("Player", cn.HienTai, st) end end }, { Loai = "NhieuNut", DanhSachNut = { { Ten = "TP", SuKien = function() local cn = TimChucNang("ETC", "Select Player") if cn and cn.HienTai ~= "..." then ETC_Logic.TeleportToPlayer(cn.HienTai) ThongBao("Hx", "Bay tới: " .. cn.HienTai, 1.5) end end }, { Ten = "Refresh", Loai = "Nut", SuKien = function() local cn = TimChucNang("ETC", "Select Player") if cn then cn.LuaChon = ETC_Logic.GetPlayers() ThongBao("Hx", "Đã làm mới Player List", 1) end end }, { Ten = "Stop", SuKien = function() ETC_Logic.StopTP() ThongBao("Hx", "Dừng Teleport", 1) end } }} }}
+				{ Ten = "Map Teleport", Loai = "Gat", HienTai = "Tat", SuKien = function() end, CacNutCon = { { Ten = "Select Location", Loai = "HopXo", HienTai = "...", LuaChon = ETC_Logic.LayDiaDiemGame(game.PlaceId), SuKien = function() end }, { Loai = "NhieuNut", DanhSachNut = { { Ten = "TP", SuKien = function() local cn = TimChucNang("ETC", "Select Location") if cn and cn.HienTai ~= "..." then ThongBao("Di Chuyển", "Bay tới: " .. cn.HienTai, 1) end end }, { Ten = "Stop", SuKien = function() ETC_Logic.StopTP() ThongBao("Di Chuyển", "Dừng Teleport", 1) end } }} }},
+				{ Ten = "Player Teleport", Loai = "Gat", HienTai = "Tat", SuKien = function() end, CacNutCon = { { Ten = "Select Player", Loai = "HopXo", HienTai = "...", LuaChon = ETC_Logic.GetPlayers(), SuKien = function() end }, { Ten = "Target Lock Player", Loai = "Gat", HienTai = "Tat", SuKien = function(st) local cn = TimChucNang("ETC", "Select Player") if cn and cn.HienTai ~= "..." then ETC_Logic.TargetLock("Player", cn.HienTai, st) end end }, { Loai = "NhieuNut", DanhSachNut = { { Ten = "TP", SuKien = function() local cn = TimChucNang("ETC", "Select Player") if cn and cn.HienTai ~= "..." then ETC_Logic.TeleportToPlayer(cn.HienTai) ThongBao("Di Chuyển", "Bay tới: " .. cn.HienTai, 1.5) end end }, { Ten = "Refresh", Loai = "Nut", SuKien = function() local cn = TimChucNang("ETC", "Select Player") if cn then cn.LuaChon = ETC_Logic.GetPlayers() ThongBao("Hệ Thống", "Đã làm mới Player List", 1) end end }, { Ten = "Stop", SuKien = function() ETC_Logic.StopTP() ThongBao("Di Chuyển", "Dừng Teleport", 1) end } }} }}
 			}},
 			{ TieuDe = "Visuals (ESP)", ChucNang = {
 				{ Ten = "Enable ESP", Loai = "Gat", HienTai = "Tat", SuKien = function() end, CacNutCon = {
@@ -244,17 +245,18 @@ local function TaoGiaoDien()
 				local TrangThaiMoi = not AutoClickLogic.DangChay
 				AutoClickLogic.BatTatAutoClick(TrangThaiMoi) TrangThaiLuu.AutoClick = TrangThaiMoi LuuConfig()
 				local cn = TimChucNang("Auto Click", "Auto Click") if cn and cn.SetTrangThai then cn.SetTrangThai(TrangThaiMoi) end
-				ThongBao("Hx Script", TrangThaiMoi and "Đã BẬT Auto Click" or "Đã TẮT Auto Click", 1)
+				ThongBao("Status", TrangThaiMoi and "Đã Bật Auto Click" or "Đã Tắt Auto Click", 1)
 			end
 		end
 		if DauVaoBanPhim.KeyCode == ETC_Logic.FlyHotkey then
 			local TrangThaiMoi = not ETC_Logic.FlyEnabled ETC_Logic.ToggleFly(TrangThaiMoi)
 			local cn = TimChucNang("ETC", "Fly") if cn and cn.SetTrangThai then cn.SetTrangThai(TrangThaiMoi) end
-			ThongBao("Hx Script", TrangThaiMoi and "Đã BẬT Fly" or "Đã TẮT Fly", 1)
+			ThongBao("Status", TrangThaiMoi and "Đã Bật Fly" or "Đã Tắt Fly", 1)
 		end
 	end)
 	MoGiaoDien()
 end
 
 if not game:IsLoaded() then game.Loaded:Wait() end
-task.wait(1) TaoGiaoDien()
+task.wait(1) 
+TaoGiaoDien()
