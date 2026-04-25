@@ -51,30 +51,20 @@ local C = {
 	Vang = Color3.fromRGB(255, 200, 50)
 }
 
+local GuiThongBao = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ThongBao.lua"))()
+
+local function ThongBao(title, text)
+	GuiThongBao.thongbao("Hx Script | " .. title, text, 3)
+end
+
+local function ThongBaoLoi(title, text)
+	GuiThongBao.thongbaoloi("Hx Script | " .. title, text)
+end
+
 local function Tween(obj, t, style, dir, props)
 	style = style or Enum.EasingStyle.Quint
 	dir = dir or Enum.EasingDirection.Out
 	return TweenService:Create(obj, TweenInfo.new(t, style, dir), props)
-end
-
-local function Notify(title, text)
-	pcall(function()
-		local Utilities = LocalPlayer.PlayerScripts:FindFirstChild("Utilities")
-		if Utilities and Utilities:FindFirstChild("ThongBao") then
-			local tb = require(Utilities.ThongBao)
-			if string.find(string.lower(title), "lỗi") then
-				tb.thongbaoloi("Hx Script | " .. title, text)
-			else
-				tb.thongbao("Hx Script | " .. title, text, 3)
-			end
-		else
-			game:GetService("StarterGui"):SetCore("SendNotification", {
-				Title = "Hx Script | " .. title,
-				Text = text,
-				Duration = 3,
-			})
-		end
-	end)
 end
 
 local function Corner(parent, rad)
@@ -93,13 +83,12 @@ local function Stroke(parent, color, transparency, thickness)
 	return s
 end
 
-local function Padding(parent, px, top, bottom)
+local function Padding(parent, left, right, top, bottom)
 	local p = Instance.new("UIPadding")
-	local u = UDim.new(0, px)
-	p.PaddingLeft = u
-	p.PaddingRight = u
-	p.PaddingTop = top and UDim.new(0, top) or u
-	p.PaddingBottom = bottom and UDim.new(0, bottom) or u
+	p.PaddingLeft = UDim.new(0, left)
+	p.PaddingRight = UDim.new(0, right or left)
+	p.PaddingTop = UDim.new(0, top or left)
+	p.PaddingBottom = UDim.new(0, bottom or left)
 	p.Parent = parent
 	return p
 end
@@ -361,7 +350,7 @@ local function HandleAccessory(acc, targetModel)
 end
 
 function NhanVat.CopyAppearance(sourceModel, targetModel)
-	if not sourceModel or not targetModel then Notify("Lỗi","Chưa chọn model nguồn hoặc đích!") return end
+	if not sourceModel or not targetModel then ThongBaoLoi("Lỗi", "Chưa chọn model nguồn hoặc đích!") return end
 
 	local sHum = sourceModel:FindFirstChildWhichIsA("Humanoid")
 	local tHum = targetModel:FindFirstChildWhichIsA("Humanoid")
@@ -374,7 +363,7 @@ function NhanVat.CopyAppearance(sourceModel, targetModel)
 				if targetModel == State.CurrentDummy and State.CurrentScale ~= 1 then
 					targetModel:ScaleTo(State.CurrentScale)
 				end
-				Notify("Sao chép", "Đã chép 100% ngoại hình từ " .. sourceModel.Name)
+				ThongBao("Sao chép", "Đã chép 100% ngoại hình từ " .. sourceModel.Name)
 				return
 			end
 		end
@@ -411,12 +400,12 @@ function NhanVat.CopyAppearance(sourceModel, targetModel)
 			count += 1
 		end
 	end
-	Notify("Sao chép", "Đã chép " .. count .. " trang bị từ " .. sourceModel.Name)
+	ThongBao("Sao chép", "Đã chép " .. count .. " trang bị từ " .. sourceModel.Name)
 end
 
 function NhanVat.ScaleDummy(targetScale, duration)
 	local dummy = State.CurrentDummy
-	if not dummy or not dummy.PrimaryPart then Notify("Lỗi","Chưa có Mẫu!") return end
+	if not dummy or not dummy.PrimaryPart then ThongBaoLoi("Lỗi", "Chưa có Mẫu!") return end
 	duration = duration or 0.4
 	State.CurrentScale = targetScale
 	local sv = Instance.new("NumberValue")
@@ -455,7 +444,7 @@ function NhanVat.ClearAllAccessories(model)
 			v:Destroy(); removed += 1
 		end
 	end
-	Notify("Xóa", "Đã xóa toàn bộ trang bị!")
+	ThongBao("Xóa", "Đã xóa toàn bộ trang bị!")
 end
 
 function NhanVat.SetBodyPartColor(model, partGroup, color)
@@ -507,7 +496,7 @@ function NhanVat.SetFace(model, textureId)
 		face.Parent = head
 	end
 	face.Texture = "rbxassetid://" .. tostring(textureId)
-	Notify("Khuôn mặt","Đã đổi khuôn mặt!")
+	ThongBao("Khuôn mặt", "Đã đổi khuôn mặt!")
 end
 
 function NhanVat.PlayAnim(model, animId)
@@ -528,22 +517,22 @@ function NhanVat.PlayAnim(model, animId)
 	if ok and track then
 		track:Play()
 		State.AnimTrack = track
-		Notify("Animation", "Đang phát ID: " .. animId)
+		ThongBao("Animation", "Đang phát ID: " .. animId)
 	else
-		Notify("Lỗi", "Không thể tải animation!")
+		ThongBaoLoi("Lỗi", "Không thể tải animation!")
 	end
 end
 
 function NhanVat.TeleportDummyToPlayer(targetModel)
 	local dummy = targetModel or State.CurrentDummy
-	if not dummy then Notify("Lỗi","Chưa có Mẫu!") return end
+	if not dummy then ThongBaoLoi("Lỗi", "Chưa có Mẫu!") return end
 	local char = LocalPlayer.Character
 	if not char then return end
 	local hrp = char:FindFirstChild("HumanoidRootPart")
 	if not hrp then return end
 	local scale = dummy:GetScale()
 	dummy:PivotTo(hrp.CFrame * CFrame.new(1.5, 3 * (scale - 1), 1.5))
-	Notify("Di chuyển","Đã mang Mẫu đến vị trí của bạn!")
+	ThongBao("Di chuyển", "Đã mang Mẫu đến vị trí của bạn!")
 end
 
 function NhanVat.HighlightModel(model, color, enabled)
@@ -567,24 +556,24 @@ end
 
 function NhanVat.LoadUserAppearance(model, userId)
 	model = model or State.CurrentDummy
-	if not model then Notify("Lỗi","Chưa có Mẫu!") return end
+	if not model then ThongBaoLoi("Lỗi", "Chưa có Mẫu!") return end
 
 	local ok, desc = pcall(function() return Players:GetHumanoidDescriptionFromUserIdAsync(userId) end)
-	if not ok or not desc then Notify("Lỗi","Không thể lấy avatar của UserId " .. tostring(userId)) return end
+	if not ok or not desc then ThongBaoLoi("Lỗi", "Không thể lấy avatar của UserId " .. tostring(userId)) return end
 
 	local hum = model:FindFirstChildWhichIsA("Humanoid")
 	if hum then
 		local applyOk, err = pcall(function() hum:ApplyDescription(desc) end)
 		if applyOk then
-			if model == State.CurrentDummy and State.CurrentScale ~= 1 then
-				model:ScaleTo(State.CurrentScale)
-			end
-			Notify("Ngoại hình","Đã tải 100% avatar UserId: " .. tostring(userId))
+			task.wait()
+			model:ScaleTo(1)
+			State.CurrentScale = 1
+			ThongBao("Ngoại hình", "Đã tải 100% avatar UserId: " .. tostring(userId))
 		else
-			Notify("Lỗi", "Không thể áp dụng ngoại hình!")
+			ThongBaoLoi("Lỗi", "Không thể áp dụng ngoại hình!")
 		end
 	else
-		Notify("Lỗi", "Model không có Humanoid!")
+		ThongBaoLoi("Lỗi", "Model không có Humanoid!")
 	end
 end
 
@@ -613,7 +602,7 @@ function NhanVat.ToggleSelectMode(isON)
 					if State.SelectedModel then NhanVat.HighlightModel(State.SelectedModel, nil, false) end
 					State.SelectedModel = model
 					NhanVat.HighlightModel(model, C.TichBat, true)
-					Notify("Đã chọn", "Mục tiêu: " .. model.Name)
+					ThongBao("Đã chọn", "Mục tiêu: " .. model.Name)
 				end
 			end
 		end)
@@ -665,7 +654,7 @@ local function AttachAccessory(targetModel, id, addBtn)
 	if result then
 		if targetModel:FindFirstChild(result.Name) then
 			if addBtn then addBtn.Text = "Thêm" end
-			Notify("Đã tồn tại", "Trang bị này đã được mặc!")
+			ThongBao("Đã tồn tại", "Trang bị này đã được mặc!")
 			return false
 		end
 
@@ -691,7 +680,7 @@ local function AttachAccessory(targetModel, id, addBtn)
 end
 
 function NhanVat.OpenCustomMenu(targetModel)
-	if not targetModel then Notify("Lỗi", "Chưa có mục tiêu để mở menu!") return end
+	if not targetModel then ThongBaoLoi("Lỗi", "Chưa có mục tiêu để mở menu!") return end
 
 	local uiName = "Hx_NhanVat_V2"
 	local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
@@ -918,7 +907,7 @@ function NhanVat.OpenCustomMenu(targetModel)
 	local p1Layout = Instance.new("UIListLayout", page1)
 	p1Layout.SortOrder = Enum.SortOrder.LayoutOrder
 	p1Layout.Padding = UDim.new(0, 10)
-	Padding(page1, 12, 12, 12)
+	Padding(page1, 12, 2, 12, 12)
 
 	local inputRow = Instance.new("Frame", page1)
 	inputRow.Size = UDim2.new(1, 0, 0, 32)
@@ -926,7 +915,7 @@ function NhanVat.OpenCustomMenu(targetModel)
 	inputRow.LayoutOrder = 1
 
 	local idBox = Instance.new("TextBox")
-	idBox.Size = UDim2.new(1, -88, 1, 0)
+	idBox.Size = UDim2.new(1, -96, 1, 0)
 	idBox.BackgroundColor3 = C.NenHop
 	idBox.PlaceholderText = "Nhập Asset ID..."
 	idBox.PlaceholderColor3 = C.ChuMo
@@ -941,7 +930,7 @@ function NhanVat.OpenCustomMenu(targetModel)
 	Padding(idBox, 8)
 	idBox.Parent = inputRow
 
-	local addBtn = MakeBtn(inputRow, "Thêm", C.NenMuc, UDim2.new(0, 80, 1, 0), UDim2.new(1, -80, 0, 0))
+	local addBtn = MakeBtn(inputRow, "Thêm", C.NenMuc, UDim2.new(0, 80, 1, 0), UDim2.new(1, -88, 0, 0))
 	Stroke(addBtn, C.VienNeon, 0.6)
 	Ripple(addBtn)
 
@@ -955,7 +944,7 @@ function NhanVat.OpenCustomMenu(targetModel)
 	Ripple(clearBtn)
 	clearBtn.MouseButton1Click:Connect(function() NhanVat.ClearAllAccessories(targetModel) end)
 
-	local copyBtn = MakeBtn(quickRow, "Copy từ quét", C.NenMuc, UDim2.new(0.48, 0, 1, 0), UDim2.new(0.52, 0, 0, 0))
+	local copyBtn = MakeBtn(quickRow, "Copy từ quét", C.NenMuc, UDim2.new(0.48, -8, 1, 0), UDim2.new(0.52, 0, 0, 0))
 	Stroke(copyBtn, C.VienNeon, 0.6)
 	Ripple(copyBtn)
 	copyBtn.MouseButton1Click:Connect(function()
@@ -1018,7 +1007,7 @@ function NhanVat.OpenCustomMenu(targetModel)
 					row.Parent = scroll1
 				end
 			end
-		else Notify("Lỗi", "Chưa có mục tiêu quét. Bật chế độ quét trước.") end
+		else ThongBaoLoi("Lỗi", "Chưa có mục tiêu quét. Bật chế độ quét trước.") end
 	end)
 
 	local scroll1 = Instance.new("ScrollingFrame", page1)
@@ -1104,15 +1093,15 @@ function NhanVat.OpenCustomMenu(targetModel)
 
 	addBtn.MouseButton1Click:Connect(function()
 		local id = tonumber(idBox.Text:match("%d+"))
-		if not id then Notify("Lỗi", "Vui lòng nhập ID hợp lệ!") return end
+		if not id then ThongBaoLoi("Lỗi", "Vui lòng nhập ID hợp lệ!") return end
 		local success = AttachAccessory(targetModel, id, addBtn)
-		if success then idBox.Text = "" RefreshList() Notify("Thành công", "Đã gắn trang bị!") end
+		if success then idBox.Text = "" RefreshList() ThongBao("Thành công", "Đã gắn trang bị!") end
 	end)
 	clearBtn.MouseButton1Click:Connect(RefreshList)
 	RefreshList()
 
 	local page2 = tabPages[2]
-	Padding(page2, 12, 12, 12)
+	Padding(page2, 12, 2, 12, 12)
 
 	local bodyScroll = Instance.new("ScrollingFrame", page2)
 	bodyScroll.Size = UDim2.new(1, 0, 0, 0)
@@ -1157,7 +1146,7 @@ function NhanVat.OpenCustomMenu(targetModel)
 	uidRow.Parent = bodyScroll
 
 	local uidBox = Instance.new("TextBox")
-	uidBox.Size = UDim2.new(1, -90, 1, 0)
+	uidBox.Size = UDim2.new(1, -98, 1, 0)
 	uidBox.BackgroundColor3 = C.NenHop
 	uidBox.PlaceholderText = "Nhập UserId..."
 	uidBox.PlaceholderColor3 = C.ChuMo
@@ -1172,25 +1161,39 @@ function NhanVat.OpenCustomMenu(targetModel)
 	Padding(uidBox, 8)
 	uidBox.Parent = uidRow
 
-	local loadAvaBtn = MakeBtn(uidRow, "Tải", C.NenMuc, UDim2.new(0, 80, 1, 0), UDim2.new(1, -80, 0, 0))
+	local scaleRow = Instance.new("Frame")
+	scaleRow.Size = UDim2.new(1, 0, 0, 36)
+	scaleRow.BackgroundTransparency = 1
+	scaleRow.LayoutOrder = 4
+	scaleRow.Parent = bodyScroll
+
+	local loadAvaBtn = MakeBtn(uidRow, "Tải", C.NenMuc, UDim2.new(0, 80, 1, 0), UDim2.new(1, -88, 0, 0))
 	Stroke(loadAvaBtn, C.VienNeon, 0.6)
 	Ripple(loadAvaBtn)
 	loadAvaBtn.MouseButton1Click:Connect(function()
 		local uid = tonumber(uidBox.Text:match("%d+"))
-		if not uid then Notify("Lỗi", "UserId không hợp lệ!") return end
+		if not uid then ThongBaoLoi("Lỗi", "UserId không hợp lệ!") return end
 		loadAvaBtn.Text = "..."
+
+		NhanVat.ScaleDummy(1)
+		for _, btn in ipairs(scaleRow:GetChildren()) do
+			if btn:IsA("TextButton") then
+				if btn.Text == "Thường" then
+					Tween(btn, 0.15, nil, nil, {BackgroundColor3 = C.NenMuc}):Play()
+					btn.TextColor3 = C.TichBat
+				else
+					Tween(btn, 0.15, nil, nil, {BackgroundColor3 = C.NenHop}):Play()
+					btn.TextColor3 = C.Chu
+				end
+			end
+		end
+
 		NhanVat.LoadUserAppearance(targetModel, uid)
 		loadAvaBtn.Text = "Tải"
 		RefreshList()
 	end)
 
 	SectionLabel(bodyScroll, "Tỉ lệ nhân vật", 3)
-
-	local scaleRow = Instance.new("Frame")
-	scaleRow.Size = UDim2.new(1, 0, 0, 36)
-	scaleRow.BackgroundTransparency = 1
-	scaleRow.LayoutOrder = 4
-	scaleRow.Parent = bodyScroll
 
 	local SCALES = {{"Bé", 0.5}, {"Nhỏ", 0.75}, {"Thường", 1}, {"To", 1.5}, {"Lớn", 2.5}}
 	local scListLayout = Instance.new("UIListLayout", scaleRow)
@@ -1270,7 +1273,7 @@ function NhanVat.OpenCustomMenu(targetModel)
 	faceRow.LayoutOrder = orderIndex + 1
 	faceRow.Parent = bodyScroll
 	local faceBox = Instance.new("TextBox")
-	faceBox.Size = UDim2.new(1, -90, 1, 0)
+	faceBox.Size = UDim2.new(1, -98, 1, 0)
 	faceBox.BackgroundColor3 = C.NenHop
 	faceBox.PlaceholderText = "Nhập ID Face..."
 	faceBox.PlaceholderColor3 = C.ChuMo
@@ -1285,17 +1288,17 @@ function NhanVat.OpenCustomMenu(targetModel)
 	Padding(faceBox, 8)
 	faceBox.Parent = faceRow
 
-	local setFaceBtn = MakeBtn(faceRow, "Đặt", C.NenMuc, UDim2.new(0, 80, 1, 0), UDim2.new(1, -80, 0, 0))
+	local setFaceBtn = MakeBtn(faceRow, "Đặt", C.NenMuc, UDim2.new(0, 80, 1, 0), UDim2.new(1, -88, 0, 0))
 	Stroke(setFaceBtn, C.VienNeon, 0.6)
 	Ripple(setFaceBtn)
 	setFaceBtn.MouseButton1Click:Connect(function()
 		local fid = tonumber(faceBox.Text:match("%d+"))
-		if fid then NhanVat.SetFace(targetModel, fid) else Notify("Lỗi", "Face ID không hợp lệ!") end
+		if fid then NhanVat.SetFace(targetModel, fid) else ThongBaoLoi("Lỗi", "Face ID không hợp lệ!") end
 	end)
 	bodyScroll.Size = UDim2.new(1, 0, 0, math.clamp(bodyLayout.AbsoluteContentSize.Y + 4, 0, 300))
 
 	local page3 = tabPages[3]
-	Padding(page3, 12, 12, 12)
+	Padding(page3, 12, 2, 12, 12)
 
 	local animScroll = Instance.new("ScrollingFrame", page3)
 	animScroll.Size = UDim2.new(1, 0, 0, 0)
@@ -1316,7 +1319,7 @@ function NhanVat.OpenCustomMenu(targetModel)
 	end)
 
 	local animInfoLbl = Instance.new("TextLabel", animScroll)
-	animInfoLbl.Size = UDim2.new(1, 0, 0, 36)
+	animInfoLbl.Size = UDim2.new(1, -8, 0, 36)
 	animInfoLbl.BackgroundColor3 = C.NenHop
 	animInfoLbl.Text = "Nhập Animation ID để phát. Mục tiêu cần có Animator."
 	animInfoLbl.TextColor3 = C.ChuMo
@@ -1335,7 +1338,7 @@ function NhanVat.OpenCustomMenu(targetModel)
 	animRow.Parent = animScroll
 
 	local animBox = Instance.new("TextBox")
-	animBox.Size = UDim2.new(1, -90, 1, 0)
+	animBox.Size = UDim2.new(1, -98, 1, 0)
 	animBox.BackgroundColor3 = C.NenHop
 	animBox.PlaceholderText = "Animation ID..."
 	animBox.PlaceholderColor3 = C.ChuMo
@@ -1350,15 +1353,15 @@ function NhanVat.OpenCustomMenu(targetModel)
 	Padding(animBox, 8)
 	animBox.Parent = animRow
 
-	local playAnimBtn = MakeBtn(animRow, "Phát", C.NenMuc, UDim2.new(0, 80, 1, 0), UDim2.new(1, -80, 0, 0))
+	local playAnimBtn = MakeBtn(animRow, "Phát", C.NenMuc, UDim2.new(0, 80, 1, 0), UDim2.new(1, -88, 0, 0))
 	Stroke(playAnimBtn, C.VienNeon, 0.6)
 	Ripple(playAnimBtn)
 	playAnimBtn.MouseButton1Click:Connect(function()
 		local aid = tonumber(animBox.Text:match("%d+"))
-		if aid then NhanVat.PlayAnim(targetModel, aid) else Notify("Lỗi", "Animation ID không hợp lệ!") end
+		if aid then NhanVat.PlayAnim(targetModel, aid) else ThongBaoLoi("Lỗi", "Animation ID không hợp lệ!") end
 	end)
 
-	local stopAnimBtn = MakeBtn(animScroll, "Dừng Animation", C.NenMuc, UDim2.new(1, 0, 0, 34))
+	local stopAnimBtn = MakeBtn(animScroll, "Dừng Animation", C.NenMuc, UDim2.new(1, -8, 0, 34))
 	stopAnimBtn.LayoutOrder = 2
 	Stroke(stopAnimBtn, C.VienNeon, 0.6)
 	Ripple(stopAnimBtn)
@@ -1366,7 +1369,7 @@ function NhanVat.OpenCustomMenu(targetModel)
 		if State.AnimTrack then
 			State.AnimTrack:Stop()
 			State.AnimTrack = nil
-			Notify("Animation", "Đã dừng chuyển động.")
+			ThongBao("Animation", "Đã dừng chuyển động.")
 		end
 		if targetModel then
 			local hum = targetModel:FindFirstChildWhichIsA("Humanoid")
@@ -1425,7 +1428,7 @@ function NhanVat.OpenCustomMenu(targetModel)
 	animScroll.Size = UDim2.new(1, 0, 0, math.clamp(animLayout.AbsoluteContentSize.Y + 4, 0, 300))
 
 	local page4 = tabPages[4]
-	Padding(page4, 12, 12, 12)
+	Padding(page4, 12, 2, 12, 12)
 
 	local toolScroll = Instance.new("ScrollingFrame", page4)
 	toolScroll.Size = UDim2.new(1, 0, 0, 0)
@@ -1455,14 +1458,14 @@ function NhanVat.OpenCustomMenu(targetModel)
 	Ripple(tpPlayerBtn)
 	tpPlayerBtn.MouseButton1Click:Connect(function() NhanVat.TeleportDummyToPlayer(targetModel) end)
 
-	local tpCamBtn = MakeBtn(tpRow, "Đến Camera", C.NenMuc, UDim2.new(0.48, 0, 1, 0), UDim2.new(0.52, 0, 0, 0))
+	local tpCamBtn = MakeBtn(tpRow, "Đến Camera", C.NenMuc, UDim2.new(0.48, -8, 1, 0), UDim2.new(0.52, 0, 0, 0))
 	Stroke(tpCamBtn, C.VienNeon, 0.6)
 	Ripple(tpCamBtn)
 	tpCamBtn.MouseButton1Click:Connect(function()
 		if targetModel and targetModel.PrimaryPart then
 			local scale = targetModel:GetScale()
 			targetModel:PivotTo(Camera.CFrame * CFrame.new(0, -1.5 * (scale - 1), -5 - scale))
-			Notify("Di chuyển", "Đã mang đến trước Camera!")
+			ThongBao("Di chuyển", "Đã mang đến trước Camera!")
 		end
 	end)
 
@@ -1479,7 +1482,7 @@ function NhanVat.OpenCustomMenu(targetModel)
 	Stroke(followBtn, C.VienNeon, 0.6)
 	Ripple(followBtn)
 
-	local flyBtn = MakeBtn(folRow, "Bay Theo : " .. (isFly and "Bật" or "Tắt"), isFly and C.NenMuc or C.NenHop, UDim2.new(0.48, 0, 1, 0), UDim2.new(0.52, 0, 0, 0))
+	local flyBtn = MakeBtn(folRow, "Bay Theo : " .. (isFly and "Bật" or "Tắt"), isFly and C.NenMuc or C.NenHop, UDim2.new(0.48, -8, 1, 0), UDim2.new(0.52, 0, 0, 0))
 	flyBtn.TextColor3 = isFly and C.TichBat or C.Chu
 	Stroke(flyBtn, C.VienNeon, 0.6)
 	Ripple(flyBtn)
@@ -1530,8 +1533,10 @@ function NhanVat.OpenCustomMenu(targetModel)
 							local bobSpeed = isMoving and 6 or 2.5
 							local bobY = math.sin(tick() * bobSpeed) * bobAmp
 
-							local targetCF = hrp.CFrame * CFrame.new(1.5, 3 * (scale - 1) + 2.5 + bobY, 1.5) * tilt
-							targetModel:PivotTo(targetModel:GetPivot():Lerp(targetCF, 0.1))
+							local targetCF = hrp.CFrame * CFrame.new(1.5, 3 * (scale - 1) + 3 + bobY, 1.5) * tilt
+							local currentPivot = targetModel:GetPivot()
+							local nextPivot = currentPivot:Lerp(targetCF, 0.1)
+							targetModel:PivotTo(nextPivot)
 
 							if vY > 1.5 then PlayStateAnim(targetModel, "Jump")
 							elseif vY < -1.5 then PlayStateAnim(targetModel, "Fall")
@@ -1584,7 +1589,7 @@ function NhanVat.OpenCustomMenu(targetModel)
 	end)
 
 	local isHl = targetModel:GetAttribute("HxHighlight") or false
-	local hlBtn = MakeBtn(toolScroll, "Highlight : " .. (isHl and "Bật" or "Tắt"), isHl and C.NenMuc or C.NenHop, UDim2.new(1, 0, 0, 32))
+	local hlBtn = MakeBtn(toolScroll, "Highlight : " .. (isHl and "Bật" or "Tắt"), isHl and C.NenMuc or C.NenHop, UDim2.new(1, -8, 0, 32))
 	hlBtn.LayoutOrder = 3
 	hlBtn.TextColor3 = isHl and C.TichBat or C.Chu
 	Stroke(hlBtn, C.VienNeon, 0.6)
@@ -1599,7 +1604,7 @@ function NhanVat.OpenCustomMenu(targetModel)
 	end)
 
 	local isSpin = targetModel:GetAttribute("HxSpinning") or false
-	local spinBtn = MakeBtn(toolScroll, "Xoay Mục Tiêu : " .. (isSpin and "Bật" or "Tắt"), isSpin and C.NenMuc or C.NenHop, UDim2.new(1, 0, 0, 32))
+	local spinBtn = MakeBtn(toolScroll, "Xoay Mục Tiêu : " .. (isSpin and "Bật" or "Tắt"), isSpin and C.NenMuc or C.NenHop, UDim2.new(1, -8, 0, 32))
 	spinBtn.LayoutOrder = 4
 	spinBtn.TextColor3 = isSpin and C.TichBat or C.Chu
 	Stroke(spinBtn, C.VienNeon, 0.6)
@@ -1624,7 +1629,7 @@ function NhanVat.OpenCustomMenu(targetModel)
 		end
 	end)
 
-	local delBtn = MakeBtn(toolScroll, "Xóa Model Này", C.NenMuc, UDim2.new(1, 0, 0, 32))
+	local delBtn = MakeBtn(toolScroll, "Xóa Model Này", C.NenMuc, UDim2.new(1, -8, 0, 32))
 	delBtn.LayoutOrder = 5
 	Stroke(delBtn, C.VienNeon, 0.6)
 	Ripple(delBtn)
@@ -1632,7 +1637,7 @@ function NhanVat.OpenCustomMenu(targetModel)
 		if targetModel == State.CurrentDummy then NhanVat.RemoveDummy()
 		else
 			targetModel:Destroy()
-			Notify("Đã Xóa", "Mục tiêu đã bị xóa!")
+			ThongBao("Đã Xóa", "Mục tiêu đã bị xóa!")
 		end
 		task.delay(0.3, DongGiaoDien)
 	end)
