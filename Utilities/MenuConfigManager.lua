@@ -2,8 +2,6 @@ local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-local VirtualInputManager = game:GetService("VirtualInputManager")
 local VirtualUser = game:GetService("VirtualUser")
 local Terrain = workspace:FindFirstChildOfClass("Terrain")
 
@@ -236,73 +234,12 @@ function MenuConfigManager.NoShadows(TrangThai)
 	end
 end
 
-local lastActivityTime = tick()
-local isAfk = false
-local isSimulatingKeys = false
-
 print("Anti - AFK Loaded")
 
 Players.LocalPlayer.Idled:Connect(function()
 	VirtualUser:CaptureController()
 	VirtualUser:ClickButton2(Vector2.new())
-end)
-
-local function resetActivity(input, gameProcessed)
-	if isSimulatingKeys then return end
-	
-	if input.UserInputType == Enum.UserInputType.Keyboard or 
-	   input.UserInputType == Enum.UserInputType.MouseMovement or 
-	   input.UserInputType == Enum.UserInputType.MouseButton1 or 
-	   input.UserInputType == Enum.UserInputType.Touch then
-		
-		lastActivityTime = tick()
-		
-		if isAfk then
-			isAfk = false
-			print("Anti - AFK : OFF")
-		end
-	end
-end
-
-UserInputService.InputBegan:Connect(resetActivity)
-UserInputService.InputChanged:Connect(resetActivity)
-
-task.spawn(function()
-	local keyPairs = {
-		{Enum.KeyCode.W, Enum.KeyCode.S},
-		{Enum.KeyCode.S, Enum.KeyCode.W},
-		{Enum.KeyCode.A, Enum.KeyCode.D},
-		{Enum.KeyCode.D, Enum.KeyCode.A}
-	}
-	
-	while task.wait(1) do
-		if tick() - lastActivityTime >= 10 then
-			if not isAfk then
-				isAfk = true
-				print("Anti - AFK : ON")
-			end
-			
-			isSimulatingKeys = true 
-			
-			local randomPair = keyPairs[math.random(1, #keyPairs)]
-			local key1 = randomPair[1]
-			local key2 = randomPair[2]
-			
-			VirtualInputManager:SendKeyEvent(true, key1, false, game)
-			task.wait() 
-			VirtualInputManager:SendKeyEvent(false, key1, false, game)
-			
-			task.wait()
-			
-			VirtualInputManager:SendKeyEvent(true, key2, false, game)
-			task.wait() 
-			VirtualInputManager:SendKeyEvent(false, key2, false, game)
-			
-			isSimulatingKeys = false
-			
-			task.wait(5)
-		end
-	end
+	print("Anti - AFK : Bypassed")
 end)
 
 return MenuConfigManager
