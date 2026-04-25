@@ -1,8 +1,8 @@
 local DichVuTween = game:GetService("TweenService")
 local DichVuRun = game:GetService("RunService")
 local DichVuInput = game:GetService("UserInputService")
-local TimKiem = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/TimKiem.lua"))()
 local ChuDe = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ChuDe.lua"))()
+local TimKiemLogic = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/TimKiem.lua"))()
 
 local TweenNhanh = TweenInfo.new(0.08, Enum.EasingStyle.Sine)
 local TweenMuot = TweenInfo.new(0.3, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out)
@@ -703,6 +703,11 @@ function ThuVienUI.Tao(KhungChinh, Cuon, DuLieu, CauHinh, LopPhu, DongMenu, HamP
 			if k ~= "Ten" then CauHinh.Mau[k] = v end
 		end
 
+		pcall(function()
+			local tb = require(script.Parent:WaitForChild("ThongBao"))
+			if tb.CapNhatChuDe then tb.CapNhatChuDe(ThemeInfo) end
+		end)
+
 		ChayTween(KhungChinh, TweenTheme, {BackgroundColor3 = ThemeInfo.Nen})
 		ChayTween(Cuon, TweenTheme, {BackgroundColor3 = ThemeInfo.NenList})
 		local nutMoUI = KhungChinh.Parent and KhungChinh.Parent:FindFirstChild("NutMoUI")
@@ -829,10 +834,10 @@ function ThuVienUI.Tao(KhungChinh, Cuon, DuLieu, CauHinh, LopPhu, DongMenu, HamP
 			else
 				ChayTween(KhungTimKiem, TweenMuot, {Size = UDim2.new(0, 0, 1, 0)})
 				NhanTimKiemText.Text = ""
-				TimKiem.LocDuLieu(Cuon, "")
+				TimKiemLogic.LocDuLieu(Cuon, "")
 			end
 		end)
-		NhanTimKiemText:GetPropertyChangedSignal("Text"):Connect(function() TimKiem.LocDuLieu(Cuon, NhanTimKiemText.Text) end)
+		NhanTimKiemText:GetPropertyChangedSignal("Text"):Connect(function() TimKiemLogic.LocDuLieu(Cuon, NhanTimKiemText.Text) end)
 	end
 
 	local NutMin = TaoDoiTuong("TextButton", {LayoutOrder = 2, Size = UDim2.fromOffset(35, 35), BackgroundColor3 = Mau.NenHop, BackgroundTransparency = 0.6, Text = "_", TextColor3 = Mau.Chu, TextSize = 22, Font = "GothamBold", ZIndex = 10, Parent = Toolbar})
@@ -868,9 +873,9 @@ function ThuVienUI.Tao(KhungChinh, Cuon, DuLieu, CauHinh, LopPhu, DongMenu, HamP
 			ThanhPhan[DuLieuMuc.Loai](Cha, DuLieuMuc, CauHinh, function() if CapNhatMuc then CapNhatMuc() end end, TaoMuc, NguCanh)
 		end
 	end
-	
+
 	local ChuyenTab
-	
+
 	if CauHinh.DangTab then
 		Cuon.ScrollingEnabled = false Cuon.ScrollBarThickness = 0 Cuon.CanvasSize = UDim2.new(0, 0, 0, 0)
 		local ThanhTab = TaoDoiTuong("ScrollingFrame", {Size = UDim2.new(0.96, 0, 0, 30), Position = UDim2.new(0.02, 0, 0, 1), BackgroundTransparency = 1, ScrollBarThickness = 0, ScrollingDirection = Enum.ScrollingDirection.X, AutomaticCanvasSize = Enum.AutomaticSize.X, CanvasSize = UDim2.new(0, 0, 0, 0), ClipsDescendants = true, Parent = Cuon})
