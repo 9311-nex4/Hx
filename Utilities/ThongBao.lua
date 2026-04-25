@@ -12,7 +12,8 @@ local CONFIG = {
 	MAU_CHU_DAO = Color3.fromRGB(0, 255, 170),
 	MAU_LOI = Color3.fromRGB(255, 60, 60),
 	MAU_NEN = Color3.fromRGB(15, 15, 20),
-	MAU_XAC_NHAN = Color3.fromRGB(255, 75, 75)
+	MAU_XAC_NHAN = Color3.fromRGB(255, 75, 75),
+	MAU_CHU = Color3.fromRGB(220, 220, 220)
 }
 
 local existingGui = GuiNguoiChoi:FindFirstChild("ChaosSystem_Final")
@@ -31,6 +32,27 @@ local ThongBaoDangHien = {}
 local KhungLoiHienTai = nil
 local KhungXacNhanHienTai = nil
 local Guithongbao = {}
+
+function Guithongbao.CapNhatChuDe(ThemeInfo)
+	if not ThemeInfo then return end
+	CONFIG.MAU_CHU_DAO = ThemeInfo.VienNeon or CONFIG.MAU_CHU_DAO
+	CONFIG.MAU_NEN = ThemeInfo.NenKhoi or ThemeInfo.Nen or CONFIG.MAU_NEN
+	CONFIG.MAU_CHU = ThemeInfo.Chu or CONFIG.MAU_CHU
+
+	local ti = TweenInfo.new(0.3, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out)
+	for _, v in ipairs(ThongBaoDangHien) do
+		if v.Khung then TweenService:Create(v.Khung, ti, {BackgroundColor3 = CONFIG.MAU_NEN}):Play() end
+		if v.Stroke then TweenService:Create(v.Stroke, ti, {Color = CONFIG.MAU_CHU_DAO}):Play() end
+		if v.NhanTieuDe then TweenService:Create(v.NhanTieuDe, ti, {TextColor3 = CONFIG.MAU_CHU_DAO}):Play() end
+		if v.NhanNoiDung then TweenService:Create(v.NhanNoiDung, ti, {TextColor3 = CONFIG.MAU_CHU}):Play() end
+		if v.ThanhChay then TweenService:Create(v.ThanhChay, ti, {BackgroundColor3 = CONFIG.MAU_CHU_DAO}):Play() end
+	end
+
+	if KhungXacNhanHienTai then
+		local kxn = KhungXacNhanHienTai:FindFirstChildOfClass("Frame")
+		if kxn then TweenService:Create(kxn, ti, {BackgroundColor3 = CONFIG.MAU_NEN}):Play() end
+	end
+end
 
 local function KiemTraMobile()
 	local cam = workspace.CurrentCamera
@@ -118,7 +140,7 @@ function Guithongbao.thongbao(TieuDe, NoiDung, ThoiGian)
 	NhanNoiDung.Size = UDim2.new(1, -20, 0, isMobile and 25 or 30)
 	NhanNoiDung.Position = UDim2.new(0, 12, 0, isMobile and 20 or 26)
 	NhanNoiDung.BackgroundTransparency = 1
-	NhanNoiDung.TextColor3 = Color3.fromRGB(220, 220, 220)
+	NhanNoiDung.TextColor3 = CONFIG.MAU_CHU
 	NhanNoiDung.Font = Enum.Font.GothamMedium
 	NhanNoiDung.TextSize = descSize
 	NhanNoiDung.TextWrapped = true
@@ -141,7 +163,7 @@ function Guithongbao.thongbao(TieuDe, NoiDung, ThoiGian)
 	ThanhChay.Parent = NenThoiGian
 	Instance.new("UICorner", ThanhChay).CornerRadius = UDim.new(1, 0)
 
-	local DuLieu = { Khung = KhungChua }
+	local DuLieu = { Khung = KhungChua, Stroke = Stroke, NhanTieuDe = NhanTieuDe, NhanNoiDung = NhanNoiDung, ThanhChay = ThanhChay }
 	table.insert(ThongBaoDangHien, DuLieu)
 
 	CapNhatViTri()
@@ -394,7 +416,7 @@ function Guithongbao.thongbaoxacnhan(TieuDe, NoiDung, CallbackDongY, CallbackHuy
 	NhanNoiDung.Size = UDim2.new(1, -40, 0, 50)
 	NhanNoiDung.Position = UDim2.new(0, 20, 0, 40)
 	NhanNoiDung.BackgroundTransparency = 1
-	NhanNoiDung.TextColor3 = Color3.fromRGB(220, 220, 220)
+	NhanNoiDung.TextColor3 = CONFIG.MAU_CHU
 	NhanNoiDung.Font = Enum.Font.GothamMedium
 	NhanNoiDung.TextSize = descSize
 	NhanNoiDung.TextWrapped = true
