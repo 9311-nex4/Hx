@@ -80,7 +80,11 @@ local function CapNhatOutline()
 		box.Name = "TransformSelectionBox"
 		box.Color3 = SEL_COLOR
 		box.LineThickness = 0.05
-		box.Adornee = sel
+		if State.CurrentMode == "NhanVat" then
+			box.Adornee = sel:FindFirstAncestorWhichIsA("Model") or sel
+		else
+			box.Adornee = sel
+		end
 		box.Parent = PlayerGui
 	end
 end
@@ -265,8 +269,10 @@ local function BienHinh_NhanVat(char, root)
 		cloneHum:ApplyDescription(cloneDesc)
 	end)
 	task.wait()
-	local doLechDoc = 0
-	pcall(function() doLechDoc = myHum.HipHeight - cloneHum.HipHeight end)
+	local yOffset = 0
+	pcall(function() 
+		yOffset = (cloneHum.HipHeight - myHum.HipHeight) + (cloneRoot.Size.Y - root.Size.Y) / 2 
+	end)
 	for _, v in ipairs(cloneChar:GetDescendants()) do
 		if (v:IsA("Script") or v:IsA("LocalScript")) and v.Name ~= "Animate" then
 			v:Destroy()
@@ -277,11 +283,14 @@ local function BienHinh_NhanVat(char, root)
 		end
 	end
 	cloneRoot.Anchored = false
-	cloneRoot.CFrame = root.CFrame * CFrame.new(0, doLechDoc, 0)
+	cloneRoot.CFrame = root.CFrame * CFrame.new(0, yOffset, 0)
 	local w = Instance.new("WeldConstraint")
 	w.Part0 = root; w.Part1 = cloneRoot; w.Parent = root
 	cloneChar.Parent = char
 	table.insert(Storage.CreatedObjects, cloneChar)
+
+	cloneHum.PlatformStand = true
+
 	if Connections.AnimationSync then Connections.AnimationSync:Disconnect() end
 	local jumpState = Enum.HumanoidStateType.Jumping
 	Connections.AnimationSync = RunService.RenderStepped:Connect(function()
@@ -334,7 +343,7 @@ local function SetupInputListener()
 			local isChar = part:FindFirstAncestorWhichIsA("Model") and part:FindFirstAncestorWhichIsA("Model"):FindFirstChildWhichIsA("Humanoid")
 			if mode == "NhanVat" and not isChar then return end
 			if (mode == "ToanThan" or mode == "TungPhan") and isChar then return end
-			State.SelectedPart = part
+			State.SelectedPart = isChar and part:FindFirstAncestorWhichIsA("Model").PrimaryPart or part
 			CapNhatOutline()
 		end
 	end)
