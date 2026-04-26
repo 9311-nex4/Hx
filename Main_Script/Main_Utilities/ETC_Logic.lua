@@ -117,7 +117,7 @@ end
 
 function ETC_Logic.TeleportToMouse()
 	local mouse = LocalPlayer:GetMouse()
-	if mouse.Target then ETC_Logic.TeleportTo(CFrame.new(mouse.Hit.p + Vector3.new(0, 3, 0))) end
+	if mouse.Target then ETC_Logic.TeleportTo(CFrame.new(mouse.Hit.Position + Vector3.new(0, 3, 0))) end
 end
 
 function ETC_Logic.SetClickTP(TrangThai)
