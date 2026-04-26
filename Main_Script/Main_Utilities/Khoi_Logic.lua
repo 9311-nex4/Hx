@@ -106,6 +106,8 @@ local function LayState()
 	for obj in next_fn, State.DangChon do
 		if obj:IsA("BasePart") then
 			d[obj] = { CF = obj.CFrame, Size = obj.Size, Shape = obj.Shape, Parent = obj.Parent }
+		elseif obj:IsA("Model") and obj.PrimaryPart then
+			d[obj] = { CF = obj:GetPivot(), Parent = obj.Parent }
 		end
 	end
 	return d
@@ -114,8 +116,13 @@ end
 local function SetState(data)
 	for obj, info in next_fn, data do
 		if obj and obj.Parent then
-			obj.CFrame = info.CF; obj.Size = info.Size
-			if obj:IsA("Part") then obj.Shape = info.Shape end
+			if obj:IsA("Model") then
+				obj:PivotTo(info.CF)
+			elseif obj:IsA("BasePart") then
+				obj.CFrame = info.CF
+				if info.Size then obj.Size = info.Size end
+				if obj:IsA("Part") and info.Shape then obj.Shape = info.Shape end
+			end
 		end
 	end
 end
@@ -123,7 +130,7 @@ end
 local function LuuHistory(cu, moi)
 	local change = false
 	for k, v in next_fn, moi do
-		if not cu[k] or cu[k].CF ~= v.CF or cu[k].Size ~= v.Size or cu[k].Shape ~= v.Shape then
+		if not cu[k] or cu[k].CF ~= v.CF or (v.Size and cu[k].Size ~= v.Size) then
 			change = true; break
 		end
 	end
@@ -197,7 +204,7 @@ local function XuLyNgoi(ghe)
 		local spd = ghe:GetAttribute("Speed") or 20
 		local smooth = 0.15
 
-		RAY_PARAMS_XE.FilterDescendantsInstances = { char, ghe }
+		RAY_PARAMS_XE.FilterDescendantsInstances = { char, ghe, ghe.Parent }
 
 		local targetHoverHeight = 2
 		local startRay = Workspace:Raycast(ghe.Position, vec3(0, -100, 0), RAY_PARAMS_XE)
@@ -236,14 +243,18 @@ local function XuLyNgoi(ghe)
 				if choPhepDi then
 					local look = CFrame.lookAt(pos, pos + dir)
 					local nCF = ghe.CFrame:Lerp(look, smooth)
-					ghe.CFrame = nCF - nCF.Position + (pos + moveVec) + vec3(0, hoverOffset, 0)
+					local finalCF = nCF - nCF.Position + (pos + moveVec) + vec3(0, hoverOffset, 0)
+					if ghe.Parent:IsA("Model") and ghe.Parent.PrimaryPart == ghe then
+						ghe.Parent:PivotTo(finalCF)
+					else
+						ghe.CFrame = finalCF
+					end
 				elseif mAbs(hoverOffset) > 0.001 then
 					ghe.Position = pos + vec3(0, hoverOffset, 0)
 				end
 			elseif mAbs(hoverOffset) > 0.001 then
 				ghe.Position = pos + vec3(0, hoverOffset, 0)
 			end
-
 			root.CFrame = ghe.CFrame * seatOffset
 		end)
 	end
@@ -386,8 +397,14 @@ TaoGizmo = function(target)
 		end)
 		h.MouseDrag:Connect(function(face, dist)
 			if target:GetAttribute("LockMove") or not DataGoc.CF then return end
-			target.CFrame = DataGoc.CF + (DataGoc.CF:VectorToWorldSpace(Vector3.FromNormalId(face)) * Snap(dist, CAIDAT.LUOI_MOVE))
-			target.Anchored = true
+			local nCF = DataGoc.CF + (DataGoc.CF:VectorToWorldSpace(Vector3.FromNormalId(face)) * Snap(dist, CAIDAT.LUOI_MOVE))
+			local par = target.Parent
+			if par and par:IsA("Model") and par.PrimaryPart == target then
+				par:PivotTo(nCF)
+			else
+				target.CFrame = nCF
+				target.Anchored = true
+			end
 		end)
 	elseif t == 2 then
 		local h = Instance.new("Handles", f)
@@ -410,12 +427,18 @@ TaoGizmo = function(target)
 		h.MouseDrag:Connect(function(ax, ag)
 			if not DataGoc.CF then return end
 			local r = mRad(Snap(mDeg(ag), CAIDAT.LUOI_ROT))
-			target.CFrame = DataGoc.CF * CFrame.Angles(
+			local nCF = DataGoc.CF * CFrame.Angles(
 				ax == Enum.Axis.X and r or 0,
 				ax == Enum.Axis.Y and r or 0,
 				ax == Enum.Axis.Z and r or 0
 			)
-			target.Anchored = true
+			local par = target.Parent
+			if par and par:IsA("Model") and par.PrimaryPart == target then
+				par:PivotTo(nCF)
+			else
+				target.CFrame = nCF
+				target.Anchored = true
+			end
 		end)
 	end
 end
@@ -430,13 +453,22 @@ UpdateBox = function()
 		local t = k:IsA("Model") and k.PrimaryPart or k
 		if t then
 			local b = Instance.new("SelectionBox")
-			b.Name = "SelBox"; b.Adornee = t; b.LineThickness = 0.08
+			b.Name = "SelBox"; b.Adornee = t; b.LineThickness = 0.05
 			b.Color3 = CAIDAT.C_BOX; b.Parent = t; rep = t
 		end
 	end
 	if sl > 0 then
 		if not UI.Container or not UI.Container.Visible then ToggleUI(true) end
-		if sl == 1 then TaoGizmo(rep) else XoaGizmo() end
+		if sl == 1 then 
+			local obj = next_fn(State.DangChon)
+			if obj:IsA("Model") and State.Tool == 2 then
+				XoaGizmo()
+			else
+				TaoGizmo(rep) 
+			end
+		else 
+			XoaGizmo() 
+		end
 	else
 		ToggleUI(false); XoaGizmo()
 	end
@@ -574,7 +606,13 @@ local function TaoUI()
 	end)
 	MakeSub("BtnSeat", "rbxassetid://"..CAIDAT.ICONS.SEAT, 8, function()
 		State.ModeGhe = (State.ModeGhe + 1) % 3
-		for k in next_fn, State.DangChon do SetGhe(k, State.ModeGhe) end
+		for k in next_fn, State.DangChon do
+			if k:IsA("Model") and k.PrimaryPart then
+				SetGhe(k.PrimaryPart, State.ModeGhe)
+			else
+				SetGhe(k, State.ModeGhe)
+			end
+		end
 		CapNhatUI()
 	end)
 	MakeSub("BtnSpeed", CAIDAT.ICONS.SPEED, 9, ToggleSpeed)
@@ -673,7 +711,10 @@ ToggleSpeed = function()
 	ipStrk.Transparency = 0.6
 
 	local g = next_fn(State.DangChon)
-	if g then ip.Text = tostring(g:GetAttribute("Speed") or 50) end
+	if g then 
+		local target = g:IsA("Model") and g.PrimaryPart or g
+		ip.Text = tostring(target:GetAttribute("Speed") or 50) 
+	end
 
 	local btn = Instance.new("TextButton", f)
 	btn.Text = "LƯU"
@@ -690,7 +731,12 @@ ToggleSpeed = function()
 
 	btn.MouseButton1Click:Connect(function()
 		local s = tonumber(ip.Text)
-		if s then for k in next_fn, State.DangChon do k:SetAttribute("Speed", s) end end
+		if s then 
+			for k in next_fn, State.DangChon do 
+				local t = k:IsA("Model") and k.PrimaryPart or k
+				t:SetAttribute("Speed", s) 
+			end 
+		end
 		f:Destroy(); UI.P_Speed = nil
 	end)
 
@@ -706,9 +752,12 @@ ToggleProp = function()
 		State.ShowProp = false; CapNhatUI(); return
 	end
 
-	State.ShowProp = true; CapNhatUI()
-	local obj = next_fn(State.DangChon); if not obj then return end
+	local target = next_fn(State.DangChon)
+	if not target then return end
+	local obj = target:IsA("Model") and target.PrimaryPart or target
+	if not obj then return end
 
+	State.ShowProp = true; CapNhatUI()
 	local par = UI.Container and UI.Container.Parent
 	if not par then return end
 
@@ -738,7 +787,7 @@ ToggleProp = function()
 	hFiller.BorderSizePixel = 0
 
 	local title = Instance.new("TextLabel", header)
-	title.Text = " Thuộc Tính: " .. (obj.Name:sub(1,10))
+	title.Text = " Thuộc Tính: " .. (target.Name:sub(1,10))
 	title.Size = udim2(1, -40, 1, 0)
 	title.BackgroundTransparency = 1
 	title.TextColor3 = CAIDAT.C_CHU
@@ -875,7 +924,7 @@ ToggleProp = function()
 		end
 	end
 
-	Row("Tên", obj.Name, "Str", function(v) obj.Name = v end)
+	Row("Tên", target.Name, "Str", function(v) target.Name = v end)
 	Row("Màu", obj.Color, "Col", function(v) obj.Color = v end)
 	local cTex = obj:FindFirstChildOfClass("Texture") and obj:FindFirstChildOfClass("Texture").Texture or ""
 	Row("Texture", cTex, "Str", function(v)
@@ -889,7 +938,17 @@ ToggleProp = function()
 	Row("Phản chiếu", obj.Reflectance, "Num", function(v) obj.Reflectance = tonumber(v) or 0 end)
 	Row("Trong suốt", obj.Transparency, "Num", function(v) obj.Transparency = tonumber(v) or 0 end)
 	Row("Va chạm", obj.CanCollide, "Bool", function() obj.CanCollide = not obj.CanCollide; return obj.CanCollide end)
-	Row("Cố định", obj.Anchored, "Bool", function() obj.Anchored = not obj.Anchored; return obj.Anchored end)
+	Row("Cố định", obj.Anchored, "Bool", function() 
+		if target:IsA("Model") then
+			local newState = not obj.Anchored
+			for _, child in ipairs(target:GetDescendants()) do
+				if child:IsA("BasePart") then child.Anchored = newState end
+			end
+			return newState
+		else
+			obj.Anchored = not obj.Anchored; return obj.Anchored 
+		end
+	end)
 	Row("Đổ bóng", obj.CastShadow, "Bool", function() obj.CastShadow = not obj.CastShadow; return obj.CastShadow end)
 
 	UI.P_Prop = f
@@ -942,12 +1001,14 @@ LogicKhoi.HanKhoi = function()
 		end
 	end
 
+	-- FIX: Giữ tất cả anchored để tránh rơi khi hàn
+	-- PivotTo sẽ vẫn di chuyển toàn bộ model bình thường
 	for _, p in ipairs(tatCaPart) do
 		p.Parent = g
 		for _, w in ipairs(p:GetChildren()) do if w:IsA("WeldConstraint") then w:Destroy() end end
+		p.Anchored = true
 		if p ~= m then
 			local w = Instance.new("WeldConstraint"); w.Part0 = m; w.Part1 = p; w.Parent = m
-			p.Anchored = false
 		end
 		ColService:AddTag(p, CAIDAT.TAG)
 	end
@@ -1041,7 +1102,8 @@ UIS.InputEnded:Connect(function(i, p)
 				else
 					if not (UIS:IsKeyDown(Enum.KeyCode.LeftControl) or State.DaChon) then clr(State.DangChon) end
 					State.DangChon[final] = true
-					State.ModeGhe = final:GetAttribute("ModeGhe") or 0
+					local check = final:IsA("Model") and final.PrimaryPart or final
+					State.ModeGhe = check:GetAttribute("ModeGhe") or 0
 					CapNhatUI(); HieuUngPop(final:IsA("Model") and final.PrimaryPart or final); UpdateBox()
 				end
 			else
