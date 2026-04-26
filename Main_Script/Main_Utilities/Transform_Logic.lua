@@ -241,24 +241,31 @@ local function BienHinh_NhanVat(char, root)
 	if targetModel == char then return false, "Không thể biến thành chính mình!" end
 	local myHum = char:FindFirstChildWhichIsA("Humanoid")
 	if not myHum then return false, "Lỗi: Không tìm thấy Humanoid của bạn!" end
+
 	LuuTrangThai(char)
 	AnToanThan(char)
+
 	Storage.OrigTargetModel = targetModel
 	Storage.OrigTargetCFrame = targetModel:GetPrimaryPartCFrame()
 	targetModel.Archivable = true
+
 	local cloneChar = targetModel:Clone()
 	cloneChar.Name = "Morph_Character"
 	pcall(function() targetModel:SetPrimaryPartCFrame(CFrame.new(0, -20000, 0)) end)
+
 	local cloneRoot = cloneChar:FindFirstChild("HumanoidRootPart")
 	local cloneHum = cloneChar:FindFirstChildWhichIsA("Humanoid")
+
 	if not cloneRoot or not cloneHum then
 		cloneChar:Destroy()
 		HienNhanVatThat()
 		return false, "Nhân vật mục tiêu bị lỗi (Thiếu Root/Humanoid)!"
 	end
+
 	cloneHum.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
 	cloneHum.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOff
 	cloneHum.NameDisplayDistance = 0
+
 	pcall(function()
 		local myDesc = myHum:GetAppliedDescription()
 		local cloneDesc = cloneHum:GetAppliedDescription()
@@ -268,11 +275,13 @@ local function BienHinh_NhanVat(char, root)
 		cloneDesc.HeadScale = myDesc.HeadScale
 		cloneHum:ApplyDescription(cloneDesc)
 	end)
+
 	task.wait()
 	local yOffset = 0
 	pcall(function() 
 		yOffset = (cloneHum.HipHeight - myHum.HipHeight) + (cloneRoot.Size.Y - root.Size.Y) / 2 
 	end)
+
 	for _, v in ipairs(cloneChar:GetDescendants()) do
 		if v:IsA("Script") or v:IsA("LocalScript") then
 			v:Destroy()
@@ -282,8 +291,10 @@ local function BienHinh_NhanVat(char, root)
 			if v ~= cloneRoot then v.Anchored = false end
 		end
 	end
+
 	cloneRoot.Anchored = false
 	cloneRoot.CFrame = root.CFrame * CFrame.new(0, yOffset, 0)
+
 	local w = Instance.new("WeldConstraint")
 	w.Part0 = root; w.Part1 = cloneRoot; w.Parent = root
 	cloneChar.Parent = char
@@ -294,44 +305,56 @@ local function BienHinh_NhanVat(char, root)
 	local myAnimator = myHum:FindFirstChildOfClass("Animator")
 	local cloneAnimator = cloneHum:FindFirstChildOfClass("Animator") or Instance.new("Animator", cloneHum)
 
-	local clonedTracks = {}
+	local targetAnims = {}
+	local animateScript = targetModel:FindFirstChild("Animate")
+	if animateScript then
+		for _, child in ipairs(animateScript:GetChildren()) do
+			local anim = child:FindFirstChildWhichIsA("Animation")
+			if anim then
+				targetAnims[string.lower(child.Name)] = anim
+			end
+		end
+	end
+
+	local currentAnimState = nil
+	local currentTrack = nil
 
 	if Connections.AnimationSync then Connections.AnimationSync:Disconnect() end
 	Connections.AnimationSync = RunService.RenderStepped:Connect(function()
-		if myHum and cloneHum and cloneHum.Parent and myHum.Parent and myAnimator then
-			local playingTracks = myAnimator:GetPlayingAnimationTracks()
-			local activeIds = {}
+		if myHum and cloneHum and cloneHum.Parent and root and cloneAnimator then
+			local speed = Vector3.new(root.AssemblyLinearVelocity.X, 0, root.AssemblyLinearVelocity.Z).Magnitude
+			local state = myHum:GetState()
 
-			for _, track in ipairs(playingTracks) do
-				if track.Animation then
-					local id = track.Animation.AnimationId
-					activeIds[id] = true
+			local desiredState = "idle"
+			if state == Enum.HumanoidStateType.Jumping then desiredState = "jump"
+			elseif state == Enum.HumanoidStateType.Freefall then desiredState = "fall"
+			elseif speed > 0.5 then desiredState = "walk"
+			end
 
-					if not clonedTracks[id] then
-						clonedTracks[id] = cloneAnimator:LoadAnimation(track.Animation)
-						clonedTracks[id]:Play()
-					end
+			if desiredState ~= currentAnimState then
+				if currentTrack then currentTrack:Stop(0.2) end
+				currentAnimState = desiredState
 
-					local cloneTrack = clonedTracks[id]
-					if cloneTrack and cloneTrack.IsPlaying then
-						cloneTrack.TimePosition = track.TimePosition
-						cloneTrack:AdjustWeight(track.WeightCurrent)
-						cloneTrack:AdjustSpeed(track.Speed)
-					end
+				local animToPlay = targetAnims[desiredState]
+				if desiredState == "walk" and not animToPlay then
+					animToPlay = targetAnims["run"] 
+				end
+
+				if animToPlay then
+					currentTrack = cloneAnimator:LoadAnimation(animToPlay)
+					currentTrack:Play(0.2)
 				end
 			end
 
-			for id, cloneTrack in pairs(clonedTracks) do
-				if not activeIds[id] then
-					cloneTrack:Stop()
-					clonedTracks[id] = nil
-				end
+			if desiredState == "walk" and currentTrack then
+				currentTrack:AdjustSpeed(math.clamp(speed / 16, 0.1, 2))
 			end
 		else
 			if Connections.AnimationSync then Connections.AnimationSync:Disconnect() end
-			clonedTracks = {}
+			if currentTrack then currentTrack:Stop() end
 		end
 	end)
+
 	return true, "Biến hình nhân vật thành công!"
 end
 
