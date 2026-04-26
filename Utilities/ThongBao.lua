@@ -16,17 +16,21 @@ local CONFIG = {
 	MAU_CHU = Color3.fromRGB(220, 220, 220)
 }
 
-local existingGui = GuiNguoiChoi:FindFirstChild("ChaosSystem_Final")
-if existingGui then
-	existingGui:Destroy()
-end
+local GuiChinh = nil
+local function LayGuiChinh()
+	if not GuiChinh or not GuiChinh.Parent then
+		local existingGui = GuiNguoiChoi:FindFirstChild("ChaosSystem_Final")
+		if existingGui then existingGui:Destroy() end
 
-local GuiChinh = Instance.new("ScreenGui")
-GuiChinh.Name = "ChaosSystem_Final"
-GuiChinh.ResetOnSpawn = false
-GuiChinh.IgnoreGuiInset = true
-GuiChinh.DisplayOrder = 1000
-GuiChinh.Parent = GuiNguoiChoi
+		GuiChinh = Instance.new("ScreenGui")
+		GuiChinh.Name = "ChaosSystem_Final"
+		GuiChinh.ResetOnSpawn = false
+		GuiChinh.IgnoreGuiInset = true
+		GuiChinh.DisplayOrder = 1000
+		GuiChinh.Parent = GuiNguoiChoi
+	end
+	return GuiChinh
+end
 
 local ThongBaoDangHien = {}
 local KhungLoiHienTai = nil
@@ -48,7 +52,7 @@ function Guithongbao.CapNhatChuDe(ThemeInfo)
 		if v.ThanhChay then TweenService:Create(v.ThanhChay, ti, {BackgroundColor3 = CONFIG.MAU_CHU_DAO}):Play() end
 	end
 
-	if KhungXacNhanHienTai then
+	if KhungXacNhanHienTai and KhungXacNhanHienTai.Parent then
 		local kxn = KhungXacNhanHienTai:FindFirstChildOfClass("Frame")
 		if kxn then TweenService:Create(kxn, ti, {BackgroundColor3 = CONFIG.MAU_NEN}):Play() end
 	end
@@ -115,7 +119,7 @@ function Guithongbao.thongbao(TieuDe, NoiDung, ThoiGian)
 	KhungChua.BackgroundColor3 = CONFIG.MAU_NEN
 	KhungChua.BackgroundTransparency = 0.1
 	KhungChua.ClipsDescendants = true
-	KhungChua.Parent = GuiChinh
+	KhungChua.Parent = LayGuiChinh()
 	Instance.new("UICorner", KhungChua).CornerRadius = UDim.new(0, 6)
 
 	local Stroke = Instance.new("UIStroke")
@@ -199,6 +203,8 @@ function Guithongbao.thongbao(TieuDe, NoiDung, ThoiGian)
 end
 
 function Guithongbao.thongbaoloi(TieuDe, NoiDung)
+	if KhungLoiHienTai and KhungLoiHienTai.Parent == nil then KhungLoiHienTai = nil end
+	if KhungXacNhanHienTai and KhungXacNhanHienTai.Parent == nil then KhungXacNhanHienTai = nil end
 	if KhungLoiHienTai or KhungXacNhanHienTai then return end
 
 	local isMobile = KiemTraMobile()
@@ -211,7 +217,7 @@ function Guithongbao.thongbaoloi(TieuDe, NoiDung)
 	LopNen.Size = UDim2.new(1, 0, 1, 0)
 	LopNen.BackgroundColor3 = Color3.new(0,0,0)
 	LopNen.BackgroundTransparency = 1
-	LopNen.Parent = GuiChinh
+	LopNen.Parent = LayGuiChinh()
 	TweenService:Create(LopNen, TweenInfo.new(0.2), {BackgroundTransparency = 0.3}):Play()
 	KhungLoiHienTai = LopNen
 
@@ -371,6 +377,8 @@ function Guithongbao.thongbaoloi(TieuDe, NoiDung)
 end
 
 function Guithongbao.thongbaoxacnhan(TieuDe, NoiDung, CallbackDongY, CallbackHuy)
+	if KhungLoiHienTai and KhungLoiHienTai.Parent == nil then KhungLoiHienTai = nil end
+	if KhungXacNhanHienTai and KhungXacNhanHienTai.Parent == nil then KhungXacNhanHienTai = nil end
 	if KhungXacNhanHienTai or KhungLoiHienTai then return end
 
 	local isMobile = KiemTraMobile()
@@ -383,7 +391,7 @@ function Guithongbao.thongbaoxacnhan(TieuDe, NoiDung, CallbackDongY, CallbackHuy
 	LopNen.Size = UDim2.new(1, 0, 1, 0)
 	LopNen.BackgroundColor3 = Color3.new(0, 0, 0)
 	LopNen.BackgroundTransparency = 1
-	LopNen.Parent = GuiChinh
+	LopNen.Parent = LayGuiChinh()
 	TweenService:Create(LopNen, TweenInfo.new(0.2), {BackgroundTransparency = 0.5}):Play()
 	KhungXacNhanHienTai = LopNen
 
