@@ -1,9 +1,27 @@
+-- ThuVienUI.lua
 local DichVuTween = game:GetService("TweenService")
 local DichVuRun = game:GetService("RunService")
 local DichVuInput = game:GetService("UserInputService")
-local ChuDe = require(script.Parent:WaitForChild("ChuDe"))
-local TimKiemLogic = require(script.Parent:WaitForChild("TimKiem"))
-local HoatAnh = require(script.Parent:WaitForChild("Animation"))
+local Players = game:GetService("Players")
+local NguoiChoi = Players.LocalPlayer
+local PlayerGui = NguoiChoi:WaitForChild("PlayerGui")
+local PlayerScripts = NguoiChoi:WaitForChild("PlayerScripts")
+
+local Utilities = PlayerScripts:WaitForChild("Utilities")
+
+local GuiThongBao = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ThongBao.lua"))()
+local function ThongBao(TieuDe, NoiDung, ThoiGian) GuiThongBao.thongbao("Hx Script | " .. TieuDe, NoiDung, ThoiGian or 2) end
+local function ThongBaoLoi(TieuDe, NoiDung) 
+	if GuiThongBao.thongbaoloi then 
+		GuiThongBao.thongbaoloi("Hx Script | " .. TieuDe, NoiDung) 
+	else 
+		GuiThongBao.thongbao("Hx Script Lỗi | " .. TieuDe, NoiDung, 3) 
+	end 
+end
+
+local ChuDe = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ChuDe.lua"))()
+local TimKiem = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/TimKiem.lua"))()
+local HoatAnh = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/Animation.lua"))()
 
 local TweenNhanh = TweenInfo.new(0.08, Enum.EasingStyle.Sine)
 local TweenMuot = TweenInfo.new(0.3, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out)
@@ -222,7 +240,7 @@ function ThanhPhan.Otich(Cha, DuLieu, CauHinh, CapNhat, DeQuy)
 		NutPhu = TaoDoiTuong("TextButton", {Name = "Theme_NenMuc", LayoutOrder = 2, Size = UDim2.new(0.3, 0, 1, 0), BackgroundColor3 = DuLieu.MauNenRieng or Mau.NenMuc, Text = "...", TextColor3 = Mau.Chu, Font = Enum.Font.GothamMedium, TextScaled = true, Visible = false, ZIndex = 2, Parent = HangNgang})
 		NutPhu:SetAttribute("MauGoc", DuLieu.MauNenRieng or Mau.NenMuc)
 		TaoBoGoc(NutPhu, 8) TaoVien(NutPhu, Mau.VienNeon, 0.7) TaoGioiHanChu(NutPhu, CauHinh.VanBan.Nho) TaoHieuUng(NutPhu, nil)
-		CapNhatNutPhu = function() NutPhu.Text = (DuLieu.CacNutCon and DuLieu.CacNutCon[ChiSoPhu]) and DuLieu.CacNutCon[ChiSoPhu].Ten or "Trong" end
+		CapNhatNutPhu = function() NutPhu.Text = (DuLieu.CacNutCon and DuLieu.CacNutCon[ChiSoPhu]) and DuLieu.CacNutCon[ChiSoPhu].Ten or "Trống" end
 		if DuLieu.CacNutCon then CapNhatNutPhu() end
 		NutPhu.MouseButton1Click:Connect(function()
 			if DuLieu.CacNutCon and DuLieu.CacNutCon[ChiSoPhu] then
@@ -309,7 +327,7 @@ function ThanhPhan.Gat(Cha, DuLieu, CauHinh, CapNhat, DeQuy)
 		NutPhu = TaoDoiTuong("TextButton", {Name = "Theme_NenMuc", LayoutOrder = 2, Size = UDim2.new(0.3, 0, 1, 0), BackgroundColor3 = Mau.NenHop, Text = "...", TextColor3 = Mau.Chu, Font = Enum.Font.GothamMedium, TextScaled = true, Visible = false, ZIndex = 2, Parent = HangNgang})
 		NutPhu:SetAttribute("MauGoc", Mau.NenHop)
 		TaoBoGoc(NutPhu, 8) TaoGioiHanChu(NutPhu, CauHinh.VanBan.Nho) TaoHieuUng(NutPhu, nil)
-		CapNhatNutPhu = function() NutPhu.Text = (DuLieu.CacNutCon and DuLieu.CacNutCon[ChiSoPhu]) and DuLieu.CacNutCon[ChiSoPhu].Ten or "Trong" end
+		CapNhatNutPhu = function() NutPhu.Text = (DuLieu.CacNutCon and DuLieu.CacNutCon[ChiSoPhu]) and DuLieu.CacNutCon[ChiSoPhu].Ten or "Trống" end
 		if DuLieu.CacNutCon then CapNhatNutPhu() end
 		NutPhu.MouseButton1Click:Connect(function()
 			if DuLieu.CacNutCon and DuLieu.CacNutCon[ChiSoPhu] then
@@ -756,8 +774,10 @@ end
 
 function ThuVienUI.Tao(KhungChinh, Cuon, DuLieu, CauHinh, LopPhu, DongMenu, HamPhaHuy, HamThuNho)
 	CauHinh.Mau = CauHinh.Mau or {}
-	for k, v in pairs(ChuDe.MacDinh) do
-		if CauHinh.Mau[k] == nil then CauHinh.Mau[k] = v end
+	if ChuDe and ChuDe.MacDinh then
+		for k, v in pairs(ChuDe.MacDinh) do
+			if CauHinh.Mau[k] == nil then CauHinh.Mau[k] = v end
+		end
 	end
 
 	local Mau = CauHinh.Mau
@@ -776,8 +796,9 @@ function ThuVienUI.Tao(KhungChinh, Cuon, DuLieu, CauHinh, LopPhu, DongMenu, HamP
 		end
 
 		pcall(function()
-			local tb = require(script.Parent:WaitForChild("ThongBao"))
-			if tb.CapNhatChuDe then tb.CapNhatChuDe(ThemeInfo) end
+			if GuiThongBao and GuiThongBao.CapNhatChuDe then 
+				GuiThongBao.CapNhatChuDe(ThemeInfo) 
+			end
 		end)
 
 		ChayTween(KhungChinh, TweenTheme, {BackgroundColor3 = ThemeInfo.Nen})
@@ -959,14 +980,14 @@ function ThuVienUI.Tao(KhungChinh, Cuon, DuLieu, CauHinh, LopPhu, DongMenu, HamP
 			else
 				ChayTween(KhungTimKiem, TweenMuot, {Size = UDim2.fromScale(0, 1)})
 				NhanTimKiemText.Text = ""
-				TimKiemLogic.LocDuLieu(Cuon, "")
+				if TimKiemLogic then TimKiemLogic.LocDuLieu(Cuon, "") end
 			end
 		end)
 		local searchDebounce
 		NhanTimKiemText:GetPropertyChangedSignal("Text"):Connect(function()
 			if searchDebounce then task.cancel(searchDebounce) end
 			searchDebounce = task.delay(0.15, function()
-				if Cuon and NhanTimKiemText then
+				if Cuon and NhanTimKiemText and TimKiemLogic then
 					TimKiemLogic.LocDuLieu(Cuon, NhanTimKiemText.Text)
 				end
 			end)
@@ -1097,13 +1118,15 @@ function ThuVienUI.Tao(KhungChinh, Cuon, DuLieu, CauHinh, LopPhu, DongMenu, HamP
 				if not InitialLoad then
 					for _, ThongTin in ipairs(DanhSachTab) do
 						local isChon = (ThongTin.Index == IndexCuaTab)
-						HoatAnh.CapNhatCache(ThongTin.Nut, {
-							BackgroundTransparency = isChon and 0.2 or 0.8,
-							TextTransparency       = isChon and 0   or 0.4
-						})
-						HoatAnh.CapNhatCache(ThongTin.ThanhLine, {
-							BackgroundTransparency = isChon and 0 or 0.6
-						})
+						if HoatAnh then
+							HoatAnh.CapNhatCache(ThongTin.Nut, {
+								BackgroundTransparency = isChon and 0.2 or 0.8,
+								TextTransparency       = isChon and 0   or 0.4
+							})
+							HoatAnh.CapNhatCache(ThongTin.ThanhLine, {
+								BackgroundTransparency = isChon and 0 or 0.6
+							})
+						end
 					end
 				end
 			end
