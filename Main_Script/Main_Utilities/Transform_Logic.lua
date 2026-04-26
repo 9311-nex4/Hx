@@ -297,7 +297,7 @@ local function BienHinh_NhanVat(char, root)
 	local cloneAnimator = cloneHum:FindFirstChildOfClass("Animator") or Instance.new("Animator", cloneHum)
 	local targetAnims = {}
 	local loadedTracks = {}
-
+	
 	local animateScript = targetModel:FindFirstChild("Animate")
 	if animateScript then
 		for _, child in ipairs(animateScript:GetChildren()) do
