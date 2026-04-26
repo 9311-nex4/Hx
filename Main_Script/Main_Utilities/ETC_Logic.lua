@@ -16,7 +16,24 @@ local MAX_FORCE = Vector3.new(9e9, 9e9, 9e9)
 local VEC_ZERO = Vector3.zero
 local OFFSET_CFL = CFrame.new(0, 0, 3)
 
+function ETC_Logic.GetConfig()
+	local items = {}
+	for _, v in ipairs(ETC_Logic.ListItemsESP) do table.insert(items, v.Ten) end
+	return { FlySpeed = ETC_Logic.FlySpeed, FlyCollide = ETC_Logic.FlyCollide, GroundNoclip = ETC_Logic.GroundNoclip, ESP_Players = ETC_Logic.ESP_Players, ESP_Items = ETC_Logic.ESP_Items, ESP_Tracker = ETC_Logic.ESP_Tracker, SavedItems = items }
+end
+
+function ETC_Logic.SetConfig(cfg)
+	if not cfg then return end
+	if cfg.FlySpeed ~= nil then ETC_Logic.FlySpeed = cfg.FlySpeed end
+	if cfg.FlyCollide ~= nil then ETC_Logic.FlyCollide = cfg.FlyCollide end
+	if cfg.GroundNoclip ~= nil then ETC_Logic.GroundNoclip = cfg.GroundNoclip end
+	if cfg.ESP_Players ~= nil then ETC_Logic.ESP_Players = cfg.ESP_Players end
+	if cfg.ESP_Items ~= nil then ETC_Logic.ESP_Items = cfg.ESP_Items end
+	if cfg.ESP_Tracker ~= nil then ETC_Logic.ESP_Tracker = cfg.ESP_Tracker end
+end
+
 function ETC_Logic.LayDiaDiemGame(PlaceId) return DiaDiemGame[PlaceId] or {"Chưa có"} end
+
 function ETC_Logic.GetPlayers()
 	local ds = {}
 	for _, plr in ipairs(Players:GetPlayers()) do if plr ~= LocalPlayer then table.insert(ds, plr.Name) end end
