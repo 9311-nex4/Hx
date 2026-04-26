@@ -40,39 +40,47 @@ local CauHinh = {
 for k, v in pairs(ChuDe.MacDinh) do CauHinh.Mau[k] = v end
 
 local function BaoTrangThai(TenChucNang, TrangThai)
-	ThongBao("Trạng Thái", TrangThai and "Đã bật " .. TenChucNang or "Đã tắt " .. TenChucNang, 2)
+	ThongBao("Status", TrangThai and "Đã bật " .. TenChucNang or "Đã tắt " .. TenChucNang, 2)
 end
 
 local DuLieuDanhSachKhoiUI = {}
 local TimChucNang
 
-local TrangThaiLuu = {
+local GlobalConfig = {
+	PhimMoMenu = "Insert",
+	ChuDeUI = { Ten = "Dark" },
+	DoTrongSuotKhung = 0.4
+}
+
+local GameConfig = {
 	ReduceLags = false,
 	RemoveFog = false,
 	FullBright = false,
 	NoShadows = false,
-	PhimMoMenu = "Insert",
-	ChuDeUI = { Ten = "Dark" },
 	KhoiConfig = {},
 	TransformConfig = {
-		Active = false,
 		ShowHUD = true,
 		ShowOutline = true,
 		CanSelectChar = false,
 		Mode = "ToanThan",
+		EnabledParts = { Head = false, Torso = false, RightArm = false, LeftArm = false, RightLeg = false, LeftLeg = false }
 	},
 }
 
-local function LuuConfig()
-	TrangThaiLuu.KhoiConfig = Khoi.GetConfig()
-	MenuConfigManager.Save(TrangThaiLuu)
+local function LuuGlobal()
+	MenuConfigManager.SaveGlobal(GlobalConfig)
 end
 
-Khoi.OnConfigChanged = LuuConfig
+local function LuuGame()
+	GameConfig.KhoiConfig = Khoi.GetConfig()
+	MenuConfigManager.SaveGame(GameConfig)
+end
+
+Khoi.OnConfigChanged = LuuGame
 
 CauHinh.LuuTheme = function(duLieuTheme)
-	TrangThaiLuu.ChuDeUI = duLieuTheme
-	LuuConfig()
+	GlobalConfig.ChuDeUI = duLieuTheme
+	LuuGlobal()
 end
 
 local function UpdateSubButtonText(rowName, text)
@@ -157,7 +165,7 @@ local function TaoCauTrucItemChoKhoi(Obj)
 						SuKien = function(TrangThai)
 							if Obj then Obj:SetAttribute("KhoaDiChuyen", not TrangThai) end
 							ThongBao("Hệ Thống", TrangThai and "Đã mở khóa di chuyển: " .. TenHienThi or "Đã khóa vị trí: " .. TenHienThi, 2)
-							LuuConfig()
+							LuuGame()
 						end
 					},
 					{
@@ -167,7 +175,7 @@ local function TaoCauTrucItemChoKhoi(Obj)
 						SuKien = function(TrangThai)
 							SetAnchored(TrangThai)
 							ThongBao("Hệ Thống", TrangThai and "Đã Neo khối (Đứng yên)" or "Đã Tháo Neo (Rơi tự do)", 2)
-							LuuConfig()
+							LuuGame()
 						end
 					}
 				},
@@ -175,7 +183,7 @@ local function TaoCauTrucItemChoKhoi(Obj)
 					SetLocked(TrangThai)
 					if not TrangThai then Khoi.CheckHuy(Obj) end
 					BaoTrangThai("khả năng chọn khối " .. TenHienThi, TrangThai)
-					LuuConfig()
+					LuuGame()
 				end
 			}
 		}
@@ -194,20 +202,29 @@ Khoi.SuKienThayDoi.Event:Connect(function(HanhDong, DoiTuong)
 	end
 	local cn = TimChucNang("Danh Sách")
 	if cn and cn.LamMoi then cn.LamMoi() end
-	LuuConfig()
+	LuuGame()
 end)
 
 CauHinh.ExtraConfig = {
-	{ Ten = "Reduce Lags",       Loai = "Gat",     HienTai = "Tat", SuKien = function(st) MenuConfigManager.ReduceLags(st)  TrangThaiLuu.ReduceLags = st  LuuConfig() end },
-	{ Ten = "Removes Fog",       Loai = "Gat",     HienTai = "Tat", SuKien = function(st) MenuConfigManager.RemoveFog(st)   TrangThaiLuu.RemoveFog  = st  LuuConfig() end },
-	{ Ten = "Fully Bright",      Loai = "Gat",     HienTai = "Tat", SuKien = function(st) MenuConfigManager.FullBright(st)  TrangThaiLuu.FullBright = st  LuuConfig() end },
-	{ Ten = "No Shadows",        Loai = "Gat",     HienTai = "Tat", SuKien = function(st) MenuConfigManager.NoShadows(st)   TrangThaiLuu.NoShadows  = st  LuuConfig() end },
-	{ Ten = "HotKeys Open Menu", Loai = "PhimNong", HienTai = "Insert", SuKien = function(key) PhimMoMenu = key TrangThaiLuu.PhimMoMenu = key.Name LuuConfig() end },
+	{ Ten = "Reduce Lags",       Loai = "Gat",     HienTai = "Tat", SuKien = function(st) MenuConfigManager.ReduceLags(st)  GameConfig.ReduceLags = st  LuuGame() end },
+	{ Ten = "Removes Fog",       Loai = "Gat",     HienTai = "Tat", SuKien = function(st) MenuConfigManager.RemoveFog(st)   GameConfig.RemoveFog  = st  LuuGame() end },
+	{ Ten = "Fully Bright",      Loai = "Gat",     HienTai = "Tat", SuKien = function(st) MenuConfigManager.FullBright(st)  GameConfig.FullBright = st  LuuGame() end },
+	{ Ten = "No Shadows",        Loai = "Gat",     HienTai = "Tat", SuKien = function(st) MenuConfigManager.NoShadows(st)   GameConfig.NoShadows  = st  LuuGame() end },
+	{ Ten = "HotKeys Open Menu", Loai = "PhimNong", HienTai = "Insert", SuKien = function(key) PhimMoMenu = key GlobalConfig.PhimMoMenu = key.Name LuuGlobal() end },
+	{ Ten = "UI Transparency", Loai = "Gat", HienTai = "Tat", SuKien = function(st) 
+		local Alpha = st and 0.4 or 0.15 
+		CauHinh.DoTrongSuotKhung = Alpha 
+		GlobalConfig.DoTrongSuotKhung = Alpha 
+		if PlayerGui:FindFirstChild("main_v2") and PlayerGui.main_v2:FindFirstChild("KhungChinh") then 
+			PlayerGui.main_v2.KhungChinh.BackgroundTransparency = Alpha 
+		end 
+		LuuGlobal() 
+	end }
 }
 
 local function LuuTransformConfig(key, value)
-	TrangThaiLuu.TransformConfig[key] = value
-	LuuConfig()
+	GameConfig.TransformConfig[key] = value
+	LuuGame()
 end
 
 local function TaoPhanTungPhan(tenHienThi, logicName)
@@ -215,6 +232,8 @@ local function TaoPhanTungPhan(tenHienThi, logicName)
 		Ten = tenHienThi, Loai = "Gat", HienTai = "Tat", LoaiNutCon = "CungHang",
 		SuKien = function(TrangThai)
 			Transform_Logic.SetPartEnabled(logicName, TrangThai)
+			GameConfig.TransformConfig.EnabledParts[logicName] = TrangThai
+			LuuGame()
 			BaoTrangThai(tenHienThi, TrangThai)
 		end,
 		CacNutCon = {
@@ -278,7 +297,6 @@ local DanhSachNhom = {
 				},
 				SuKien = function(TrangThai)
 					Transform_Logic.SetActive(TrangThai)
-					LuuTransformConfig("Active", TrangThai)
 					BaoTrangThai("chức năng biến hình", TrangThai)
 				end
 			}
@@ -445,57 +463,78 @@ function TimChucNang(TenChucNang)
 	return DuyetChucNang(CauHinh.ExtraConfig, TenChucNang)
 end
 
-local function ApDungConfig(cfg)
-	if not cfg then return end
-	if cfg.ReduceLags then
-		MenuConfigManager.KichHoat(true)
-		local cn = TimChucNang("Reduce Lags"); if cn then cn.HienTai = "Bat" end
-	end
-	if cfg.RemoveFog then
-		MenuConfigManager.RemoveFog(true)
-		local cn = TimChucNang("Removes Fog"); if cn then cn.HienTai = "Bat" end
-	end
-	if cfg.FullBright then
-		MenuConfigManager.FullBright(true)
-		local cn = TimChucNang("Fully Bright"); if cn then cn.HienTai = "Bat" end
-	end
-	if cfg.NoShadows then
-		MenuConfigManager.NoShadows(true)
-		local cn = TimChucNang("No Shadows"); if cn then cn.HienTai = "Bat" end
-	end
-	if cfg.PhimMoMenu then
-		pcall(function() PhimMoMenu = Enum.KeyCode[cfg.PhimMoMenu] end)
-		local cn = TimChucNang("HotKeys Open Menu"); if cn then cn.HienTai = cfg.PhimMoMenu end
-	end
-	if cfg.ChuDeUI then CauHinh.ChuDeDaLuu = cfg.ChuDeUI end
-	if cfg.KhoiConfig then Khoi.SetConfig(cfg.KhoiConfig) end
-	if cfg.TransformConfig then
-		local tc = cfg.TransformConfig
-		if tc.Active ~= nil        then Transform_Logic.SetActive(tc.Active) end
-		if tc.ShowOutline ~= nil   then Transform_Logic.ToggleOutline(tc.ShowOutline) end
-		if tc.CanSelectChar ~= nil then Transform_Logic.SetCharSelect(tc.CanSelectChar) end
-		if tc.Mode                 then Transform_Logic.SetMode(tc.Mode) end
-
-		local cnMain = TimChucNang("Chức Năng Biến Hình")
-		if cnMain then cnMain.HienTai = tc.Active and "Bat" or "Tat" end
-
-		local cn = TimChucNang("Hiển thị Outline Vùng Chọn")
-		if cn then cn.HienTai = (tc.ShowOutline ~= false) and "Bat" or "Tat" end
-
-		local cnHUD = TimChucNang("Hiển Thị Nút Chức Năng")
-		if cnHUD then cnHUD.HienTai = (tc.ShowHUD ~= false) and "Bat" or "Tat" end
-
-		local cnMove = TimChucNang("Cho Phép Chọn Mẫu")
-		if cnMove then cnMove.HienTai = tc.CanSelectChar and "Bat" or "Tat" end
-
-		if PlayerGui:FindFirstChild("main_v2") and PlayerGui.main_v2:FindFirstChild("KhungNutNgoai") then
-			PlayerGui.main_v2.KhungNutNgoai.Visible = (tc.ShowHUD ~= false)
+local function ApDungConfig(globalCfg, gameCfg)
+	if globalCfg then
+		if globalCfg.PhimMoMenu then
+			pcall(function() PhimMoMenu = Enum.KeyCode[globalCfg.PhimMoMenu] end)
+			local cn = TimChucNang("HotKeys Open Menu"); if cn then cn.HienTai = globalCfg.PhimMoMenu end
 		end
+		if globalCfg.ChuDeUI then CauHinh.ChuDeDaLuu = globalCfg.ChuDeUI end
+		if globalCfg.DoTrongSuotKhung then 
+			CauHinh.DoTrongSuotKhung = globalCfg.DoTrongSuotKhung 
+			local cn = TimChucNang("UI Transparency") 
+			if cn then cn.HienTai = (globalCfg.DoTrongSuotKhung == 0.4) and "Bat" or "Tat" end 
+		end
+		for k, v in pairs(globalCfg) do GlobalConfig[k] = v end
 	end
-	for k, v in pairs(cfg) do TrangThaiLuu[k] = v end
+
+	if gameCfg then
+		if gameCfg.ReduceLags then
+			MenuConfigManager.ReduceLags(true)
+			local cn = TimChucNang("Reduce Lags"); if cn then cn.HienTai = "Bat" end
+		end
+		if gameCfg.RemoveFog then
+			MenuConfigManager.RemoveFog(true)
+			local cn = TimChucNang("Removes Fog"); if cn then cn.HienTai = "Bat" end
+		end
+		if gameCfg.FullBright then
+			MenuConfigManager.FullBright(true)
+			local cn = TimChucNang("Fully Bright"); if cn then cn.HienTai = "Bat" end
+		end
+		if gameCfg.NoShadows then
+			MenuConfigManager.NoShadows(true)
+			local cn = TimChucNang("No Shadows"); if cn then cn.HienTai = "Bat" end
+		end
+		if gameCfg.KhoiConfig then Khoi.SetConfig(gameCfg.KhoiConfig) end
+		if gameCfg.TransformConfig then
+			local tc = gameCfg.TransformConfig
+			if tc.ShowOutline ~= nil   then Transform_Logic.ToggleOutline(tc.ShowOutline) end
+			if tc.CanSelectChar ~= nil then Transform_Logic.SetCharSelect(tc.CanSelectChar) end
+			if tc.Mode                 then Transform_Logic.SetMode(tc.Mode) end
+
+			local cn = TimChucNang("Hiển thị Outline Vùng Chọn")
+			if cn then cn.HienTai = (tc.ShowOutline ~= false) and "Bat" or "Tat" end
+
+			local cnHUD = TimChucNang("Hiển Thị Nút Chức Năng")
+			if cnHUD then cnHUD.HienTai = (tc.ShowHUD ~= false) and "Bat" or "Tat" end
+
+			local cnMove = TimChucNang("Cho Phép Chọn Mẫu")
+			if cnMove then cnMove.HienTai = tc.CanSelectChar and "Bat" or "Tat" end
+
+			local cnMode = TimChucNang("Thành Phần")
+			if cnMode and tc.Mode then
+				local RevModeMap = { ToanThan = "Toàn Thân", TungPhan = "Từng Phần", NhanVat = "Nhân Vật" }
+				cnMode.HienTai = RevModeMap[tc.Mode] or "Toàn Thân"
+			end
+
+			if type(tc.EnabledParts) == "table" then
+				local LogicToName = { Head = "Phần Đầu", Torso = "Phần Thân", RightArm = "Tay Phải", LeftArm = "Tay Trái", RightLeg = "Chân Phải", LeftLeg = "Chân Trái" }
+				for lName, st in pairs(tc.EnabledParts) do
+					Transform_Logic.SetPartEnabled(lName, st)
+					local cnPart = TimChucNang(LogicToName[lName])
+					if cnPart then cnPart.HienTai = st and "Bat" or "Tat" end
+				end
+			end
+
+			if PlayerGui:FindFirstChild("main_v2") and PlayerGui.main_v2:FindFirstChild("KhungNutNgoai") then
+				PlayerGui.main_v2.KhungNutNgoai.Visible = (tc.ShowHUD ~= false)
+			end
+		end
+		for k, v in pairs(gameCfg) do GameConfig[k] = v end
+	end
 end
 
-ApDungConfig(MenuConfigManager.Load())
+ApDungConfig(MenuConfigManager.LoadGlobal(), MenuConfigManager.LoadGame())
 
 local function TaoGiaoDien()
 	if PlayerGui:FindFirstChild("main_v2") then PlayerGui.main_v2:Destroy() end
@@ -529,7 +568,7 @@ local function TaoGiaoDien()
 	local KhungChinh = Instance.new("Frame", ManHinhGui)
 	KhungChinh.Name = "KhungChinh"; KhungChinh.Size = CauHinh.KichThuoc.IconLon
 	KhungChinh.Position = UDim2.new(0.5,0,0.5,0); KhungChinh.AnchorPoint = Vector2.new(0.5,0.5)
-	KhungChinh.BackgroundColor3 = CauHinh.Mau.Nen; KhungChinh.BackgroundTransparency = 0.4
+	KhungChinh.BackgroundColor3 = CauHinh.Mau.Nen; KhungChinh.BackgroundTransparency = CauHinh.DoTrongSuotKhung or 0.4
 	KhungChinh.ClipsDescendants = true; KhungChinh.Visible = false; KhungChinh.Active = true
 	Instance.new("UICorner", KhungChinh).CornerRadius = UDim.new(0,14)
 
@@ -570,7 +609,7 @@ local function TaoGiaoDien()
 		IconDau = CauHinh.KichThuoc.IconLon, IconCuoi = UDim2.new(0,40,0,40),
 		ViTriIconDau = UDim2.new(0.5,0,0.5,0), ViTriIconCuoi = UDim2.new(0,30,0,30),
 		KhungDau = CauHinh.KichThuoc.IconLon, KhungCuoi = UDim2.fromScale(0.55,0.6),
-		DoTrongSuotKhung = 0.4, KichThuocNutDongNay = UDim2.new(0,45,0,45)
+		DoTrongSuotKhung = CauHinh.DoTrongSuotKhung or 0.4, KichThuocNutDongNay = UDim2.new(0,45,0,45)
 	}
 	HoatAnh.KeoTha(KhungChinh, KhungChinh)
 
@@ -584,11 +623,14 @@ local function TaoGiaoDien()
 		end)
 	end
 
+	local SuKienBanPhim = nil
 	local function PhaHuyUI()
 		GuiThongBao.thongbaoxacnhan("XÁC NHẬN", "Bạn có chắc chắn muốn đóng UI không?", function()
-			if Khoi and Khoi.HuyChon then Khoi.HuyChon() end
-			if PlayerGui:FindFirstChild("main_v2") then PlayerGui.main_v2:Destroy() end
-			if shared.HxKeybindEvent then shared.HxKeybindEvent:Disconnect() end
+			if Khoi and Khoi.HuyChon then pcall(function() Khoi.HuyChon() end) end
+			pcall(function() Transform_Logic.SetActive(false) end)
+			if SuKienBanPhim then pcall(function() SuKienBanPhim:Disconnect() end) end
+			if shared.HxKeybindEvent then pcall(function() shared.HxKeybindEvent:Disconnect() end) end
+			if ManHinhGui and ManHinhGui.Parent then ManHinhGui:Destroy() end
 		end)
 	end
 
@@ -615,7 +657,7 @@ local function TaoGiaoDien()
 		if KhungChinh.Visible then DongGiaoDien() else MoGiaoDien() end
 	end)
 
-	UserInputService.InputBegan:Connect(function(DauVaoBanPhim, DaXuLy)
+	SuKienBanPhim = UserInputService.InputBegan:Connect(function(DauVaoBanPhim, DaXuLy)
 		if shared.HxDangChinhPhim == true or DaXuLy then return end
 		if DauVaoBanPhim.KeyCode == PhimMoMenu then
 			if KhungChinh.Visible then DongGiaoDien() else MoGiaoDien() end
@@ -631,7 +673,7 @@ local function TaoGiaoDien()
 	KhungNutNgoai.Position = UDim2.new(1, -70, 0.6, 0)
 	KhungNutNgoai.AnchorPoint = Vector2.new(1, 1)
 	KhungNutNgoai.BackgroundTransparency = 1
-	KhungNutNgoai.Visible = (TrangThaiLuu.TransformConfig.ShowHUD ~= false)
+	KhungNutNgoai.Visible = (GameConfig.TransformConfig.ShowHUD ~= false)
 
 	local NutBienHinhNgoai = Instance.new("TextButton", KhungNutNgoai)
 	NutBienHinhNgoai.Name = "NutBienHinhNgoai"
