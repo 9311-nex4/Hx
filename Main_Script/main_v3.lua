@@ -152,7 +152,7 @@ local DanhSachNhom = {
 				}}
 			}},
 			{ TieuDe = "Movement", ChucNang = {
-				{ Ten = "Noclip", Loai = "Gat", HienTai = "Tat", SuKien = function(st) ETC_Logic.ToggleNoclip(st) end, CacNutCon = { { Ten = "Allows Ground Noclip", Loai = "Gat", HienTai = "Tat", SuKien = function(st) ETC_Logic.GroundNoclip = st LuuGame() end } } },
+				{ Ten = "Noclip", Loai = "Gat", HienTai = "Tat", SuKien = function(st) ETC_Logic.ToggleNoclip(st) end,
 				{ Ten = "Fly", Loai = "Gat", HienTai = "Tat", SuKien = function(st) ETC_Logic.ToggleFly(st) end, CacNutCon = {
 				{ Ten = "Speed Fly", Loai = "Odien", HienTai = tostring((NguoiChoi.Character and NguoiChoi.Character:FindFirstChildOfClass("Humanoid")) and NguoiChoi.Character:FindFirstChildOfClass("Humanoid").WalkSpeed or 16), GoiY = "Nhập tốc độ", SuKien = function(val) ETC_Logic.FlySpeed = tonumber(val) or 16 LuuGame() end },
 				{ Ten = "Hotkey Fly", Loai = "PhimNong", HienTai = "F", SuKien = function(key) ETC_Logic.FlyHotkey = key GlobalConfig.FlyHotkey = key.Name LuuGlobal() end },
@@ -197,7 +197,6 @@ local function ApDungConfig(globalCfg, gameCfg)
 			if type(gameCfg.ETCConfig.SavedItems) == "table" then for _, tenItem in ipairs(gameCfg.ETCConfig.SavedItems) do ThemItemVaoESP(tenItem) end end
 			local cn = TimChucNang("ETC", "Speed Fly") if cn then cn.HienTai = tostring(ETC_Logic.FlySpeed) end
 			cn = TimChucNang("ETC", "Enable Collide") if cn then cn.HienTai = ETC_Logic.FlyCollide and "Bat" or "Tat" end
-			cn = TimChucNang("ETC", "Allows Ground Noclip") if cn then cn.HienTai = ETC_Logic.GroundNoclip and "Bat" or "Tat" end
 			cn = TimChucNang("ETC", "ESP Player") if cn then cn.HienTai = ETC_Logic.ESP_Players and "Bat" or "Tat" end
 			cn = TimChucNang("ETC", "ESP Part") if cn then cn.HienTai = ETC_Logic.ESP_Items and "Bat" or "Tat" end
 			cn = TimChucNang("ETC", "Tracker (Player & Item)") if cn then cn.HienTai = ETC_Logic.ESP_Tracker and "Bat" or "Tat" end
