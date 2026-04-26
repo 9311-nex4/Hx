@@ -307,11 +307,39 @@ end
 
 local function ApDungConfig(globalCfg, gameCfg)
 	if globalCfg then
-		if globalCfg.PhimMoMenu then pcall(function() PhimMoMenu = Enum.KeyCode[globalCfg.PhimMoMenu] end) local cn = TimChucNang("Config Menu", "HotKeys Open Menu") if cn then cn.HienTai = globalCfg.PhimMoMenu end end
-		if globalCfg.PhimAutoClick then pcall(function() PhimAutoClick = Enum.KeyCode[globalCfg.PhimAutoClick] end) local cn = TimChucNang("Auto Click", "Auto Click Hotkey") if cn then cn.HienTai = globalCfg.PhimAutoClick end end
-		if globalCfg.PhimClickTP then pcall(function() ETC_Logic.SetKey(Enum.KeyCode[globalCfg.PhimClickTP]) end) local cn = TimChucNang("ETC", "Click TP Hotkey") if cn then cn.HienTai = globalCfg.PhimClickTP end end
-		if globalCfg.FlyHotkey then pcall(function() ETC_Logic.FlyHotkey = Enum.KeyCode[globalCfg.FlyHotkey] end) local cn = TimChucNang("ETC", "Hotkey Fly") if cn then cn.HienTai = globalCfg.FlyHotkey end end
-		if globalCfg.ChuDeUI then CauHinh.ChuDeDaLuu = globalCfg.ChuDeUI end
+		if globalCfg.PhimMoMenu then 
+			pcall(function() PhimMoMenu = Enum.KeyCode[globalCfg.PhimMoMenu] end) 
+			local cn = TimChucNang("Config Menu", "HotKeys Open Menu") 
+			if cn then cn.HienTai = globalCfg.PhimMoMenu end 
+		end
+		if globalCfg.PhimAutoClick then 
+			pcall(function() PhimAutoClick = Enum.KeyCode[globalCfg.PhimAutoClick] end) 
+			local cn = TimChucNang("Auto Click", "Auto Click Hotkey") 
+			if cn then cn.HienTai = globalCfg.PhimAutoClick end 
+		end
+		if globalCfg.PhimClickTP then 
+			pcall(function() ETC_Logic.SetKey(Enum.KeyCode[globalCfg.PhimClickTP]) end) 
+			local cn = TimChucNang("ETC", "Click TP Hotkey") 
+			if cn then cn.HienTai = globalCfg.PhimClickTP end 
+		end
+		if globalCfg.FlyHotkey then 
+			pcall(function() ETC_Logic.FlyHotkey = Enum.KeyCode[globalCfg.FlyHotkey] end) 
+			local cn = TimChucNang("ETC", "Hotkey Fly") 
+			if cn then cn.HienTai = globalCfg.FlyHotkey end 
+		end
+		
+		if globalCfg.ChuDeUI then 
+			CauHinh.ChuDeDaLuu = globalCfg.ChuDeUI
+			if globalCfg.ChuDeUI.Ten ~= "Dark" then
+				for k, v in pairs(globalCfg.ChuDeUI) do
+					if k ~= "Ten" then 
+						CauHinh.Mau[k] = v 
+					end
+				end
+			end
+			pcall(function() GuiThongBao.CapNhatChuDe(globalCfg.ChuDeUI) end)
+		end
+		
 		if globalCfg.DoTrongSuotKhung ~= nil then CauHinh.DoTrongSuotKhung = globalCfg.DoTrongSuotKhung end
 		if globalCfg.QuickAnim ~= nil then CauHinh.QuickAnim = globalCfg.QuickAnim end
 		if globalCfg.AutoCloseUI ~= nil then CauHinh.AutoCloseUI = globalCfg.AutoCloseUI end
@@ -320,20 +348,56 @@ local function ApDungConfig(globalCfg, gameCfg)
 	end
 
 	if gameCfg then
-		if gameCfg.TocDoClick then AutoClickLogic.CaiDatTocDo(tostring(gameCfg.TocDoClick)) local cn = TimChucNang("Auto Click", "Speed Click (ms)") if cn then cn.HienTai = tostring(gameCfg.TocDoClick) end end
-		if gameCfg.ReduceLags then MenuConfigManager.ReduceLags(true) local cn = TimChucNang("Config Menu", "Reduce Lags") if cn then cn.HienTai = "Bat" end end
-		if gameCfg.RemoveFog then MenuConfigManager.RemoveFog(true) local cn = TimChucNang("Config Menu", "Removes Fog") if cn then cn.HienTai = "Bat" end end
-		if gameCfg.FullBright then MenuConfigManager.FullBright(true) local cn = TimChucNang("Config Menu", "Fully Bright") if cn then cn.HienTai = "Bat" end end
-		if gameCfg.NoShadows then MenuConfigManager.NoShadows(true) local cn = TimChucNang("Config Menu", "No Shadows") if cn then cn.HienTai = "Bat" end end
-		if type(gameCfg.DanhSachClick) == "table" then for _, saved in ipairs(gameCfg.DanhSachClick) do if tonumber(saved.X) and tonumber(saved.Y) then table.insert(DuLieuDanhSachClick, TaoItemClick(tonumber(saved.X), tonumber(saved.Y), saved.BatTat ~= false, saved.DaAn == true)) end end CapNhatDanhSachClick() end
+		if gameCfg.TocDoClick then 
+			AutoClickLogic.CaiDatTocDo(tostring(gameCfg.TocDoClick)) 
+			local cn = TimChucNang("Auto Click", "Speed Click (ms)") 
+			if cn then cn.HienTai = tostring(gameCfg.TocDoClick) end 
+		end
+		if gameCfg.ReduceLags then 
+			MenuConfigManager.ReduceLags(true) 
+			local cn = TimChucNang("Config Menu", "Reduce Lags") 
+			if cn then cn.HienTai = "Bat" end 
+		end
+		if gameCfg.RemoveFog then 
+			MenuConfigManager.RemoveFog(true) 
+			local cn = TimChucNang("Config Menu", "Removes Fog") 
+			if cn then cn.HienTai = "Bat" end 
+		end
+		if gameCfg.FullBright then 
+			MenuConfigManager.FullBright(true) 
+			local cn = TimChucNang("Config Menu", "Fully Bright") 
+			if cn then cn.HienTai = "Bat" end 
+		end
+		if gameCfg.NoShadows then 
+			MenuConfigManager.NoShadows(true) 
+			local cn = TimChucNang("Config Menu", "No Shadows") 
+			if cn then cn.HienTai = "Bat" end 
+		end
+		if type(gameCfg.DanhSachClick) == "table" then 
+			for _, saved in ipairs(gameCfg.DanhSachClick) do 
+				if tonumber(saved.X) and tonumber(saved.Y) then 
+					table.insert(DuLieuDanhSachClick, TaoItemClick(tonumber(saved.X), tonumber(saved.Y), saved.BatTat ~= false, saved.DaAn == true)) 
+				end 
+			end 
+			CapNhatDanhSachClick() 
+		end
 		if gameCfg.ETCConfig then
 			ETC_Logic.SetConfig(gameCfg.ETCConfig)
-			if type(gameCfg.ETCConfig.SavedItems) == "table" then for _, tenItem in ipairs(gameCfg.ETCConfig.SavedItems) do ThemItemVaoESP(tenItem) end end
-			local cn = TimChucNang("ETC", "Speed Fly") if cn then cn.HienTai = tostring(ETC_Logic.FlySpeed) end
-			cn = TimChucNang("ETC", "Enable Collide") if cn then cn.HienTai = ETC_Logic.FlyCollide and "Bat" or "Tat" end
-			cn = TimChucNang("ETC", "ESP Player") if cn then cn.HienTai = ETC_Logic.ESP_Players and "Bat" or "Tat" end
-			cn = TimChucNang("ETC", "ESP Part") if cn then cn.HienTai = ETC_Logic.ESP_Items and "Bat" or "Tat" end
-			cn = TimChucNang("ETC", "Tracker (Player & Item)") if cn then cn.HienTai = ETC_Logic.ESP_Tracker and "Bat" or "Tat" end
+			if type(gameCfg.ETCConfig.SavedItems) == "table" then 
+				for _, tenItem in ipairs(gameCfg.ETCConfig.SavedItems) do 
+					ThemItemVaoESP(tenItem) 
+				end 
+			end
+			local cn = TimChucNang("ETC", "Speed Fly") 
+			if cn then cn.HienTai = tostring(ETC_Logic.FlySpeed) end
+			cn = TimChucNang("ETC", "Enable Collide") 
+			if cn then cn.HienTai = ETC_Logic.FlyCollide and "Bat" or "Tat" end
+			cn = TimChucNang("ETC", "ESP Player") 
+			if cn then cn.HienTai = ETC_Logic.ESP_Players and "Bat" or "Tat" end
+			cn = TimChucNang("ETC", "ESP Part") 
+			if cn then cn.HienTai = ETC_Logic.ESP_Items and "Bat" or "Tat" end
+			cn = TimChucNang("ETC", "Tracker (Player & Item)") 
+			if cn then cn.HienTai = ETC_Logic.ESP_Tracker and "Bat" or "Tat" end
 		end
 		for k, v in pairs(gameCfg) do GameConfig[k] = v end
 	end
