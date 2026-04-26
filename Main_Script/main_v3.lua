@@ -152,7 +152,7 @@ local DanhSachNhom = {
 				}}
 			}},
 			{ TieuDe = "Movement", ChucNang = {
-				{ Ten = "Noclip", Loai = "Gat", HienTai = "Tat", SuKien = function(st) ETC_Logic.ToggleNoclip(st) end,
+				{ Ten = "Noclip", Loai = "Gat", HienTai = "Tat", SuKien = function(st) ETC_Logic.ToggleNoclip(st) end},
 				{ Ten = "Fly", Loai = "Gat", HienTai = "Tat", SuKien = function(st) ETC_Logic.ToggleFly(st) end, CacNutCon = {
 				{ Ten = "Speed Fly", Loai = "Odien", HienTai = tostring((NguoiChoi.Character and NguoiChoi.Character:FindFirstChildOfClass("Humanoid")) and NguoiChoi.Character:FindFirstChildOfClass("Humanoid").WalkSpeed or 16), GoiY = "Nhập tốc độ", SuKien = function(val) ETC_Logic.FlySpeed = tonumber(val) or 16 LuuGame() end },
 				{ Ten = "Hotkey Fly", Loai = "PhimNong", HienTai = "F", SuKien = function(key) ETC_Logic.FlyHotkey = key GlobalConfig.FlyHotkey = key.Name LuuGlobal() end },
