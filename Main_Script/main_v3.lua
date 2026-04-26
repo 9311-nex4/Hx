@@ -238,13 +238,8 @@ local function TaoGiaoDien()
 	end
 
 	local SuKienBanPhim = nil
-	local SoLanBamX = 0
 	local function PhaHuyUI()
-		if SoLanBamX == 0 then
-			SoLanBamX = 1
-			ThongBao("XÁC NHẬN", "Nhấn nút 'X' thêm lần nữa để đóng UI!", 2)
-			task.delay(2, function() SoLanBamX = 0 end)
-		else
+		GuiThongBao.thongbaoxacnhan("XÁC NHẬN", "Bạn có chắc chắn muốn đóng UI không?", function()
 			pcall(function() AutoClickLogic.Destroy() end)
 			pcall(function() ETC_Logic.ToggleFly(false) end)
 			pcall(function() ETC_Logic.ToggleNoclip(false) end)
@@ -256,7 +251,7 @@ local function TaoGiaoDien()
 			end)
 			if SuKienBanPhim then pcall(function() SuKienBanPhim:Disconnect() end) end
 			if ManHinhGui and ManHinhGui.Parent then ManHinhGui:Destroy() end
-		end
+		end)
 	end
 
 	local PhanTuToolbar = ThuVienUI.Tao(KhungChinh, VungCuon, DanhSachNhom, CauHinh, LopPhu, function() DongTatCaXoXuong() ClickNgoai.Visible = true end, PhaHuyUI, DongGiaoDien)
