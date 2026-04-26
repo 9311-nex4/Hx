@@ -1,20 +1,24 @@
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
-local NguoiChoi = Players.LocalPlayer
-local PlayerGui = NguoiChoi:WaitForChild("PlayerGui")
-local PlayerScripts = NguoiChoi:WaitForChild("PlayerScripts")
+local Players           = game:GetService("Players")
+local TweenService      = game:GetService("TweenService")
+local UserInputService  = game:GetService("UserInputService")
 
-local GuiThongBao = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ThongBao.lua"))()
-local function ThongBao(TieuDe, NoiDung, ThoiGian) GuiThongBao.thongbao("Hx Script | " .. TieuDe, NoiDung, ThoiGian or 2) end
-local function ThongBaoLoi(TieuDe, NoiDung) 
-	if GuiThongBao.thongbaoloi then 
-		GuiThongBao.thongbaoloi("Hx Script | " .. TieuDe, NoiDung) 
-	else 
-		GuiThongBao.thongbao("Hx Script Lỗi | " .. TieuDe, NoiDung, 3) 
-	end 
+local NguoiChoi         = Players.LocalPlayer
+local PlayerGui         = NguoiChoi:WaitForChild("PlayerGui")
+local PlayerScripts     = NguoiChoi:WaitForChild("PlayerScripts")
+
+local ThuMucUI
+local KiemTraHui, KetQuaHui = pcall(function() return gethui() end)
+local KiemTraCoreGui, KetQuaCoreGui = pcall(function() return game:GetService("CoreGui") end)
+
+if KiemTraHui and KetQuaHui then
+	ThuMucUI = KetQuaHui
+elseif KiemTraCoreGui and KetQuaCoreGui then
+	ThuMucUI = KetQuaCoreGui
+else
+	ThuMucUI = PlayerGui
 end
 
+local GuiThongBao       = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ThongBao.lua"))()
 local ChuDe = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ChuDe.lua"))()
 local HoatAnh = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/Animation.lua"))()
 local ThuVienUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ThuVienUI.lua"))()
@@ -23,6 +27,18 @@ local MenuConfigManager = loadstring(game:HttpGet("https://raw.githubusercontent
 local Khoi = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Main_Script/Main_Utilities/Khoi_Logic.lua"))()
 local Transform_Logic = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Main_Script/Main_Utilities/Transform_Logic.lua"))()
 local NhanVat_Logic = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Main_Script/Main_Utilities/NhanVat_Logic.lua"))()
+
+local function ThongBao(TieuDe, NoiDung, ThoiGian) 
+	GuiThongBao.thongbao("Hx Script | " .. TieuDe, NoiDung, ThoiGian or 2) 
+end
+
+local function ThongBaoLoi(TieuDe, NoiDung) 
+	if GuiThongBao.thongbaoloi then 
+		GuiThongBao.thongbaoloi("Hx Script | " .. TieuDe, NoiDung) 
+	else 
+		GuiThongBao.thongbao("Hx Script Lỗi | " .. TieuDe, NoiDung, 3) 
+	end 
+end
 
 MenuConfigManager.SetFileName("main_v2")
 
@@ -34,7 +50,10 @@ local CauHinh = {
 	KichThuoc = { Header = 45, Cach = 8, IconLon = UDim2.new(0, 90, 0, 90) },
 	Asset = { Icon = "rbxassetid://117118515787811", MuiTenXuong = "rbxassetid://6031091004" },
 	VanBan = { Nut = 14, Nho = 13, TieuDe = 15 },
-	Mau = {}
+	Mau = {},
+	DoTrongSuotKhung = 0.4,
+	QuickAnim = false,
+	AutoCloseUI = false
 }
 
 for k, v in pairs(ChuDe.MacDinh) do CauHinh.Mau[k] = v end
@@ -49,7 +68,10 @@ local TimChucNang
 local GlobalConfig = {
 	PhimMoMenu = "Insert",
 	ChuDeUI = { Ten = "Dark" },
-	DoTrongSuotKhung = 0.4
+	DoTrongSuotKhung = 0.4,
+	QuickAnim = false,
+	AutoCloseUI = false,
+	UISize = "1.0x (rec)"
 }
 
 local GameConfig = {
@@ -83,8 +105,14 @@ CauHinh.LuuTheme = function(duLieuTheme)
 	LuuGlobal()
 end
 
+CauHinh.LuuTrongSuot = function(val) GlobalConfig.DoTrongSuotKhung = val LuuGlobal() end
+CauHinh.LuuQuickAnim = function(val) GlobalConfig.QuickAnim = val LuuGlobal() end
+CauHinh.LuuAutoClose = function(val) GlobalConfig.AutoCloseUI = val LuuGlobal() end
+CauHinh.UISize = "1.0x (rec)"
+CauHinh.LuuKichThuoc = function(val) GlobalConfig.UISize = val LuuGlobal() end
+
 local function UpdateSubButtonText(rowName, text)
-	local gui = PlayerGui:FindFirstChild("main_v2")
+	local gui = ThuMucUI:FindFirstChild("main_v2")
 	if not gui then return end
 	for _, v in ipairs(gui:GetDescendants()) do
 		if v:IsA("TextLabel") and (v.Text == "  " .. rowName or v.Text == rowName) then
@@ -178,8 +206,7 @@ local function TaoCauTrucItemChoKhoi(Obj)
 							LuuGame()
 						end
 					}
-				}
-				,
+				},
 				SuKien = function(TrangThai)
 					SetLocked(TrangThai)
 					if not TrangThai then Khoi.CheckHuy(Obj) end
@@ -207,18 +234,34 @@ Khoi.SuKienThayDoi.Event:Connect(function(HanhDong, DoiTuong)
 end)
 
 CauHinh.ExtraConfig = {
-	{ Ten = "Reduce Lags",       Loai = "Gat",     HienTai = "Tat", SuKien = function(st) MenuConfigManager.ReduceLags(st)  GameConfig.ReduceLags = st  LuuGame() end },
-	{ Ten = "Removes Fog",       Loai = "Gat",     HienTai = "Tat", SuKien = function(st) MenuConfigManager.RemoveFog(st)   GameConfig.RemoveFog  = st  LuuGame() end },
-	{ Ten = "Fully Bright",      Loai = "Gat",     HienTai = "Tat", SuKien = function(st) MenuConfigManager.FullBright(st)  GameConfig.FullBright = st  LuuGame() end },
-	{ Ten = "No Shadows",        Loai = "Gat",     HienTai = "Tat", SuKien = function(st) MenuConfigManager.NoShadows(st)   GameConfig.NoShadows  = st  LuuGame() end },
-	{ Ten = "HotKeys Open Menu", Loai = "PhimNong", HienTai = "Insert", SuKien = function(key) PhimMoMenu = key GlobalConfig.PhimMoMenu = key.Name LuuGlobal() end },
-	{ Ten = "UI Transparency", Loai = "Gat", HienTai = "Tat", SuKien = function(st) 
-		local Alpha = st and 0.4 or 0.15 
-		CauHinh.DoTrongSuotKhung = Alpha 
-		GlobalConfig.DoTrongSuotKhung = Alpha 
-		if PlayerGui:FindFirstChild("main_v2") and PlayerGui.main_v2:FindFirstChild("KhungChinh") then 
-			PlayerGui.main_v2.KhungChinh.BackgroundTransparency = Alpha 
-		end 
+	{ Ten = "Reduce Lags", Loai = "Gat", HienTai = "Tat", SuKien = function(st) 
+		MenuConfigManager.ReduceLags(st) 
+		GameConfig.ReduceLags = st 
+		LuuGame() 
+	end },
+	{ Ten = "More", Loai = "Danhsach", DangMo = false, Danhsach = {
+		{ Ten = "Removes Fog", Loai = "Gat", HienTai = "Tat", SuKien = function(st) 
+			MenuConfigManager.RemoveFog(st) 
+			GameConfig.RemoveFog = st 
+			LuuGame() 
+		end },
+		{ Ten = "Fully Bright", Loai = "Gat", HienTai = "Tat", SuKien = function(st) 
+			MenuConfigManager.FullBright(st) 
+			GameConfig.FullBright = st 
+			LuuGame() 
+		end },
+		{ Ten = "No Shadows", Loai = "Gat", HienTai = "Tat", SuKien = function(st) 
+			MenuConfigManager.NoShadows(st) 
+			GameConfig.NoShadows = st 
+			LuuGame() 
+		end }
+	}}
+}
+
+CauHinh.ExtraConfigPost = {
+	{ Ten = "HotKeys Open Menu", Loai = "PhimNong", HienTai = "Insert", SuKien = function(key) 
+		PhimMoMenu = key 
+		GlobalConfig.PhimMoMenu = key.Name 
 		LuuGlobal() 
 	end }
 }
@@ -277,7 +320,7 @@ local DanhSachNhom = {
 						Loai = "Gat",
 						HienTai = "Bat",
 						SuKien = function(TrangThai)
-							local gui = PlayerGui:FindFirstChild("main_v2")
+							local gui = ThuMucUI:FindFirstChild("main_v2")
 							if gui and gui:FindFirstChild("KhungNutNgoai") then
 								gui.KhungNutNgoai.Visible = TrangThai
 							end
@@ -461,41 +504,27 @@ function TimChucNang(TenChucNang)
 		local res = DuyetChucNang(KhoiObj.ChucNang, TenChucNang)
 		if res then return res end
 	end
-	return DuyetChucNang(CauHinh.ExtraConfig, TenChucNang)
+	return nil
 end
 
 local function ApDungConfig(globalCfg, gameCfg)
 	if globalCfg then
 		if globalCfg.PhimMoMenu then
 			pcall(function() PhimMoMenu = Enum.KeyCode[globalCfg.PhimMoMenu] end)
-			local cn = TimChucNang("HotKeys Open Menu"); if cn then cn.HienTai = globalCfg.PhimMoMenu end
 		end
 		if globalCfg.ChuDeUI then CauHinh.ChuDeDaLuu = globalCfg.ChuDeUI end
-		if globalCfg.DoTrongSuotKhung then 
-			CauHinh.DoTrongSuotKhung = globalCfg.DoTrongSuotKhung 
-			local cn = TimChucNang("UI Transparency") 
-			if cn then cn.HienTai = (globalCfg.DoTrongSuotKhung == 0.4) and "Bat" or "Tat" end 
-		end
+		if globalCfg.DoTrongSuotKhung ~= nil then CauHinh.DoTrongSuotKhung = globalCfg.DoTrongSuotKhung end
+		if globalCfg.QuickAnim ~= nil then CauHinh.QuickAnim = globalCfg.QuickAnim end
+		if globalCfg.AutoCloseUI ~= nil then CauHinh.AutoCloseUI = globalCfg.AutoCloseUI end
+		if globalCfg.UISize then CauHinh.UISize = globalCfg.UISize end
 		for k, v in pairs(globalCfg) do GlobalConfig[k] = v end
 	end
 
 	if gameCfg then
-		if gameCfg.ReduceLags then
-			MenuConfigManager.ReduceLags(true)
-			local cn = TimChucNang("Reduce Lags"); if cn then cn.HienTai = "Bat" end
-		end
-		if gameCfg.RemoveFog then
-			MenuConfigManager.RemoveFog(true)
-			local cn = TimChucNang("Removes Fog"); if cn then cn.HienTai = "Bat" end
-		end
-		if gameCfg.FullBright then
-			MenuConfigManager.FullBright(true)
-			local cn = TimChucNang("Fully Bright"); if cn then cn.HienTai = "Bat" end
-		end
-		if gameCfg.NoShadows then
-			MenuConfigManager.NoShadows(true)
-			local cn = TimChucNang("No Shadows"); if cn then cn.HienTai = "Bat" end
-		end
+		if gameCfg.ReduceLags then MenuConfigManager.ReduceLags(true) end
+		if gameCfg.RemoveFog then MenuConfigManager.RemoveFog(true) end
+		if gameCfg.FullBright then MenuConfigManager.FullBright(true) end
+		if gameCfg.NoShadows then MenuConfigManager.NoShadows(true) end
 		if gameCfg.KhoiConfig then Khoi.SetConfig(gameCfg.KhoiConfig) end
 		if gameCfg.TransformConfig then
 			local tc = gameCfg.TransformConfig
@@ -527,8 +556,8 @@ local function ApDungConfig(globalCfg, gameCfg)
 				end
 			end
 
-			if PlayerGui:FindFirstChild("main_v2") and PlayerGui.main_v2:FindFirstChild("KhungNutNgoai") then
-				PlayerGui.main_v2.KhungNutNgoai.Visible = (tc.ShowHUD ~= false)
+			if ThuMucUI:FindFirstChild("main_v2") and ThuMucUI.main_v2:FindFirstChild("KhungNutNgoai") then
+				ThuMucUI.main_v2.KhungNutNgoai.Visible = (tc.ShowHUD ~= false)
 			end
 		end
 		for k, v in pairs(gameCfg) do GameConfig[k] = v end
@@ -538,11 +567,11 @@ end
 ApDungConfig(MenuConfigManager.LoadGlobal(), MenuConfigManager.LoadGame())
 
 local function TaoGiaoDien()
-	if PlayerGui:FindFirstChild("main_v2") then PlayerGui.main_v2:Destroy() end
+	if ThuMucUI:FindFirstChild("main_v2") then ThuMucUI.main_v2:Destroy() end
 
 	local ManHinhGui = Instance.new("ScreenGui")
 	ManHinhGui.Name = "main_v2"; ManHinhGui.ResetOnSpawn = false
-	ManHinhGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling; ManHinhGui.Parent = PlayerGui
+	ManHinhGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling; ManHinhGui.Parent = ThuMucUI
 
 	local LopPhu = Instance.new("Frame", ManHinhGui)
 	LopPhu.Name = "LopPhu"; LopPhu.Size = UDim2.fromScale(1,1)
@@ -572,6 +601,24 @@ local function TaoGiaoDien()
 	KhungChinh.BackgroundColor3 = CauHinh.Mau.Nen; KhungChinh.BackgroundTransparency = CauHinh.DoTrongSuotKhung or 0.4
 	KhungChinh.ClipsDescendants = true; KhungChinh.Visible = false; KhungChinh.Active = true
 	Instance.new("UICorner", KhungChinh).CornerRadius = UDim.new(0,14)
+
+	local function LayScaleAnToan(val)
+		return tonumber(tostring(val or "1.0x"):match("([%d%.]+)")) or 1.0
+	end
+
+	local UIScaleKhung = Instance.new("UIScale")
+	UIScaleKhung.Scale = LayScaleAnToan(CauHinh.UISize)
+	UIScaleKhung.Parent = KhungChinh
+
+	local UIScaleLopPhu = Instance.new("UIScale")
+	UIScaleLopPhu.Scale = LayScaleAnToan(CauHinh.UISize)
+	UIScaleLopPhu.Parent = LopPhu
+
+	CauHinh.ApDungKichThuoc = function(scale, val)
+		CauHinh.UISize = val
+		UIScaleKhung.Scale = scale
+		if UIScaleLopPhu then UIScaleLopPhu.Scale = scale end
+	end
 
 	local BieuTuong = Instance.new("ImageLabel", KhungChinh)
 	BieuTuong.Size = UDim2.fromOffset(0,0); BieuTuong.Position = UDim2.new(0.5,0,0.5,0)
@@ -634,9 +681,14 @@ local function TaoGiaoDien()
 		if LuongEpKichThuoc then task.cancel(LuongEpKichThuoc) LuongEpKichThuoc = nil end
 		if LuongCapNhatTab then task.cancel(LuongCapNhatTab) LuongCapNhatTab = nil end
 
-		HoatAnh.DongGiaoDien(CacPhanTu, TaoCauHinhHieuUng(), function()
-			KhungChinh.Visible = false; DangHanhDong = false
-		end)
+		if CauHinh.QuickAnim then
+			KhungChinh.Visible = false 
+			DangHanhDong = false 
+		else
+			HoatAnh.DongGiaoDien(CacPhanTu, TaoCauHinhHieuUng(), function()
+				KhungChinh.Visible = false; DangHanhDong = false
+			end)
+		end
 	end
 
 	local SuKienBanPhim = nil
@@ -679,21 +731,29 @@ local function TaoGiaoDien()
 		if CacPhanTu.NutDong then CacPhanTu.NutDong.Size = UDim2.fromOffset(35,35) end
 
 		local hieuUng = TaoCauHinhHieuUng()
-		HoatAnh.MoGiaoDien(CacPhanTu, hieuUng)
 
-		LuongEpKichThuoc = task.delay(0.25, function() 
+		if CauHinh.QuickAnim then
+			KhungChinh.Size = hieuUng.KhungCuoi
+			KhungBaoNoiDung.Visible = true
 			DangHanhDong = false
-			if KhungChinh and KhungChinh.Visible and not shared.HxUI_DangThuNho then 
-				KhungChinh.Size = hieuUng.KhungCuoi 
-			end 
-		end)
+			if PhanTuToolbar and PhanTuToolbar.CapNhatTab then PhanTuToolbar.CapNhatTab() end
+		else
+			HoatAnh.MoGiaoDien(CacPhanTu, hieuUng)
 
-		if PhanTuToolbar and PhanTuToolbar.CapNhatTab then 
-			LuongCapNhatTab = task.delay(1.1, function()
-				if KhungChinh.Visible and not shared.HxUI_DangThuNho then
-					PhanTuToolbar.CapNhatTab()
-				end
+			LuongEpKichThuoc = task.delay(0.25, function() 
+				DangHanhDong = false
+				if KhungChinh and KhungChinh.Visible and not shared.HxUI_DangThuNho then 
+					KhungChinh.Size = hieuUng.KhungCuoi 
+				end 
 			end)
+
+			if PhanTuToolbar and PhanTuToolbar.CapNhatTab then 
+				LuongCapNhatTab = task.delay(1.1, function()
+					if KhungChinh.Visible and not shared.HxUI_DangThuNho then
+						PhanTuToolbar.CapNhatTab()
+					end
+				end)
+			end
 		end
 	end
 
@@ -753,7 +813,11 @@ local function TaoGiaoDien()
 		if msg then ThongBao(ok and "Thành công" or "Lỗi", msg, 2) end
 	end)
 
-	MoGiaoDien()
+	if CauHinh.AutoCloseUI then
+		shared.HxUI_DangThuNho = true
+	else
+		MoGiaoDien()
+	end
 end
 
 if not game:IsLoaded() then game.Loaded:Wait() end
