@@ -1,9 +1,9 @@
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
+local Players          = game:GetService("Players")
+local TweenService     = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local NguoiChoi = Players.LocalPlayer
-local PlayerGui = NguoiChoi:WaitForChild("PlayerGui")
-local PlayerScripts = NguoiChoi:WaitForChild("PlayerScripts")
+local NguoiChoi        = Players.LocalPlayer
+local PlayerGui        = NguoiChoi:WaitForChild("PlayerGui")
+local PlayerScripts    = NguoiChoi:WaitForChild("PlayerScripts")
 
 local ThuMucUI
 local KiemTraHui, KetQuaHui = pcall(function() return gethui() end)
@@ -17,18 +17,18 @@ else
 	ThuMucUI = PlayerGui
 end
 
-local GuiThongBao = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ThongBao.lua"))()
-local function ThongBao(TieuDe, NoiDung, ThoiGian) GuiThongBao.thongbao("Hx Script | " .. TieuDe, NoiDung, ThoiGian or 2) end
-local function ThongBaoLoi(TieuDe, NoiDung) GuiThongBao.thongbaoloi("Hx Script | " .. TieuDe, NoiDung) end
-
-local ChuDe = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ChuDe.lua"))()
-local TimKiem = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/TimKiem.lua"))()
-local HoatAnh = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/Animation.lua"))()
-local ThuVienUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ThuVienUI.lua"))()
+local GuiThongBao       = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ThongBao.lua"))()
+local ChuDe             = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ChuDe.lua"))()
+local TimKiem           = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/TimKiem.lua"))()
+local HoatAnh           = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/Animation.lua"))()
+local ThuVienUI         = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ThuVienUI.lua"))()
 local MenuConfigManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/MenuConfigManager.lua"))()
 
-local AutoClickLogic = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Main_Script/Main_Utilities/AutoClick_Logic.lua"))()
-local ETC_Logic = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Main_Script/Main_Utilities/ETC_Logic.lua"))()
+local AutoClickLogic    = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Main_Script/Main_Utilities/AutoClick_Logic.lua"))()
+local ETC_Logic         = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-nex4/Hx/main/Main_Script/Main_Utilities/ETC_Logic.lua"))()
+
+local function ThongBao(TieuDe, NoiDung, ThoiGian) GuiThongBao.thongbao("Hx Script | " .. TieuDe, NoiDung, ThoiGian or 2) end
+local function ThongBaoLoi(TieuDe, NoiDung) GuiThongBao.thongbaoloi("Hx Script | " .. TieuDe, NoiDung) end
 
 MenuConfigManager.SetFileName("main_v3")
 
