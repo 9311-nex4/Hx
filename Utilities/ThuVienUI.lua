@@ -51,6 +51,7 @@ end
 local function TaoHieuUng(NutBam, MauThayDoi)
 	local MauGocBanDau = NutBam.BackgroundColor3
 	NutBam.MouseEnter:Connect(function()
+		if shared.HxUI_DangThuNho then return end
 		local base = NutBam:GetAttribute("MauGoc") or MauGocBanDau
 		local hover = MauThayDoi or Color3.new(
 			math.min(base.R + 0.12, 1),
@@ -62,8 +63,13 @@ local function TaoHieuUng(NutBam, MauThayDoi)
 	NutBam.MouseLeave:Connect(function()
 		ChayTween(NutBam, TweenMuot, {BackgroundColor3 = NutBam:GetAttribute("MauGoc") or MauGocBanDau})
 	end)
-	NutBam.MouseButton1Down:Connect(function() ChayTween(NutBam, TweenNhanh, TWEEN_BGDOWN) end)
-	NutBam.MouseButton1Up:Connect(function() ChayTween(NutBam, TweenNhanh, TWEEN_BGUP) end)
+	NutBam.MouseButton1Down:Connect(function() 
+		if shared.HxUI_DangThuNho then return end
+		ChayTween(NutBam, TweenNhanh, TWEEN_BGDOWN) 
+	end)
+	NutBam.MouseButton1Up:Connect(function() 
+		ChayTween(NutBam, TweenNhanh, TWEEN_BGUP) 
+	end)
 end
 
 local function TaoThemeSelector(KhungCha, CauHinhRef, ApDungThemeCB, Mau, NguCanh)
@@ -357,11 +363,10 @@ function ThanhPhan.Nut(Cha, DuLieu, CauHinh, CapNhat, DeQuy)
 		if DuLieuHienTai.SauBam == "Thay" and DuLieuHienTai.DanhSachThay then
 			local DuLieuMoi
 			if type(DuLieuHienTai.DanhSachThay) == "table" and DuLieuHienTai.DanhSachThay[1] then
-				ChiSoVongLap = ChiSoVongLap + 1
 				local DanhSach = DuLieuHienTai.DanhSachThay
-				local CoVongLap = true
-				for _, PhanTuThay in ipairs(DanhSach) do if PhanTuThay.Loai and PhanTuThay.Loai ~= "Nut" then CoVongLap = false break end end
-				ChiSoVongLap = CoVongLap and ((ChiSoVongLap - 1) % #DanhSach) + 1 or ChiSoVongLap
+				ChiSoVongLap = ChiSoVongLap + 1
+				if ChiSoVongLap > #DanhSach then ChiSoVongLap = 1 end
+
 				DuLieuMoi = DanhSach[ChiSoVongLap]
 			else
 				DuLieuMoi = DuLieuHienTai.DanhSachThay
@@ -451,10 +456,10 @@ function ThanhPhan.HopXo(Cha, DuLieu, CauHinh, CapNhat, DeQuy, NguCanh)
 		TaoDoiTuong("UIListLayout", {SortOrder = "LayoutOrder", Padding = UDim.new(0, 3), Parent = Cuon})
 		local CapNhatViTri = nil
 		AnimDongXoXuong = function()
-			if not HopXoDangMo then return end
-			HopXoDangMo = false
+			if not HopXoDangMo then return end HopXoDangMo = false
 			if NguCanh and NguCanh.DongMenuAnim == AnimDongXoXuong then NguCanh.DongMenuAnim = nil end
-			if CapNhatViTri then CapNhatViTri:Disconnect() CapNhatViTri = nil end
+			if CapNhatViTri then CapNhatViTri:Disconnect() CapNhatViTri = nil end 
+
 			if not KhungXo.Parent then return end
 			ChayTween(VienKhung, TweenMuot, {Transparency = 1})
 			for _, child in ipairs(Cuon:GetChildren()) do if child:IsA("TextButton") then ChayTween(child, TweenMuot, {TextTransparency = 1, BackgroundTransparency = 1}) end end
@@ -483,6 +488,12 @@ function ThanhPhan.HopXo(Cha, DuLieu, CauHinh, CapNhat, DeQuy, NguCanh)
 			if math.abs(HienThi.AbsolutePosition.Y - ToaDoYBanDau) > 2 then AnimDongXoXuong() return end
 			KhungXo.Position = UDim2.fromOffset(HienThi.AbsolutePosition.X, HienThi.AbsolutePosition.Y + HienThi.AbsoluteSize.Y + 6)
 		end)
+
+		if #DuLieu.LuaChon == 0 then
+			local NhanTrong = TaoNhan({Text = "Không có lựa chọn", Size = UDim2.new(1,0,0,30), TextColor3 = Mau.ChuMo, ZIndex = 107, Parent = Cuon})
+			TaoGioiHanChu(NhanTrong, 12)
+		end
+
 		for ViTriLuaChon, DuLieuLuaChon in ipairs(DuLieu.LuaChon) do
 			local TenLuaChon = (type(DuLieuLuaChon) == "table") and DuLieuLuaChon.Ten or DuLieuLuaChon
 			local DuocChon = (TenLuaChon == DuLieu.HienTai)
@@ -583,12 +594,31 @@ function ThanhPhan.PhimNong(Cha, DuLieu, CauHinh, CapNhat, DeQuy)
 	TaoBoGoc(NutPhim, 6) TaoVien(NutPhim, Mau.VienNeon, 0.7) TaoGioiHanChu(NutPhim, CauHinh.VanBan.Nho) TaoHieuUng(NutPhim, nil)
 
 	local DangCho = false
+	NutPhim.AncestryChanged:Connect(function(_, parent)
+		if not parent and DuLieu.KetNoiInput then
+			DuLieu.KetNoiInput:Disconnect()
+			DuLieu.KetNoiInput = nil
+		end
+	end)
+
 	NutPhim.MouseButton1Click:Connect(function()
 		if not DichVuInput.KeyboardEnabled or DangCho then return end
 		DangCho = true shared.HxDangChinhPhim = true NutPhim.Text = "..."
+
 		if DuLieu.KetNoiInput then DuLieu.KetNoiInput:Disconnect() DuLieu.KetNoiInput = nil end
+
+		local timeout = task.delay(8, function()
+			if DangCho then
+				if DuLieu.KetNoiInput then DuLieu.KetNoiInput:Disconnect() DuLieu.KetNoiInput = nil end
+				NutPhim.Text = tostring(DuLieu.HienTai or "None")
+				shared.HxDangChinhPhim = false
+				DangCho = false
+			end
+		end)
+
 		DuLieu.KetNoiInput = DichVuInput.InputBegan:Connect(function(Input)
 			if Input.UserInputType == Enum.UserInputType.Keyboard then
+				task.cancel(timeout)
 				if DuLieu.KetNoiInput then DuLieu.KetNoiInput:Disconnect() DuLieu.KetNoiInput = nil end
 				local TenPhim = Input.KeyCode.Name DuLieu.HienTai = TenPhim NutPhim.Text = TenPhim
 				if type(DuLieu.SuKien) == "function" then task.spawn(DuLieu.SuKien, Input.KeyCode) end
@@ -794,6 +824,7 @@ function ThuVienUI.Tao(KhungChinh, Cuon, DuLieu, CauHinh, LopPhu, DongMenu, HamP
 
 	local function SetHieuUngToolbar(Nut, Vien, Kieu, SizeThuong, SizeLuot)
 		Nut.MouseEnter:Connect(function()
+			if shared.HxUI_DangThuNho then return end
 			local mg = Nut:GetAttribute("MauGoc") or CauHinh.Mau.NenHop
 			local hoverCol = (Kieu == "Dong") and CauHinh.Mau.NutDongLuot or Color3.new(math.min(mg.R+0.1, 1), math.min(mg.G+0.1, 1), math.min(mg.B+0.1, 1))
 			ChayTween(Nut, TweenMuot, {BackgroundColor3 = hoverCol, BackgroundTransparency = 0, TextSize = SizeLuot, TextColor3 = Color3.new(1, 1, 1)})
@@ -811,7 +842,7 @@ function ThuVienUI.Tao(KhungChinh, Cuon, DuLieu, CauHinh, LopPhu, DongMenu, HamP
 		local NhanTimKiemText = TaoDoiTuong("TextBox", {
 			Size = UDim2.new(0, 150, 0, 28), Position = UDim2.new(1, -3, 0.5, 0), AnchorPoint = Vector2.new(1, 0.5),
 			BackgroundColor3 = Mau.NenHop, BackgroundTransparency = 0.3,
-			TextColor3 = Mau.Chu, PlaceholderText = "🔍  Search...", PlaceholderColor3 = Mau.ChuMo,
+			TextColor3 = Mau.Chu, PlaceholderText = "Search...", PlaceholderColor3 = Mau.ChuMo,
 			Text = "", Font = "Gotham", TextSize = 12, ClearTextOnFocus = false,
 			ZIndex = 10, Parent = KhungTimKiem
 		})
@@ -820,10 +851,25 @@ function ThuVienUI.Tao(KhungChinh, Cuon, DuLieu, CauHinh, LopPhu, DongMenu, HamP
 		TaoVien(NhanTimKiemText, Mau.VienNeon, 0.4, 1.5, "Theme_Vien")
 		TaoDoiTuong("UIPadding", {PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8), Parent = NhanTimKiemText})
 
-		local NutTimKiem = TaoDoiTuong("TextButton", {LayoutOrder = 1, Size = UDim2.fromOffset(35, 35), BackgroundColor3 = Mau.NenHop, BackgroundTransparency = 0.6, Text = "🔍", TextColor3 = Mau.Chu, TextSize = 18, ZIndex = 10, Parent = Toolbar})
+		local NutTimKiem = TaoDoiTuong("TextButton", {LayoutOrder = 1, Size = UDim2.fromOffset(35, 35), BackgroundColor3 = Mau.NenHop, BackgroundTransparency = 0.6, Text = "", ZIndex = 10, Parent = Toolbar})
+		local IconTimKiem = TaoDoiTuong("ImageLabel", {Size = UDim2.fromOffset(18, 18), Position = UDim2.new(0.5, 0, 0.5, 0), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1, Image = "rbxassetid://83548692253921", ImageColor3 = Mau.Chu, ZIndex = 10, Parent = NutTimKiem})
 		NutTimKiem.Name = "Theme_NenHop" NutTimKiem:SetAttribute("MauGoc", Mau.NenHop)
 		TaoBoGoc(NutTimKiem, 8) local VienTimKiem = TaoVien(NutTimKiem, Mau.VienNeon, 1, 2, "Theme_Vien")
-		SetHieuUngToolbar(NutTimKiem, VienTimKiem, nil, 18, 22)
+
+		NutTimKiem.MouseEnter:Connect(function()
+			if shared.HxUI_DangThuNho then return end
+			local mg = NutTimKiem:GetAttribute("MauGoc") or CauHinh.Mau.NenHop
+			local hoverCol = Color3.new(math.min(mg.R+0.1, 1), math.min(mg.G+0.1, 1), math.min(mg.B+0.1, 1))
+			ChayTween(NutTimKiem, TweenMuot, {BackgroundColor3 = hoverCol, BackgroundTransparency = 0})
+			ChayTween(VienTimKiem, TweenMuot, {Transparency = 0})
+			ChayTween(IconTimKiem, TweenMuot, {Size = UDim2.fromOffset(22, 22), ImageColor3 = Color3.new(1, 1, 1)})
+		end)
+		NutTimKiem.MouseLeave:Connect(function()
+			local mg = NutTimKiem:GetAttribute("MauGoc") or CauHinh.Mau.NenHop
+			ChayTween(NutTimKiem, TweenMuot, {BackgroundColor3 = mg, BackgroundTransparency = 0.6})
+			ChayTween(VienTimKiem, TweenMuot, {Transparency = 1})
+			ChayTween(IconTimKiem, TweenMuot, {Size = UDim2.fromOffset(18, 18), ImageColor3 = CauHinh.Mau.Chu})
+		end)
 
 		local DangTimKiem = false
 		NutTimKiem.MouseButton1Click:Connect(function()
@@ -837,7 +883,15 @@ function ThuVienUI.Tao(KhungChinh, Cuon, DuLieu, CauHinh, LopPhu, DongMenu, HamP
 				TimKiemLogic.LocDuLieu(Cuon, "")
 			end
 		end)
-		NhanTimKiemText:GetPropertyChangedSignal("Text"):Connect(function() TimKiemLogic.LocDuLieu(Cuon, NhanTimKiemText.Text) end)
+		local searchDebounce
+		NhanTimKiemText:GetPropertyChangedSignal("Text"):Connect(function()
+			if searchDebounce then task.cancel(searchDebounce) end
+			searchDebounce = task.delay(0.15, function()
+				if Cuon and NhanTimKiemText then
+					TimKiemLogic.LocDuLieu(Cuon, NhanTimKiemText.Text)
+				end
+			end)
+		end)
 	end
 
 	local NutMin = TaoDoiTuong("TextButton", {LayoutOrder = 2, Size = UDim2.fromOffset(35, 35), BackgroundColor3 = Mau.NenHop, BackgroundTransparency = 0.6, Text = "_", TextColor3 = Mau.Chu, TextSize = 22, Font = "GothamBold", ZIndex = 10, Parent = Toolbar})
@@ -852,7 +906,17 @@ function ThuVienUI.Tao(KhungChinh, Cuon, DuLieu, CauHinh, LopPhu, DongMenu, HamP
 	end
 
 	shared.HxHieuUngThuNhoUI = function() task.spawn(KichHoatHieuUngMin) end
-	NutMin.MouseButton1Click:Connect(function() task.spawn(KichHoatHieuUngMin) if HamThuNho then task.delay(0.15, HamThuNho) end end)
+	NutMin.MouseButton1Click:Connect(function() 
+		task.spawn(KichHoatHieuUngMin) 
+		if NguCanh and NguCanh.DongMenuAnim then 
+			NguCanh.DongMenuAnim() 
+		elseif NguCanh and NguCanh.DongMenu then 
+			NguCanh.DongMenu() 
+		end
+		if HamThuNho then 
+			HamThuNho() 
+		end 
+	end)
 
 	local NutDongUI = TaoDoiTuong("TextButton", {LayoutOrder = 3, Size = UDim2.fromOffset(35, 35), BackgroundColor3 = Mau.NenHop, BackgroundTransparency = 0.6, Text = "X", TextColor3 = Mau.Chu, TextSize = 22, Font = "GothamBlack", ZIndex = 10, Parent = Toolbar})
 	NutDongUI.Name = "Theme_NenHop" NutDongUI:SetAttribute("MauGoc", Mau.NenHop)
