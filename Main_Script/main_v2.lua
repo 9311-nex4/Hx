@@ -753,6 +753,8 @@ local function TaoGiaoDien()
 
 		if CauHinh.QuickAnim then
 			KhungChinh.Size = hieuUng.KhungCuoi
+			BieuTuong.Size = hieuUng.IconCuoi         
+            BieuTuong.Position = hieuUng.ViTriIconCuoi
 			KhungBaoNoiDung.Visible = true
 			DangHanhDong = false
 			if PhanTuToolbar and PhanTuToolbar.CapNhatTab then PhanTuToolbar.CapNhatTab() end
