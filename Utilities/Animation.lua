@@ -146,5 +146,4 @@ function HoatAnh.DongGiaoDien(CacPhanTu, CauHinh, HamGoiLai)
 	end
 end
 
-
 return HoatAnh
