@@ -509,10 +509,8 @@ end
 
 local function ApDungConfig(globalCfg, gameCfg)
 	if globalCfg then
-		if globalCfg.PhimMoMenu then
-			pcall(function() PhimMoMenu = Enum.KeyCode[globalCfg.PhimMoMenu] end)
-		end
-		if globalCfg.ChuDeUI then CauHinh.ChuDeDaLuu = globalCfg.ChuDeUI end
+		if globalCfg.PhimMoMenu then pcall(function() PhimMoMenu = Enum.KeyCode[globalCfg.PhimMoMenu] end) end
+		if globalCfg.ChuDeUI then CauHinh.ChuDeDaLuu = globalCfg.ChuDeUI; if globalCfg.ChuDeUI.Ten ~= "Dark" then for k, v in pairs(globalCfg.ChuDeUI) do if k ~= "Ten" then CauHinh.Mau[k] = v end end end; pcall(function() GuiThongBao.CapNhatChuDe(globalCfg.ChuDeUI) end) end
 		if globalCfg.DoTrongSuotKhung ~= nil then CauHinh.DoTrongSuotKhung = globalCfg.DoTrongSuotKhung end
 		if globalCfg.QuickAnim ~= nil then CauHinh.QuickAnim = globalCfg.QuickAnim end
 		if globalCfg.AutoCloseUI ~= nil then CauHinh.AutoCloseUI = globalCfg.AutoCloseUI end
