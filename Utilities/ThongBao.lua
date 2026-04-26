@@ -5,6 +5,18 @@ local Debris = game:GetService("Debris")
 local NguoiChoi = Players.LocalPlayer
 local GuiNguoiChoi = NguoiChoi:WaitForChild("PlayerGui")
 
+local ThuMucUI
+local KiemTraHui, KetQuaHui = pcall(function() return gethui() end)
+local KiemTraCoreGui, KetQuaCoreGui = pcall(function() return game:GetService("CoreGui") end)
+
+if KiemTraHui and KetQuaHui then
+	ThuMucUI = KetQuaHui
+elseif KiemTraCoreGui and KetQuaCoreGui then
+	ThuMucUI = KetQuaCoreGui
+else
+	ThuMucUI = GuiNguoiChoi
+end
+
 local CONFIG_GOC = {
 	MAU_CHU_DAO = Color3.fromRGB(0, 255, 170),
 	MAU_LOI = Color3.fromRGB(255, 60, 60),
@@ -27,15 +39,15 @@ local CONFIG = {
 local GuiChinh = nil
 local function LayGuiChinh()
 	if not GuiChinh or not GuiChinh.Parent then
-		local existingGui = GuiNguoiChoi:FindFirstChild("ChaosSystem_Final")
+		local existingGui = ThuMucUI:FindFirstChild("HeThongBaoHx")
 		if existingGui then existingGui:Destroy() end
 
 		GuiChinh = Instance.new("ScreenGui")
-		GuiChinh.Name = "ChaosSystem_Final"
+		GuiChinh.Name = "HeThongBaoHx"
 		GuiChinh.ResetOnSpawn = false
 		GuiChinh.IgnoreGuiInset = true
 		GuiChinh.DisplayOrder = 1000
-		GuiChinh.Parent = GuiNguoiChoi
+		GuiChinh.Parent = ThuMucUI
 	end
 	return GuiChinh
 end
