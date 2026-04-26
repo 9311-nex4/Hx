@@ -3,7 +3,6 @@ local StarterGui = game:GetService("StarterGui")
 local Players = game:GetService("Players")
 local Debris = game:GetService("Debris")
 local RunService = game:GetService("RunService")
-
 local playerLocal = Players.LocalPlayer
 local playerGui = playerLocal:WaitForChild("PlayerGui")
 local camera = workspace.CurrentCamera
