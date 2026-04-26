@@ -23,7 +23,7 @@ local HoatAnh = loadstring(game:HttpGet("https://raw.githubusercontent.com/9311-
 
 local DanhSachKichBan = {
 	{ Ten = "Transform", Link = "https://raw.githubusercontent.com/9311-nex4/Hx/main/Main_Script/main_v1.lua" },
-	{ Ten = "Transform_v2 (Testing)", Link = "https://raw.githubusercontent.com/9311-nex4/Hx/main/Main_Script/main_v2.lua" },
+	{ Ten = "Transform_v2", Link = "https://raw.githubusercontent.com/9311-nex4/Hx/main/Main_Script/main_v2.lua" },
 	{ Ten = "Something (Testing)", Link = "https://raw.githubusercontent.com/9311-nex4/Hx/main/Main_Script/main_v3.lua" },
 }
 
