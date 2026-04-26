@@ -8,7 +8,6 @@ local State = {
 	CurrentScale = 1,
 }
 
-
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local Debris = game:GetService("Debris")
