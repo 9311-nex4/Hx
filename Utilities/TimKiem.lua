@@ -4,61 +4,74 @@ local TweenService = game:GetService("TweenService")
 local TweenNhanh = TweenInfo.new(0.25, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out)
 local TweenCuon  = TweenInfo.new(0.4,  Enum.EasingStyle.Cubic, Enum.EasingDirection.Out)
 
-local MAU_HIGHLIGHT_BG   = Color3.fromRGB(70, 60, 10)   
-local MAU_HIGHLIGHT_VIEN = Color3.fromRGB(255, 200, 50) 
+local MAU_HIGHLIGHT_BG   = Color3.fromRGB(70, 60, 10)
+local MAU_HIGHLIGHT_VIEN = Color3.fromRGB(255, 200, 50)
 
 local DanhSachHighlight = {}
+local CacheDescendants  = nil   
+local CacheScrollParent = {}    
+
+function TimKiem.XoaCache()
+	CacheDescendants = nil
+	CacheScrollParent = {}
+end
 
 local function XoaHighlight()
-	for _, info in ipairs(DanhSachHighlight) do
-		if info.Obj and info.Obj.Parent then
-			pcall(function()
-				info.Obj:SetAttribute("MauGoc", info.MauGoc)
-				TweenService:Create(info.Obj, TweenNhanh, {
-					BackgroundColor3  = info.MauGoc,
-					BackgroundTransparency = info.DoTrongSuot,
-				}):Play()
-			end)
+	for i = #DanhSachHighlight, 1, -1 do
+		local info = DanhSachHighlight[i]
+		local obj  = info.Obj
+		if obj and obj.Parent then
+			obj:SetAttribute("MauGoc", info.MauGoc)
+			TweenService:Create(obj, TweenNhanh, {
+				BackgroundColor3       = info.MauGoc,
+				BackgroundTransparency = info.DoTrongSuot,
+			}):Play()
 		end
-		if info.Vien and info.Vien.Parent then
-			pcall(function() info.Vien:Destroy() end)
+		local vien = info.Vien
+		if vien and vien.Parent then
+			vien:Destroy()
 		end
+		DanhSachHighlight[i] = nil
 	end
-	DanhSachHighlight = {}
 end
 
 local function LayText(obj)
-	for _, child in ipairs(obj:GetChildren()) do
-		if child:IsA("TextLabel") and child.Text ~= "" then
-			return child.Text:match("^%s*(.-)%s*$")
-		end
-		if child:IsA("ScrollingFrame") then
-			for _, sub in ipairs(child:GetChildren()) do
-				if sub:IsA("TextLabel") and sub.Text ~= "" then
-					return sub.Text:match("^%s*(.-)%s*$")
-				end
-			end
-		end
-	end
 	if obj:IsA("TextButton") and obj.Text ~= "" then
 		return obj.Text:match("^%s*(.-)%s*$")
+	end
+	local label = obj:FindFirstChildWhichIsA("TextLabel")
+	if label and label.Text ~= "" then
+		return label.Text:match("^%s*(.-)%s*$")
+	end
+	local scroll = obj:FindFirstChildWhichIsA("ScrollingFrame")
+	if scroll then
+		local sub = scroll:FindFirstChildWhichIsA("TextLabel")
+		if sub and sub.Text ~= "" then
+			return sub.Text:match("^%s*(.-)%s*$")
+		end
 	end
 	return ""
 end
 
 local function TimScrollParent(obj)
+	if CacheScrollParent[obj] ~= nil then
+		return CacheScrollParent[obj] or nil
+	end
 	local p = obj.Parent
 	while p do
-		if p:IsA("ScrollingFrame") then return p end
+		if p:IsA("ScrollingFrame") then
+			CacheScrollParent[obj] = p
+			return p
+		end
 		p = p.Parent
 	end
+	CacheScrollParent[obj] = false
 	return nil
 end
 
 local function CuonDen(scrollFrame, targetObj)
 	if not scrollFrame or not targetObj then return end
-	task.spawn(function()
-		task.wait(0.06)  
+	task.defer(function()
 		if not targetObj.Parent or not scrollFrame.Parent then return end
 		local relY = targetObj.AbsolutePosition.Y
 		- scrollFrame.AbsolutePosition.Y
@@ -72,20 +85,25 @@ end
 
 function TimKiem.LocDuLieu(Cuon, TuKhoa)
 	TuKhoa = string.lower((TuKhoa or ""):match("^%s*(.-)%s*$"))
+
 	XoaHighlight()
 	if TuKhoa == "" then return end
 
-	local ItemDauTien  = nil
-	local ScrollDauTien = nil
+	if not CacheDescendants then
+		CacheDescendants = Cuon:GetDescendants()
+		Cuon.DescendantAdded:Once(function() CacheDescendants = nil end)
+		Cuon.DescendantRemoving:Once(function() CacheDescendants = nil end)
+	end
 
-	for _, obj in ipairs(Cuon:GetDescendants()) do
+	local ItemDauTien, ScrollDauTien
+
+	for _, obj in ipairs(CacheDescendants) do
 		if obj.Name == "Theme_NenMuc"
 			and (obj:IsA("TextButton") or obj:IsA("Frame"))
 		then
 			local text = LayText(obj)
 			if text ~= "" and string.find(string.lower(text), TuKhoa, 1, true) then
-
-				local mauGoc      = obj:GetAttribute("MauGoc") or obj.BackgroundColor3
+				local mauGoc       = obj:GetAttribute("MauGoc") or obj.BackgroundColor3
 				local trongSuotGoc = obj.BackgroundTransparency
 
 				local vien = Instance.new("UIStroke")
@@ -101,15 +119,15 @@ function TimKiem.LocDuLieu(Cuon, TuKhoa)
 					BackgroundTransparency = 0.15,
 				}):Play()
 
-				table.insert(DanhSachHighlight, {
-					Obj        = obj,
-					MauGoc     = mauGoc,
+				DanhSachHighlight[#DanhSachHighlight + 1] = {
+					Obj         = obj,
+					MauGoc      = mauGoc,
 					DoTrongSuot = trongSuotGoc,
-					Vien       = vien,
-				})
+					Vien        = vien,
+				}
 
 				if not ItemDauTien then
-					ItemDauTien  = obj
+					ItemDauTien   = obj
 					ScrollDauTien = TimScrollParent(obj)
 				end
 			end
