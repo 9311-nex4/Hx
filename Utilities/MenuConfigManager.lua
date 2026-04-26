@@ -6,22 +6,47 @@ local VirtualUser = game:GetService("VirtualUser")
 local Terrain = workspace:FindFirstChildOfClass("Terrain")
 
 local MenuConfigManager = {}
-local CurrentFileName = "default_config_" .. tostring(game.PlaceId) .. ".json"
+
+local FolderName = "Hx Script"
+local GlobalFileName = FolderName .. "/Setting.cf"
+local GameFileName = ""
+
 local _KetNoiDonDep = {}
 local _DaKichHoat = false
 
+local function EnsureFolder()
+	if isfolder and not isfolder(FolderName) then
+		makefolder(FolderName)
+	end
+end
+
 function MenuConfigManager.SetFileName(name)
-	CurrentFileName = tostring(name) .. "_" .. tostring(game.PlaceId) .. ".json"
+	GameFileName = FolderName .. "/" .. tostring(name) .. " - " .. tostring(game.PlaceId) .. ".cf"
 end
 
-function MenuConfigManager.Save(data)
-	pcall(function() writefile(CurrentFileName, HttpService:JSONEncode(data)) end)
+function MenuConfigManager.SaveGlobal(data)
+	EnsureFolder()
+	pcall(function() writefile(GlobalFileName, HttpService:JSONEncode(data)) end)
 end
 
-function MenuConfigManager.Load()
+function MenuConfigManager.LoadGlobal()
 	local ok, result = pcall(function()
-		if isfile and isfile(CurrentFileName) then
-			return HttpService:JSONDecode(readfile(CurrentFileName))
+		if isfile and isfile(GlobalFileName) then
+			return HttpService:JSONDecode(readfile(GlobalFileName))
+		end
+	end)
+	return (ok and type(result) == "table") and result or nil
+end
+
+function MenuConfigManager.SaveGame(data)
+	EnsureFolder()
+	pcall(function() writefile(GameFileName, HttpService:JSONEncode(data)) end)
+end
+
+function MenuConfigManager.LoadGame()
+	local ok, result = pcall(function()
+		if isfile and isfile(GameFileName) then
+			return HttpService:JSONDecode(readfile(GameFileName))
 		end
 	end)
 	return (ok and type(result) == "table") and result or nil
@@ -196,11 +221,11 @@ function MenuConfigManager.FullBright(TrangThai)
 		OriginalLighting.Ambient = Lighting.Ambient
 		OriginalLighting.Brightness = Lighting.Brightness
 		OriginalLighting.ClockTime = Lighting.ClockTime
-		
+
 		Lighting.Ambient = Color3.fromRGB(255, 255, 255)
 		Lighting.Brightness = 2
 		Lighting.ClockTime = 14
-		
+
 		if not LightingConns.FullBright then
 			LightingConns.FullBright = Lighting.Changed:Connect(function()
 				if States.FullBright then
@@ -239,7 +264,6 @@ print("Anti - AFK Loaded")
 Players.LocalPlayer.Idled:Connect(function()
 	VirtualUser:CaptureController()
 	VirtualUser:ClickButton2(Vector2.new())
-	print("Anti - AFK : Bypassed")
 end)
 
 return MenuConfigManager
