@@ -5,15 +5,23 @@ local Debris = game:GetService("Debris")
 local NguoiChoi = Players.LocalPlayer
 local GuiNguoiChoi = NguoiChoi:WaitForChild("PlayerGui")
 
-local CONFIG = {
-	SO_LUONG_MAX = 3,
-	KHOANG_CACH = 10,
-	CHIEU_CAO_TB = 65,
+local CONFIG_GOC = {
 	MAU_CHU_DAO = Color3.fromRGB(0, 255, 170),
 	MAU_LOI = Color3.fromRGB(255, 60, 60),
 	MAU_NEN = Color3.fromRGB(15, 15, 20),
 	MAU_XAC_NHAN = Color3.fromRGB(255, 75, 75),
 	MAU_CHU = Color3.fromRGB(220, 220, 220)
+}
+
+local CONFIG = {
+	SO_LUONG_MAX = 3,
+	KHOANG_CACH = 10,
+	CHIEU_CAO_TB = 65,
+	MAU_CHU_DAO = CONFIG_GOC.MAU_CHU_DAO,
+	MAU_LOI = CONFIG_GOC.MAU_LOI,
+	MAU_NEN = CONFIG_GOC.MAU_NEN,
+	MAU_XAC_NHAN = CONFIG_GOC.MAU_XAC_NHAN,
+	MAU_CHU = CONFIG_GOC.MAU_CHU
 }
 
 local GuiChinh = nil
@@ -39,11 +47,23 @@ local Guithongbao = {}
 
 function Guithongbao.CapNhatChuDe(ThemeInfo)
 	if not ThemeInfo then return end
-	CONFIG.MAU_CHU_DAO = ThemeInfo.VienNeon or CONFIG.MAU_CHU_DAO
-	CONFIG.MAU_NEN = ThemeInfo.NenKhoi or ThemeInfo.Nen or CONFIG.MAU_NEN
-	CONFIG.MAU_CHU = ThemeInfo.Chu or CONFIG.MAU_CHU
+
+	if ThemeInfo.Ten == "Dark" then
+		CONFIG.MAU_CHU_DAO = CONFIG_GOC.MAU_CHU_DAO
+		CONFIG.MAU_NEN = CONFIG_GOC.MAU_NEN
+		CONFIG.MAU_CHU = CONFIG_GOC.MAU_CHU
+		CONFIG.MAU_XAC_NHAN = CONFIG_GOC.MAU_XAC_NHAN
+		CONFIG.MAU_LOI = CONFIG_GOC.MAU_LOI
+	else
+		CONFIG.MAU_CHU_DAO = ThemeInfo.VienNeon or CONFIG_GOC.MAU_CHU_DAO
+		CONFIG.MAU_NEN = ThemeInfo.NenKhoi or ThemeInfo.Nen or CONFIG_GOC.MAU_NEN
+		CONFIG.MAU_CHU = ThemeInfo.Chu or CONFIG_GOC.MAU_CHU
+		CONFIG.MAU_XAC_NHAN = ThemeInfo.VienNeon or CONFIG_GOC.MAU_XAC_NHAN
+		CONFIG.MAU_LOI = ThemeInfo.VienNeon or CONFIG_GOC.MAU_LOI
+	end
 
 	local ti = TweenInfo.new(0.3, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out)
+
 	for _, v in ipairs(ThongBaoDangHien) do
 		if v.Khung then TweenService:Create(v.Khung, ti, {BackgroundColor3 = CONFIG.MAU_NEN}):Play() end
 		if v.Stroke then TweenService:Create(v.Stroke, ti, {Color = CONFIG.MAU_CHU_DAO}):Play() end
@@ -54,7 +74,34 @@ function Guithongbao.CapNhatChuDe(ThemeInfo)
 
 	if KhungXacNhanHienTai and KhungXacNhanHienTai.Parent then
 		local kxn = KhungXacNhanHienTai:FindFirstChildOfClass("Frame")
-		if kxn then TweenService:Create(kxn, ti, {BackgroundColor3 = CONFIG.MAU_NEN}):Play() end
+		if kxn then 
+			TweenService:Create(kxn, ti, {BackgroundColor3 = CONFIG.MAU_NEN}):Play()
+			local strk = kxn:FindFirstChildOfClass("UIStroke")
+			if strk then TweenService:Create(strk, ti, {Color = CONFIG.MAU_XAC_NHAN}):Play() end
+			local nTieuDe = kxn:FindFirstChild("NhanTieuDe", true)
+			if nTieuDe then TweenService:Create(nTieuDe, ti, {TextColor3 = CONFIG.MAU_XAC_NHAN}):Play() end
+			local nNoiDung = kxn:FindFirstChild("NhanNoiDung", true)
+			if nNoiDung then TweenService:Create(nNoiDung, ti, {TextColor3 = CONFIG.MAU_CHU}):Play() end
+			local nutDongY = kxn:FindFirstChild("NutDongY", true)
+			if nutDongY then TweenService:Create(nutDongY, ti, {BackgroundColor3 = CONFIG.MAU_XAC_NHAN}):Play() end
+		end
+	end
+
+	if KhungLoiHienTai and KhungLoiHienTai.Parent then
+		local kLoi = KhungLoiHienTai:FindFirstChildOfClass("Frame")
+		if kLoi then
+			TweenService:Create(kLoi, ti, {BackgroundColor3 = CONFIG.MAU_NEN}):Play()
+			local scanlines = kLoi:FindFirstChild("Scanlines", true)
+			if scanlines then TweenService:Create(scanlines, ti, {ImageColor3 = CONFIG.MAU_LOI}):Play() end
+			local strk = kLoi:FindFirstChildOfClass("UIStroke")
+			if strk then TweenService:Create(strk, ti, {Color = CONFIG.MAU_LOI}):Play() end
+			local nTieuDe = kLoi:FindFirstChild("NhanTieuDe", true)
+			if nTieuDe then TweenService:Create(nTieuDe, ti, {TextColor3 = CONFIG.MAU_LOI}):Play() end
+			local nNoiDung = kLoi:FindFirstChild("NhanNoiDung", true)
+			if nNoiDung then TweenService:Create(nNoiDung, ti, {TextColor3 = CONFIG.MAU_CHU}):Play() end
+			local nutX = kLoi:FindFirstChild("NutX", true)
+			if nutX then TweenService:Create(nutX, ti, {BackgroundColor3 = CONFIG.MAU_LOI}):Play() end
+		end
 	end
 end
 
@@ -225,12 +272,13 @@ function Guithongbao.thongbaoloi(TieuDe, NoiDung)
 	KhungLoi.Size = UDim2.new(0, width, 0, height)
 	KhungLoi.Position = UDim2.new(0.5, 0, 0.5, 0)
 	KhungLoi.AnchorPoint = Vector2.new(0.5, 0.5)
-	KhungLoi.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+	KhungLoi.BackgroundColor3 = CONFIG.MAU_NEN
 	KhungLoi.BorderSizePixel = 0
 	KhungLoi.ClipsDescendants = true
 	KhungLoi.Parent = LopNen
 
 	local Scanlines = Instance.new("ImageLabel")
+	Scanlines.Name = "Scanlines"
 	Scanlines.Size = UDim2.new(1, 0, 1, 0)
 	Scanlines.BackgroundTransparency = 1
 	Scanlines.Image = "rbxassetid://7240608779"
@@ -246,6 +294,7 @@ function Guithongbao.thongbaoloi(TieuDe, NoiDung)
 	Stroke.Parent = KhungLoi
 
 	local NhanTieuDe = Instance.new("TextLabel")
+	NhanTieuDe.Name = "NhanTieuDe"
 	NhanTieuDe.Text = string.upper(tostring(TieuDe))
 	NhanTieuDe.Size = UDim2.new(1, -40, 0, 40)
 	NhanTieuDe.Position = UDim2.new(0, 20, 0, isMobile and 5 or 15)
@@ -257,16 +306,18 @@ function Guithongbao.thongbaoloi(TieuDe, NoiDung)
 	NhanTieuDe.Parent = KhungLoi
 
 	local TieuDeBong = NhanTieuDe:Clone()
+	TieuDeBong.Name = "TieuDeBong"
 	TieuDeBong.TextColor3 = Color3.fromRGB(0, 255, 255)
 	TieuDeBong.TextTransparency = 0.7
 	TieuDeBong.Parent = KhungLoi
 
 	local NhanNoiDung = Instance.new("TextLabel")
+	NhanNoiDung.Name = "NhanNoiDung"
 	NhanNoiDung.Text = tostring(NoiDung)
 	NhanNoiDung.Size = UDim2.new(1, -40, 0, 60)
 	NhanNoiDung.Position = UDim2.new(0, 20, 0, isMobile and 40 or 60)
 	NhanNoiDung.BackgroundTransparency = 1
-	NhanNoiDung.TextColor3 = Color3.fromRGB(240, 240, 240)
+	NhanNoiDung.TextColor3 = CONFIG.MAU_CHU
 	NhanNoiDung.Font = Enum.Font.Code
 	NhanNoiDung.TextSize = descSize
 	NhanNoiDung.TextWrapped = true
@@ -274,6 +325,7 @@ function Guithongbao.thongbaoloi(TieuDe, NoiDung)
 	NhanNoiDung.Parent = KhungLoi
 
 	local NutX = Instance.new("TextButton")
+	NutX.Name = "NutX"
 	NutX.Text = "[ ĐÓNG ]"
 	NutX.Size = UDim2.new(0, isMobile and 80 or 100, 0, isMobile and 28 or 32)
 	NutX.Position = UDim2.new(1, -15, 1, -15)
@@ -409,6 +461,7 @@ function Guithongbao.thongbaoxacnhan(TieuDe, NoiDung, CallbackDongY, CallbackHuy
 	Stroke.Parent = KhungXN
 
 	local NhanTieuDe = Instance.new("TextLabel")
+	NhanTieuDe.Name = "NhanTieuDe"
 	NhanTieuDe.Text = string.upper(tostring(TieuDe))
 	NhanTieuDe.Size = UDim2.new(1, -40, 0, 30)
 	NhanTieuDe.Position = UDim2.new(0, 20, 0, 10)
@@ -420,6 +473,7 @@ function Guithongbao.thongbaoxacnhan(TieuDe, NoiDung, CallbackDongY, CallbackHuy
 	NhanTieuDe.Parent = KhungXN
 
 	local NhanNoiDung = Instance.new("TextLabel")
+	NhanNoiDung.Name = "NhanNoiDung"
 	NhanNoiDung.Text = tostring(NoiDung)
 	NhanNoiDung.Size = UDim2.new(1, -40, 0, 50)
 	NhanNoiDung.Position = UDim2.new(0, 20, 0, 40)
@@ -449,6 +503,7 @@ function Guithongbao.thongbaoxacnhan(TieuDe, NoiDung, CallbackDongY, CallbackHuy
 	Instance.new("UICorner", NutHuy).CornerRadius = UDim.new(0, 4)
 
 	local NutDongY = Instance.new("TextButton")
+	NutDongY.Name = "NutDongY"
 	NutDongY.Text = "Yes"
 	NutDongY.Size = UDim2.new(0.48, 0, 1, 0)
 	NutDongY.Position = UDim2.new(1, 0, 0, 0)
