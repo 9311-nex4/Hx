@@ -274,7 +274,7 @@ local function BienHinh_NhanVat(char, root)
 		yOffset = (cloneHum.HipHeight - myHum.HipHeight) + (cloneRoot.Size.Y - root.Size.Y) / 2 
 	end)
 	for _, v in ipairs(cloneChar:GetDescendants()) do
-		if (v:IsA("Script") or v:IsA("LocalScript")) and v.Name ~= "Animate" then
+		if v:IsA("Script") or v:IsA("LocalScript") then
 			v:Destroy()
 		elseif v:IsA("BasePart") then
 			v.CanCollide = false
@@ -291,16 +291,45 @@ local function BienHinh_NhanVat(char, root)
 
 	cloneHum.PlatformStand = true
 
+	local myAnimator = myHum:FindFirstChildOfClass("Animator")
+	local cloneAnimator = cloneHum:FindFirstChildOfClass("Animator") or Instance.new("Animator", cloneHum)
+
+	local clonedTracks = {}
+
 	if Connections.AnimationSync then Connections.AnimationSync:Disconnect() end
-	local jumpState = Enum.HumanoidStateType.Jumping
 	Connections.AnimationSync = RunService.RenderStepped:Connect(function()
-		if myHum and cloneHum and cloneHum.Parent and myHum.Parent then
-			pcall(function()
-				cloneHum:Move(myHum.MoveDirection, false)
-				if myHum:GetState() == jumpState then cloneHum.Jump = true end
-			end)
+		if myHum and cloneHum and cloneHum.Parent and myHum.Parent and myAnimator then
+			local playingTracks = myAnimator:GetPlayingAnimationTracks()
+			local activeIds = {}
+
+			for _, track in ipairs(playingTracks) do
+				if track.Animation then
+					local id = track.Animation.AnimationId
+					activeIds[id] = true
+
+					if not clonedTracks[id] then
+						clonedTracks[id] = cloneAnimator:LoadAnimation(track.Animation)
+						clonedTracks[id]:Play()
+					end
+
+					local cloneTrack = clonedTracks[id]
+					if cloneTrack and cloneTrack.IsPlaying then
+						cloneTrack.TimePosition = track.TimePosition
+						cloneTrack:AdjustWeight(track.WeightCurrent)
+						cloneTrack:AdjustSpeed(track.Speed)
+					end
+				end
+			end
+
+			for id, cloneTrack in pairs(clonedTracks) do
+				if not activeIds[id] then
+					cloneTrack:Stop()
+					clonedTracks[id] = nil
+				end
+			end
 		else
 			if Connections.AnimationSync then Connections.AnimationSync:Disconnect() end
+			clonedTracks = {}
 		end
 	end)
 	return true, "Biến hình nhân vật thành công!"
