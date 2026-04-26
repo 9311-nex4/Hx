@@ -178,7 +178,8 @@ local function TaoCauTrucItemChoKhoi(Obj)
 							LuuGame()
 						end
 					}
-				},
+				}
+				,
 				SuKien = function(TrangThai)
 					SetLocked(TrangThai)
 					if not TrangThai then Khoi.CheckHuy(Obj) end
@@ -572,9 +573,6 @@ local function TaoGiaoDien()
 	KhungChinh.ClipsDescendants = true; KhungChinh.Visible = false; KhungChinh.Active = true
 	Instance.new("UICorner", KhungChinh).CornerRadius = UDim.new(0,14)
 
-	local GioiHamKichThuoc = Instance.new("UISizeConstraint", KhungChinh)
-	GioiHamKichThuoc.MinSize = Vector2.new(450,350)
-
 	local BieuTuong = Instance.new("ImageLabel", KhungChinh)
 	BieuTuong.Size = UDim2.fromOffset(0,0); BieuTuong.Position = UDim2.new(0.5,0,0.5,0)
 	BieuTuong.AnchorPoint = Vector2.new(0.5,0.5); BieuTuong.Image = CauHinh.Asset.Icon
@@ -582,7 +580,10 @@ local function TaoGiaoDien()
 	Instance.new("UICorner", BieuTuong).CornerRadius = UDim.new(0,10)
 
 	local KhungBaoNoiDung = Instance.new("Frame", KhungChinh)
-	KhungBaoNoiDung.Name = "KhungBaoNoiDung"; KhungBaoNoiDung.Size = UDim2.fromScale(1,1)
+	KhungBaoNoiDung.Name = "KhungBaoNoiDung"
+	KhungBaoNoiDung.Size = UDim2.fromOffset(550, 400)
+	KhungBaoNoiDung.Position = UDim2.new(0.5, 0, 0.5, 0)
+	KhungBaoNoiDung.AnchorPoint = Vector2.new(0.5, 0.5)
 	KhungBaoNoiDung.BackgroundTransparency = 1; KhungBaoNoiDung.ZIndex = 2
 
 	local TieuDe = Instance.new("TextLabel", KhungBaoNoiDung)
@@ -592,7 +593,7 @@ local function TaoGiaoDien()
 	TieuDe.TextSize = 18; TieuDe.TextXAlignment = Enum.TextXAlignment.Left
 	TieuDe.TextTransparency = 1; TieuDe.ZIndex = 5
 
-	local VungCuon = Instance.new("ScrollingFrame", KhungChinh)
+	local VungCuon = Instance.new("ScrollingFrame", KhungBaoNoiDung)
 	VungCuon.Size = UDim2.new(1,-24,1,-65); VungCuon.Position = UDim2.new(0.5,0,1,-12)
 	VungCuon.AnchorPoint = Vector2.new(0.5,1); VungCuon.BackgroundColor3 = CauHinh.Mau.NenList
 	VungCuon.BackgroundTransparency = 0.6; VungCuon.ScrollBarThickness = 6
@@ -605,20 +606,35 @@ local function TaoGiaoDien()
 	VungCuon.AutomaticCanvasSize = Enum.AutomaticSize.Y; VungCuon.CanvasSize = UDim2.new(0,0,0,0)
 
 	local CacPhanTu = { Khung = KhungChinh, Icon = BieuTuong, TieuDe = TieuDe, KhungNoiDung = VungCuon }
-	local CauHinhHieuUng = {
-		IconDau = CauHinh.KichThuoc.IconLon, IconCuoi = UDim2.new(0,40,0,40),
-		ViTriIconDau = UDim2.new(0.5,0,0.5,0), ViTriIconCuoi = UDim2.new(0,30,0,30),
-		KhungDau = CauHinh.KichThuoc.IconLon, KhungCuoi = UDim2.fromScale(0.55,0.6),
-		DoTrongSuotKhung = CauHinh.DoTrongSuotKhung or 0.4, KichThuocNutDongNay = UDim2.new(0,45,0,45)
-	}
+
+	local function TaoCauHinhHieuUng()
+		return {
+			IconDau = CauHinh.KichThuoc.IconLon, 
+			IconCuoi = UDim2.new(0, 40, 0, 40), 
+			ViTriIconDau = UDim2.new(0.5, 0, 0.5, 0), 
+			ViTriIconCuoi = UDim2.new(0, 30, 0, 30), 
+			KhungDau = CauHinh.KichThuoc.IconLon, 
+			KhungCuoi = UDim2.fromOffset(550, 400),
+			DoTrongSuotKhung = CauHinh.DoTrongSuotKhung or 0.4, 
+			KichThuocNutDongNay = UDim2.new(0, 45, 0, 45)
+		}
+	end
+
 	HoatAnh.KeoTha(KhungChinh, KhungChinh)
 
+	local LuongEpKichThuoc = nil
+	local LuongCapNhatTab = nil
 	local DangHanhDong = false
 
 	local function DongGiaoDien()
 		if DangHanhDong or not KhungChinh.Visible then return end
 		DangHanhDong = true
-		HoatAnh.DongGiaoDien(CacPhanTu, CauHinhHieuUng, function()
+		shared.HxUI_DangThuNho = true
+
+		if LuongEpKichThuoc then task.cancel(LuongEpKichThuoc) LuongEpKichThuoc = nil end
+		if LuongCapNhatTab then task.cancel(LuongCapNhatTab) LuongCapNhatTab = nil end
+
+		HoatAnh.DongGiaoDien(CacPhanTu, TaoCauHinhHieuUng(), function()
 			KhungChinh.Visible = false; DangHanhDong = false
 		end)
 	end
@@ -641,20 +657,57 @@ local function TaoGiaoDien()
 	CacPhanTu.VienNutDong = PhanTuToolbar.VienMin
 	CacPhanTu.Toolbar = PhanTuToolbar.Toolbar
 
+	if CacPhanTu.Toolbar then CacPhanTu.Toolbar.Parent = KhungBaoNoiDung end
+
+	KhungChinh:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+		if KhungChinh.AbsoluteSize.X < 150 then
+			KhungBaoNoiDung.Visible = false
+		else
+			KhungBaoNoiDung.Visible = true
+		end
+	end)
+
 	local function MoGiaoDien()
 		if DangHanhDong or KhungChinh.Visible then return end
 		DangHanhDong = true
 		KhungChinh.Visible = true
+		shared.HxUI_DangThuNho = false
+
+		if LuongEpKichThuoc then task.cancel(LuongEpKichThuoc) LuongEpKichThuoc = nil end
+		if LuongCapNhatTab then task.cancel(LuongCapNhatTab) LuongCapNhatTab = nil end
+
 		if CacPhanTu.NutDong then CacPhanTu.NutDong.Size = UDim2.fromOffset(35,35) end
-		CauHinhHieuUng.DoTrongSuotKhung = CauHinh.DoTrongSuotKhung or 0.4
-		HoatAnh.MoGiaoDien(CacPhanTu, CauHinhHieuUng)
-		task.delay(0.2, function() DangHanhDong = false end)
-		if PhanTuToolbar and PhanTuToolbar.CapNhatTab then task.delay(1.1, PhanTuToolbar.CapNhatTab) end
+
+		local hieuUng = TaoCauHinhHieuUng()
+		HoatAnh.MoGiaoDien(CacPhanTu, hieuUng)
+
+		LuongEpKichThuoc = task.delay(0.25, function() 
+			DangHanhDong = false
+			if KhungChinh and KhungChinh.Visible and not shared.HxUI_DangThuNho then 
+				KhungChinh.Size = hieuUng.KhungCuoi 
+			end 
+		end)
+
+		if PhanTuToolbar and PhanTuToolbar.CapNhatTab then 
+			LuongCapNhatTab = task.delay(1.1, function()
+				if KhungChinh.Visible and not shared.HxUI_DangThuNho then
+					PhanTuToolbar.CapNhatTab()
+				end
+			end)
+		end
 	end
 
 	NutMoUI.MouseButton1Click:Connect(function()
-		HoatAnh.NhanChuot(NutMoUI)
-		if KhungChinh.Visible then DongGiaoDien() else MoGiaoDien() end
+		NutMoUI.Size = UDim2.new(0, 45, 0, 45)
+		local TS = game:GetService("TweenService")
+		local thuNho = TS:Create(NutMoUI, TweenInfo.new(0.1), {Size = UDim2.new(0, 38, 0, 38)})
+		local phongTo = TS:Create(NutMoUI, TweenInfo.new(0.1), {Size = UDim2.new(0, 45, 0, 45)})
+		thuNho:Play()
+		task.delay(0.1, function()
+			if NutMoUI then phongTo:Play() end
+		end)
+
+		if KhungChinh.Visible then DongGiaoDien() else MoGiaoDien() end 
 	end)
 
 	SuKienBanPhim = UserInputService.InputBegan:Connect(function(DauVaoBanPhim, DaXuLy)
@@ -687,7 +740,15 @@ local function TaoGiaoDien()
 	Instance.new("UICorner", NutBienHinhNgoai).CornerRadius = UDim.new(1, 0)
 
 	NutBienHinhNgoai.MouseButton1Click:Connect(function()
-		HoatAnh.NhanChuot(NutBienHinhNgoai)
+		NutBienHinhNgoai.Size = UDim2.new(1, 0, 1, 0)
+		local TS = game:GetService("TweenService")
+		local thuNho = TS:Create(NutBienHinhNgoai, TweenInfo.new(0.1), {Size = UDim2.new(0.9, 0, 0.9, 0)})
+		local phongTo = TS:Create(NutBienHinhNgoai, TweenInfo.new(0.1), {Size = UDim2.new(1, 0, 1, 0)})
+		thuNho:Play()
+		task.delay(0.1, function()
+			if NutBienHinhNgoai then phongTo:Play() end
+		end)
+
 		local ok, msg = Transform_Logic.DoTransform()
 		if msg then ThongBao(ok and "Thành công" or "Lỗi", msg, 2) end
 	end)
