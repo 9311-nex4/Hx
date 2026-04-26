@@ -11,6 +11,9 @@ AutoClickLogic.DangChay     = false
 AutoClickLogic.TocDo        = 500
 AutoClickLogic.AnTatCa      = false
 AutoClickLogic.OnToaDoDoi   = nil
+AutoClickLogic.OnClickMoi   = nil
+
+local SO_DIEM_TOI_DA = 20
 
 local PlayerGui           = NguoiChoiSV.LocalPlayer:WaitForChild("PlayerGui")
 local VungHienThiDiem     = nil
@@ -149,7 +152,7 @@ function AutoClickLogic.CapNhatDiem(DanhSach)
 
 		local VongTrong = Instance.new("Frame", VongNgoai)
 		VongTrong.Name                   = "VongTrong"
-		VongTrong.Size                   = UDim2.fromScale(0.3, 0.3)
+		VongTrong.Size                   = UDim2.fromOffset(11, 11)
 		VongTrong.Position               = UDim2.fromScale(0.5, 0.5)
 		VongTrong.AnchorPoint            = Vector2.new(0.5, 0.5)
 		VongTrong.BackgroundColor3       = Color3.fromRGB(0, 210, 255)
@@ -196,6 +199,26 @@ function AutoClickLogic.BatTatAnToanBo(TrangThai)
 	AutoClickLogic.CapNhatDiem(AutoClickLogic.DanhSachDiem)
 end
 
+function AutoClickLogic.AnDiem(Index)
+	local Diem = AutoClickLogic.DanhSachDiem[Index]
+	if not Diem then return end
+	Diem.DaAn = true
+	local ui = DanhSachUICham[Index]
+	if ui then ui.Visible = false end
+end
+
+function AutoClickLogic.HienDiem(Index)
+	local Diem = AutoClickLogic.DanhSachDiem[Index]
+	if not Diem then return end
+	Diem.DaAn = false
+	local ui = DanhSachUICham[Index]
+	if ui and not AutoClickLogic.AnTatCa then ui.Visible = true end
+end
+
+function AutoClickLogic.CoTheThem()
+	return #AutoClickLogic.DanhSachDiem < SO_DIEM_TOI_DA
+end
+
 function AutoClickLogic.ResetTatCa()
 	AutoClickLogic.BatTatAutoClick(false)
 	table.clear(AutoClickLogic.DanhSachDiem)
@@ -203,23 +226,29 @@ function AutoClickLogic.ResetTatCa()
 end
 
 local function HieuUngChopSang(ChamUI)
-	if not ChamUI or not ChamUI.Parent then return end
-	if AutoClickLogic.TocDo < 60 then return end
-	local VongTrong = ChamUI:FindFirstChild("VongTrong")
-	if not VongTrong then return end
+	pcall(function()
+		if not ChamUI or not ChamUI.Parent then return end
+		if AutoClickLogic.TocDo < 200 then return end
 
-	local tSang = DichVuTween:Create(VongTrong, TweenInfo.new(0.05), {
-		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-		Size             = UDim2.fromOffset(30, 30)
-	})
-	tSang:Play()
-	tSang.Completed:Wait()
-	if VongTrong.Parent then
-		DichVuTween:Create(VongTrong, TweenInfo.new(0.15), {
-			BackgroundColor3 = Color3.fromRGB(0, 210, 255),
-			Size             = UDim2.fromOffset(26, 26)
-		}):Play()
-	end
+		local VongNgoai = ChamUI:FindFirstChild("VongNgoai")
+		if not VongNgoai then return end
+		local VongTrong = VongNgoai:FindFirstChild("VongTrong")
+		if not VongTrong then return end
+
+		local tSang = DichVuTween:Create(VongTrong, TweenInfo.new(0.05), {
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			Size             = UDim2.fromOffset(30, 30)
+		})
+		tSang:Play()
+		tSang.Completed:Once(function()
+			if VongTrong and VongTrong.Parent then
+				DichVuTween:Create(VongTrong, TweenInfo.new(0.15), {
+					BackgroundColor3 = Color3.fromRGB(0, 210, 255),
+					Size             = UDim2.fromOffset(11, 11)
+				}):Play()
+			end
+		end)
+	end)
 end
 
 function AutoClickLogic.BatTatAutoClick(TrangThai)
@@ -253,14 +282,18 @@ function AutoClickLogic.BatTatAutoClick(TrangThai)
 			end
 
 			local danhSach = AutoClickLogic.DanhSachDiem
+			local soLuong  = #danhSach
 
-			if #danhSach == 0 then
+			if soLuong == 0 then
 				task.wait(0.1)
 				continue
 			end
 
-			for ThuTu, Diem in ipairs(danhSach) do
+			for ThuTu = 1, soLuong do
 				if not AutoClickLogic.DangChay then break end
+
+				local Diem   = danhSach[ThuTu]
+				if not Diem then break end
 
 				local ChamUI = DanhSachUICham[ThuTu]
 				local X = math.floor(Diem.X)
@@ -285,10 +318,14 @@ function AutoClickLogic.BatTatAutoClick(TrangThai)
 					end
 				end)
 
+				if AutoClickLogic.OnClickMoi then
+					pcall(AutoClickLogic.OnClickMoi, ThuTu, X, Y)
+				end
+
 				if ChamUI and ChamUI.Parent and not AutoClickLogic.AnTatCa and not Diem.DaAn then
 					ChamUI.Visible = true
 					task.spawn(function()
-						pcall(function() HieuUngChopSang(ChamUI) end)
+						HieuUngChopSang(ChamUI)
 					end)
 				end
 
