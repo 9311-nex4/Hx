@@ -77,6 +77,10 @@ LogicKhoi.SuKienThayDoi = Instance.new("BindableEvent")
 
 local CapNhatUI, UpdateBox, TaoGizmo, HieuUngPop, XoaGizmo, ToggleUI, HuyChon, ToggleSpeed, ToggleProp, ToggleXuyenTuong
 
+local function LuuCfg()
+	if LogicKhoi.OnConfigChanged then LogicKhoi.OnConfigChanged() end
+end
+
 local function TaoScale(obj)
 	if not obj then return end
 	local s = obj:FindFirstChild("UIScale") or Instance.new("UIScale", obj)
@@ -526,6 +530,7 @@ local function TaoUI()
 		btn.MouseButton1Click:Connect(function()
 			if id==2 and State.Tool==2 then State.ModeScale = State.ModeScale==1 and 2 or 1 else State.ModeScale=1; State.Tool=id end
 			CapNhatUI(); local t = next_fn(State.DangChon); if t then TaoGizmo(t:IsA("Model") and t.PrimaryPart or t) end
+			LuuCfg()
 		end)
 	end
 	MakeTool(CAIDAT.ICONS.MOVE,1,1); MakeTool(CAIDAT.ICONS.SCALE,2,2); MakeTool(CAIDAT.ICONS.ROTATE,3,3)
@@ -556,10 +561,11 @@ local function TaoUI()
 		LuuHistory(old, LayState())
 		local n = sub:FindFirstChild("BtnShape")
 		if n and n:FindFirstChild("Stroke") then PlayTw(n.Stroke, TweenInfo.new(0.2), { Color=col, Transparency=0 }) end
+		LuuCfg()
 	end)
-	MakeSub("BtnGrid", "rbxassetid://"..CAIDAT.ICONS.GRID, 2, function() State.BatLuoi = not State.BatLuoi; CapNhatUI() end)
+	MakeSub("BtnGrid", "rbxassetid://"..CAIDAT.ICONS.GRID, 2, function() State.BatLuoi = not State.BatLuoi; CapNhatUI(); LuuCfg() end)
 	MakeSub("BtnProp", CAIDAT.ICONS.PROP, 3, ToggleProp)
-	MakeSub("BtnMulti", "rbxassetid://"..CAIDAT.ICONS.SEL, 4, function() State.DaChon = not State.DaChon; CapNhatUI() end)
+	MakeSub("BtnMulti", "rbxassetid://"..CAIDAT.ICONS.SEL, 4, function() State.DaChon = not State.DaChon; CapNhatUI(); LuuCfg() end)
 	MakeSub("BtnUndo", "rbxassetid://"..CAIDAT.ICONS.UNDO, 5, function() DoHistory(History.Undo, History.Redo) end)
 	MakeSub("BtnRedo", "rbxassetid://"..CAIDAT.ICONS.REDO, 6, function() DoHistory(History.Redo, History.Undo) end)
 	MakeSub("BtnWeld", CAIDAT.ICONS.WELD, 7, function()
@@ -1012,9 +1018,9 @@ local Touch = Enum.UserInputType.Touch
 UIS.InputBegan:Connect(function(i, p)
 	if p then return end
 	local kc = i.KeyCode
-	if kc == Enum.KeyCode.One then State.Tool = 1; CapNhatUI()
-	elseif kc == Enum.KeyCode.Two then State.Tool = 2; CapNhatUI()
-	elseif kc == Enum.KeyCode.Three then State.Tool = 3; CapNhatUI() end
+	if kc == Enum.KeyCode.One then State.Tool = 1; CapNhatUI(); LuuCfg()
+	elseif kc == Enum.KeyCode.Two then State.Tool = 2; CapNhatUI(); LuuCfg()
+	elseif kc == Enum.KeyCode.Three then State.Tool = 3; CapNhatUI(); LuuCfg() end
 	local ut = i.UserInputType
 	if ut == MB1 or ut == Touch then tClick = os.clock(); pClick = i.Position end
 end)
