@@ -25,9 +25,7 @@ local Storage = {
 	SavedParts = {},
 	CreatedObjects = {},
 	OrigTransparency = {},
-	OrigCollision = {},
-	OrigTargetModel = nil,
-	OrigTargetCFrame = nil,
+	OrigCollision = {}
 }
 
 local Connections = {
@@ -74,6 +72,10 @@ local function CapNhatOutline()
 	local old = PlayerGui:FindFirstChild("TransformSelectionBox")
 	if old then old:Destroy() end
 	local sel = State.SelectedPart
+	if sel and not sel:IsDescendantOf(workspace) then
+		State.SelectedPart = nil
+		sel = nil
+	end
 	local modeValid = (State.CurrentMode == "NhanVat" and State.CanSelect_Char) or (State.CurrentMode ~= "NhanVat" and State.CanSelect_Main)
 	if State.ShowOutline and sel and modeValid then
 		local box = Instance.new("SelectionBox")
@@ -154,11 +156,6 @@ function Transform.Undo()
 		if obj then obj:Destroy() end
 	end
 	table.clear(Storage.CreatedObjects)
-	if Storage.OrigTargetModel and Storage.OrigTargetCFrame then
-		pcall(function() Storage.OrigTargetModel:SetPrimaryPartCFrame(Storage.OrigTargetCFrame) end)
-		Storage.OrigTargetModel = nil
-		Storage.OrigTargetCFrame = nil
-	end
 	local char = Player.Character
 	if char then
 		local r = char:FindFirstChild("HumanoidRootPart")
@@ -169,7 +166,7 @@ end
 
 local function BienHinh_ToanThan(char, root)
 	local sel = State.SelectedPart
-	if not sel or not sel.Parent then return false, "Chưa chọn Part!" end
+	if not sel or not sel:IsDescendantOf(workspace) then return false, "Chưa chọn Part hoặc Part đã biến mất!" end
 	LuuTrangThai(char)
 	AnToanThan(char)
 	local clone = sel:Clone()
@@ -180,7 +177,7 @@ local function BienHinh_ToanThan(char, root)
 	local orientationGoc = sel.CFrame - sel.CFrame.Position
 	clone.CFrame = CFrame.new(root.CFrame.Position) * orientationGoc
 	local w = Instance.new("WeldConstraint")
-	w.Part0 = root; w.Part1 = clone; w.Parent = root
+	w.Part0 = root; w.Part1 = clone; w.Parent = clone
 	clone.Parent = char
 	table.insert(Storage.CreatedObjects, clone)
 	return true, "Biến hình toàn thân thành công!"
@@ -200,7 +197,7 @@ local function BienHinh_TungPhan(char)
 	for logicName, realList in next, PART_MAP do
 		if State.EnabledParts[logicName] then
 			local partDeBienHinh = Storage.SavedParts[logicName] or sel
-			if partDeBienHinh then
+			if partDeBienHinh and partDeBienHinh:IsDescendantOf(workspace) then
 				local target
 				for _, realName in ipairs(realList) do
 					local c = char:FindFirstChild(realName)
@@ -216,7 +213,7 @@ local function BienHinh_TungPhan(char)
 					local orientationGoc = partDeBienHinh.CFrame - partDeBienHinh.CFrame.Position
 					clone.CFrame = CFrame.new(target.CFrame.Position) * orientationGoc
 					local w = Instance.new("WeldConstraint")
-					w.Part0 = target; w.Part1 = clone; w.Parent = target
+					w.Part0 = target; w.Part1 = clone; w.Parent = clone
 					clone.Parent = char
 					table.insert(Storage.CreatedObjects, clone)
 					AnBoPhan(char, logicName)
@@ -226,14 +223,14 @@ local function BienHinh_TungPhan(char)
 	end
 	if not hasPart then 
 		HienNhanVatThat()
-		return false, "Chưa có Part nào được chọn hoặc lưu trữ cho các phần đang bật!" 
+		return false, "Chưa có Part hợp lệ nào được chọn!" 
 	end
 	return true, "Biến hình từng phần thành công!"
 end
 
 local function BienHinh_NhanVat(char, root)
 	local sel = State.SelectedPart
-	if not sel then return false, "Chưa chọn Nhân vật mục tiêu!" end
+	if not sel or not sel:IsDescendantOf(workspace) then return false, "Mục tiêu không hợp lệ hoặc đã chết!" end
 	local targetModel = sel:FindFirstAncestorWhichIsA("Model")
 	if not targetModel or not targetModel:FindFirstChildWhichIsA("Humanoid") then
 		return false, "Đối tượng chọn không phải là Nhân Vật!"
@@ -245,13 +242,9 @@ local function BienHinh_NhanVat(char, root)
 	LuuTrangThai(char)
 	AnToanThan(char)
 
-	Storage.OrigTargetModel = targetModel
-	Storage.OrigTargetCFrame = targetModel:GetPrimaryPartCFrame()
 	targetModel.Archivable = true
-
 	local cloneChar = targetModel:Clone()
 	cloneChar.Name = "Morph_Character"
-	pcall(function() targetModel:SetPrimaryPartCFrame(CFrame.new(0, -20000, 0)) end)
 
 	local cloneRoot = cloneChar:FindFirstChild("HumanoidRootPart")
 	local cloneHum = cloneChar:FindFirstChildWhichIsA("Humanoid")
@@ -288,24 +281,23 @@ local function BienHinh_NhanVat(char, root)
 		elseif v:IsA("BasePart") then
 			v.CanCollide = false
 			v.Massless = true
-			if v ~= cloneRoot then v.Anchored = false end
+			v.Anchored = false
 		end
 	end
 
-	cloneRoot.Anchored = false
 	cloneRoot.CFrame = root.CFrame * CFrame.new(0, yOffset, 0)
 
 	local w = Instance.new("WeldConstraint")
-	w.Part0 = root; w.Part1 = cloneRoot; w.Parent = root
+	w.Part0 = root; w.Part1 = cloneRoot; w.Parent = cloneRoot
 	cloneChar.Parent = char
 	table.insert(Storage.CreatedObjects, cloneChar)
 
 	cloneHum.PlatformStand = true
 
-	local myAnimator = myHum:FindFirstChildOfClass("Animator")
 	local cloneAnimator = cloneHum:FindFirstChildOfClass("Animator") or Instance.new("Animator", cloneHum)
-
 	local targetAnims = {}
+	local loadedTracks = {}
+
 	local animateScript = targetModel:FindFirstChild("Animate")
 	if animateScript then
 		for _, child in ipairs(animateScript:GetChildren()) do
@@ -341,7 +333,10 @@ local function BienHinh_NhanVat(char, root)
 				end
 
 				if animToPlay then
-					currentTrack = cloneAnimator:LoadAnimation(animToPlay)
+					if not loadedTracks[animToPlay] then
+						loadedTracks[animToPlay] = cloneAnimator:LoadAnimation(animToPlay)
+					end
+					currentTrack = loadedTracks[animToPlay]
 					currentTrack:Play(0.2)
 				end
 			end
@@ -352,6 +347,8 @@ local function BienHinh_NhanVat(char, root)
 		else
 			if Connections.AnimationSync then Connections.AnimationSync:Disconnect() end
 			if currentTrack then currentTrack:Stop() end
+			for _, track in pairs(loadedTracks) do track:Stop() end
+			table.clear(loadedTracks)
 		end
 	end)
 
@@ -409,7 +406,10 @@ end
 
 function Transform.SavePart(partLogicName)
 	local sel = State.SelectedPart
-	if sel then Storage.SavedParts[partLogicName] = sel:Clone(); return true end
+	if sel and sel:IsDescendantOf(workspace) then 
+		Storage.SavedParts[partLogicName] = sel:Clone()
+		return true 
+	end
 	return false
 end
 
