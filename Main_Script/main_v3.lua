@@ -5,7 +5,6 @@ local NguoiChoi        = Players.LocalPlayer
 local PlayerGui        = NguoiChoi:WaitForChild("PlayerGui")
 local PlayerScripts    = NguoiChoi:WaitForChild("PlayerScripts")
 
-
 local ThuMucUI
 local KiemTraHui, KetQuaHui = pcall(function() return gethui() end)
 local KiemTraCoreGui, KetQuaCoreGui = pcall(function() return game:GetService("CoreGui") end)
