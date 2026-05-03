@@ -7,614 +7,914 @@
 <link rel="icon" type="image/png" href="favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@300;400;600&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg:       #060a0d;
-    --bg2:      #0b1117;
-    --bg3:      #0f1820;
-    --neon:     #00e5ff;
-    --neon2:    #00ff88;
-    --neon3:    #ff6b35;
-    --neon4:    #c87bff;
-    --text:     #ddeaf2;
-    --muted:    #728a9a;
-    --border:   rgba(0,229,255,0.1);
-    --border2:  rgba(0,229,255,0.22);
-    --card:     rgba(11,17,23,0.85);
-    --glow:     0 0 24px rgba(0,229,255,0.35);
-    --glow2:    0 0 48px rgba(0,229,255,0.18);
-    --glow3:    0 0 60px rgba(0,229,255,0.08);
-  }
+:root {
+  --bg:     #060a0d;
+  --bg2:    #0b1117;
+  --bg3:    #0f1820;
+  --neon:   #00e5ff;
+  --neon2:  #00ff88;
+  --neon3:  #ff6b35;
+  --neon4:  #c87bff;
+  --text:   #ddeaf2;
+  --muted:  #728a9a;
+  --border: rgba(0,229,255,0.1);
+  --border2:rgba(0,229,255,0.22);
+  --card:   rgba(11,17,23,0.85);
+  --glow:   0 0 24px rgba(0,229,255,0.35);
+  --glow2:  0 0 48px rgba(0,229,255,0.18);
+}
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 16px;
-    line-height: 1.6;
-    overflow-x: hidden;
-  }
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Rajdhani',sans-serif;
+  font-size:16px;
+  line-height:1.6;
+  overflow-x:hidden;
+  cursor:none;
+}
 
-  #bg-canvas {
-    position: fixed; inset: 0; z-index: 0;
-    pointer-events: none; opacity: 0.45;
-  }
+#progress-bar{
+  position:fixed;top:0;left:0;height:2px;
+  background:linear-gradient(90deg,var(--neon2),var(--neon),var(--neon4));
+  z-index:999;width:0%;
+  transition:width .1s linear;
+  box-shadow:0 0 10px var(--neon),0 0 20px var(--neon);
+}
 
-  body::before {
-    content: '';
-    position: fixed; inset: 0; z-index: 0;
-    background-image:
-      linear-gradient(rgba(0,229,255,0.025) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,229,255,0.025) 1px, transparent 1px);
-    background-size: 56px 56px;
-    pointer-events: none;
-  }
+#cursor{
+  position:fixed;width:12px;height:12px;
+  border-radius:50%;background:var(--neon);
+  pointer-events:none;z-index:9999;
+  transform:translate(-50%,-50%);
+  transition:transform .1s,width .2s,height .2s,background .2s;
+  box-shadow:0 0 10px var(--neon),0 0 20px var(--neon),0 0 40px rgba(0,229,255,0.4);
+  mix-blend-mode:screen;
+}
+#cursor-ring{
+  position:fixed;width:36px;height:36px;
+  border-radius:50%;border:1px solid rgba(0,229,255,0.5);
+  pointer-events:none;z-index:9998;
+  transform:translate(-50%,-50%);
+  transition:transform .15s ease,width .25s,height .25s,border-color .2s;
+}
+body:has(a:hover,button:hover,.module-row:hover,.feat-card:hover,.theme-card:hover) #cursor{
+  width:20px;height:20px;background:var(--neon4);
+  box-shadow:0 0 15px var(--neon4),0 0 30px var(--neon4);
+}
+body:has(a:hover,button:hover,.module-row:hover,.feat-card:hover,.theme-card:hover) #cursor-ring{
+  width:54px;height:54px;border-color:rgba(200,123,255,0.5);
+}
 
-  ::-webkit-scrollbar { width: 3px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--neon); border-radius: 2px; }
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
 
-  .container { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 1; }
-  section { padding: 80px 0; }
+#grain{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  opacity:.022;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size:200px 200px;
+  animation:grain-shift 0.3s steps(1) infinite;
+}
+@keyframes grain-shift{
+  0%{transform:translate(0,0);}10%{transform:translate(-2%,-3%);}
+  20%{transform:translate(3%,1%);}30%{transform:translate(-1%,4%);}
+  40%{transform:translate(4%,-2%);}50%{transform:translate(-3%,3%);}
+  60%{transform:translate(1%,-4%);}70%{transform:translate(-4%,2%);}
+  80%{transform:translate(2%,4%);}90%{transform:translate(-2%,-1%);}
+  100%{transform:translate(3%,2%);}
+}
 
-  nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    padding: 14px 40px;
-    display: flex; align-items: center; justify-content: space-between;
-    background: rgba(6,10,13,0.9);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border);
-    gap: 16px;
-  }
-  .nav-logo {
-    font-family: 'Orbitron', monospace;
-    font-weight: 900; font-size: 17px;
-    color: var(--neon);
-    letter-spacing: 3px;
-    text-shadow: var(--glow);
-    flex-shrink: 0;
-  }
-  .nav-logo span { color: var(--text); }
-  .nav-links { display: flex; gap: 24px; }
-  .nav-links a {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; color: var(--muted);
-    text-decoration: none; letter-spacing: 1.5px;
-    transition: color .2s;
-    position: relative;
-  }
-  .nav-links a::after {
-    content: '';
-    position: absolute; bottom: -4px; left: 0; right: 0;
-    height: 1px; background: var(--neon);
-    transform: scaleX(0); transform-origin: left;
-    transition: transform .25s;
-  }
-  .nav-links a:hover { color: var(--neon); }
-  .nav-links a:hover::after { transform: scaleX(1); }
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background-image:
+    linear-gradient(rgba(0,229,255,0.02) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,229,255,0.02) 1px,transparent 1px);
+  background-size:56px 56px;
+  pointer-events:none;
+  animation:grid-pulse 8s ease-in-out infinite;
+}
+@keyframes grid-pulse{
+  0%,100%{opacity:1;}
+  50%{opacity:0.4;}
+}
 
-  .nav-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.aurora{
+  position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+}
+.aurora::before,.aurora::after{
+  content:'';position:absolute;
+  border-radius:50%;filter:blur(120px);
+  animation:aurora-float 20s ease-in-out infinite;
+}
+.aurora::before{
+  width:60vw;height:40vh;top:-10vh;left:-10vw;
+  background:radial-gradient(ellipse,rgba(0,229,255,0.06) 0%,transparent 70%);
+  animation-delay:0s;
+}
+.aurora::after{
+  width:50vw;height:50vh;bottom:-10vh;right:-10vw;
+  background:radial-gradient(ellipse,rgba(200,123,255,0.05) 0%,transparent 70%);
+  animation-delay:-10s;
+}
+@keyframes aurora-float{
+  0%,100%{transform:translate(0,0) scale(1);}
+  33%{transform:translate(5vw,3vh) scale(1.1);}
+  66%{transform:translate(-3vw,5vh) scale(0.9);}
+}
 
-  .lang-toggle {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; letter-spacing: 2px;
-    background: transparent;
-    border: 1px solid var(--border2);
-    color: var(--muted);
-    padding: 5px 10px; border-radius: 2px;
-    cursor: pointer; transition: all .2s;
-    display: flex; gap: 4px; align-items: center;
-  }
-  .lang-toggle:hover { border-color: var(--neon); color: var(--neon); }
-  .lang-toggle .lt-vi,
-  .lang-toggle .lt-en {
-    transition: color .2s;
-  }
-  .lang-toggle.is-en .lt-en { color: var(--neon); }
-  .lang-toggle.is-vi .lt-vi { color: var(--neon); }
-  .lang-toggle .lt-sep { color: var(--border2); }
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--neon2),var(--neon),var(--neon4));border-radius:2px;}
 
-  .nav-badge {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; color: var(--bg);
-    background: var(--neon); padding: 5px 14px;
-    border-radius: 2px; font-weight: 600;
-    text-decoration: none; letter-spacing: 1px;
-    transition: box-shadow .2s, transform .2s;
-  }
-  .nav-badge:hover { box-shadow: var(--glow); transform: translateY(-1px); }
+.container{max-width:1100px;margin:0 auto;padding:0 32px;position:relative;z-index:2;}
+section{padding:80px 0;}
 
-  #hero {
-    min-height: 100vh;
-    display: flex; align-items: center;
-    padding-top: 80px;
-    position: relative; overflow: hidden;
-  }
-  .hero-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; z-index: 1; }
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:14px 40px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(6,10,13,0.75);
+  backdrop-filter:blur(30px) saturate(180%);
+  border-bottom:1px solid var(--border);
+  gap:16px;
+  transition:background .3s,box-shadow .3s;
+}
+nav.scrolled{
+  background:rgba(6,10,13,0.95);
+  box-shadow:0 4px 40px rgba(0,0,0,0.6),0 1px 0 rgba(0,229,255,0.1);
+}
+.nav-logo{
+  font-family:'Orbitron',monospace;
+  font-weight:900;font-size:17px;
+  color:var(--neon);letter-spacing:3px;
+  text-shadow:0 0 20px rgba(0,229,255,0.6),0 0 40px rgba(0,229,255,0.3);
+  flex-shrink:0;position:relative;
+}
+.nav-logo::after{
+  content:'';position:absolute;bottom:-2px;left:0;right:0;
+  height:1px;background:linear-gradient(90deg,var(--neon),transparent);
+  animation:logo-line 3s ease-in-out infinite;
+}
+@keyframes logo-line{
+  0%,100%{opacity:0.4;transform:scaleX(0.5);}
+  50%{opacity:1;transform:scaleX(1);}
+}
+.nav-logo span{color:var(--text);animation:blink 2s step-end infinite;}
+.nav-links{display:flex;gap:24px;}
+.nav-links a{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:var(--muted);
+  text-decoration:none;letter-spacing:1.5px;
+  transition:color .2s;position:relative;
+}
+.nav-links a::after{
+  content:'';position:absolute;bottom:-4px;left:0;right:0;
+  height:1px;background:linear-gradient(90deg,var(--neon2),var(--neon));
+  transform:scaleX(0);transform-origin:left;
+  transition:transform .3s cubic-bezier(0.4,0,0.2,1);
+  box-shadow:0 0 8px var(--neon);
+}
+.nav-links a:hover{color:var(--neon);}
+.nav-links a:hover::after{transform:scaleX(1);}
+.nav-links a.active-link{color:var(--neon);}
+.nav-links a.active-link::after{transform:scaleX(1);}
 
-  .hero-eyebrow {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; color: var(--neon);
-    letter-spacing: 4px; text-transform: uppercase;
-    margin-bottom: 24px;
-    opacity: 0; animation: fadeUp .6s .2s forwards;
-  }
-  .hero-eyebrow::before { content: '// '; color: var(--muted); }
+.nav-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
 
-  .hero-title {
-    font-family: 'Orbitron', monospace;
-    font-size: clamp(44px, 7.5vw, 96px);
-    font-weight: 900; line-height: 0.95;
-    letter-spacing: -2px;
-    opacity: 0; animation: fadeUp .6s .4s forwards;
-  }
-  .hero-title .line1 { color: var(--text); display: block; }
-  .hero-title .line2 {
-    color: transparent;
-    -webkit-text-stroke: 1.5px var(--neon);
-    display: block;
-    filter: drop-shadow(0 0 12px rgba(0,229,255,0.3));
-  }
-  .hero-title:hover .line2 { animation: glitch .4s steps(2) 1; }
-  .hero-title .cursor {
-    display: inline-block;
-    width: 4px; height: .82em;
-    background: var(--neon);
-    margin-left: 6px;
-    vertical-align: middle;
-    animation: blink 1s step-end infinite;
-    box-shadow: 0 0 12px var(--neon);
-  }
+.lang-toggle{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;letter-spacing:2px;
+  background:transparent;
+  border:1px solid var(--border2);
+  color:var(--muted);padding:5px 10px;border-radius:2px;
+  cursor:none;transition:all .2s;
+  display:flex;gap:4px;align-items:center;
+}
+.lang-toggle:hover{border-color:var(--neon);color:var(--neon);box-shadow:0 0 15px rgba(0,229,255,0.2);}
+.lang-toggle.is-en .lt-en{color:var(--neon);}
+.lang-toggle.is-vi .lt-vi{color:var(--neon);}
+.lang-toggle .lt-sep{color:var(--border2);}
 
-  .hero-desc {
-    margin-top: 28px;
-    max-width: 560px;
-    font-size: 18px; font-weight: 400;
-    color: #9ab4c4; line-height: 1.75;
-    opacity: 0; animation: fadeUp .6s .6s forwards;
-  }
+.nav-badge{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:var(--bg);
+  background:var(--neon);padding:5px 14px;
+  border-radius:2px;font-weight:600;
+  text-decoration:none;letter-spacing:1px;
+  transition:box-shadow .2s,transform .2s;
+  position:relative;overflow:hidden;
+}
+.nav-badge::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent);
+  transform:translateX(-100%);
+  animation:nav-shine 4s ease-in-out infinite;
+}
+@keyframes nav-shine{
+  0%,60%{transform:translateX(-100%);}
+  80%{transform:translateX(100%);}
+  100%{transform:translateX(100%);}
+}
+.nav-badge:hover{box-shadow:0 0 30px rgba(0,229,255,0.6),0 0 60px rgba(0,229,255,0.3);transform:translateY(-2px);}
 
-  .hero-actions {
-    margin-top: 44px;
-    display: flex; gap: 14px; flex-wrap: wrap;
-    opacity: 0; animation: fadeUp .6s .8s forwards;
-  }
-  .btn {
-    display: inline-flex; align-items: center; gap: 10px;
-    padding: 13px 28px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px; font-weight: 600;
-    letter-spacing: 1.5px; text-decoration: none;
-    border-radius: 2px; transition: all .25s;
-    cursor: pointer; border: none;
-    position: relative; overflow: hidden;
-  }
-  .btn-primary {
-    background: var(--neon); color: var(--bg);
-  }
-  .btn-primary::after {
-    content: '';
-    position: absolute; inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-    transform: translateX(-100%);
-    transition: transform .45s;
-  }
-  .btn-primary:hover::after { transform: translateX(100%); }
-  .btn-primary:hover { box-shadow: 0 0 36px rgba(0,229,255,0.55); transform: translateY(-2px); }
-  .btn svg { width: 15px; height: 15px; flex-shrink: 0; }
-  .btn-outline {
-    background: transparent;
-    border: 1px solid var(--border2);
-    color: var(--neon);
-  }
-  .btn-outline:hover { background: rgba(0,229,255,0.07); border-color: var(--neon); box-shadow: 0 0 20px rgba(0,229,255,0.12); }
+#hero{
+  min-height:100vh;
+  display:flex;align-items:center;
+  padding-top:80px;position:relative;overflow:hidden;
+}
+.hero-inner{max-width:1100px;margin:0 auto;padding:0 32px;z-index:2;}
 
-  .hero-stats {
-    margin-top: 64px;
-    display: flex; gap: 48px; flex-wrap: wrap;
-    opacity: 0; animation: fadeUp .6s 1s forwards;
-    border-top: 1px solid var(--border);
-    padding-top: 40px;
-  }
-  .stat-num {
-    font-family: 'Orbitron', monospace;
-    font-size: 32px; font-weight: 900;
-    color: var(--neon);
-    text-shadow: 0 0 20px rgba(0,229,255,0.4);
-  }
-  .stat-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; color: var(--muted);
-    letter-spacing: 2.5px; text-transform: uppercase;
-    margin-top: 5px;
-  }
+.hero-eyebrow{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:var(--neon);
+  letter-spacing:4px;text-transform:uppercase;
+  margin-bottom:24px;
+  opacity:0;animation:fadeUp .6s .2s forwards;
+  position:relative;display:inline-block;
+}
+.hero-eyebrow::before{content:'// ';color:var(--muted);}
+.hero-eyebrow::after{
+  content:'';position:absolute;right:-16px;top:50%;
+  width:6px;height:10px;background:var(--neon);
+  transform:translateY(-50%);
+  animation:blink .8s step-end infinite;
+  box-shadow:0 0 8px var(--neon);
+}
 
-  .sec-header { margin-bottom: 56px; }
-  .sec-tag {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; color: var(--neon);
-    letter-spacing: 3px; text-transform: uppercase;
-    margin-bottom: 14px; display: block;
-    opacity: 0.8;
-  }
-  .sec-title {
-    font-family: 'Orbitron', monospace;
-    font-size: clamp(26px, 4vw, 40px);
-    font-weight: 700; line-height: 1.15;
-    letter-spacing: -0.5px;
-  }
-  .sec-title em {
-    font-style: normal;
-    color: transparent;
-    -webkit-text-stroke: 1px var(--neon);
-  }
-  .sec-sub {
-    margin-top: 14px;
-    font-size: 17px; color: #8aa4b4; font-weight: 400;
-    max-width: 520px; line-height: 1.7;
-  }
+.hero-title{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(44px,7.5vw,96px);
+  font-weight:900;line-height:0.95;
+  letter-spacing:-2px;
+  opacity:0;animation:fadeUp .6s .4s forwards;
+}
+.hero-title .line1{color:var(--text);display:block;position:relative;}
+.hero-title .line2{
+  color:transparent;
+  -webkit-text-stroke:1.5px var(--neon);
+  display:block;
+  position:relative;
+  animation:hue-shift 6s linear infinite;
+}
+@keyframes hue-shift{
+  0%{filter:drop-shadow(0 0 12px rgba(0,229,255,0.5)) hue-rotate(0deg);}
+  50%{filter:drop-shadow(0 0 24px rgba(0,229,255,0.8)) hue-rotate(20deg);}
+  100%{filter:drop-shadow(0 0 12px rgba(0,229,255,0.5)) hue-rotate(0deg);}
+}
+.hero-title:hover .line1{animation:glitch-line1 .4s steps(2) 1;}
+.hero-title:hover .line2{animation:glitch-line2 .4s steps(2) 1;}
+@keyframes glitch-line1{
+  0%{transform:translate(0);}
+  20%{transform:translate(-3px,1px);clip-path:inset(10% 0 60% 0);}
+  40%{transform:translate(3px,-1px);clip-path:inset(50% 0 20% 0);}
+  60%{transform:translate(-2px,2px);clip-path:inset(30% 0 40% 0);}
+  80%{transform:translate(2px,-2px);clip-path:inset(70% 0 5% 0);}
+  100%{transform:translate(0);clip-path:none;}
+}
+@keyframes glitch-line2{
+  0%{transform:translate(0);text-shadow:none;}
+  25%{transform:translate(4px,0);text-shadow:-4px 0 #ff0080,4px 0 #00e5ff;}
+  50%{transform:translate(-4px,0);text-shadow:4px 0 #ff0080,-4px 0 #00e5ff;clip-path:inset(20% 0 50% 0);}
+  75%{transform:translate(2px,-1px);text-shadow:-2px 0 #00e5ff,2px 0 #ff0080;}
+  100%{transform:translate(0);text-shadow:none;clip-path:none;}
+}
+.hero-title .cursor{
+  display:inline-block;
+  width:4px;height:.82em;
+  background:var(--neon);margin-left:6px;
+  vertical-align:middle;
+  animation:blink 1s step-end infinite;
+  box-shadow:0 0 12px var(--neon),0 0 24px rgba(0,229,255,0.5);
+}
 
-  .features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-    gap: 2px;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  .feat-card {
-    background: var(--bg2);
-    padding: 32px 28px;
-    position: relative;
-    transition: background .25s;
-    overflow: hidden;
-  }
-  .feat-card::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(0,229,255,0.04), transparent 60%);
-    opacity: 0; transition: opacity .3s;
-  }
-  .feat-card::after {
-    content: '';
-    position: absolute; top: 0; right: 0;
-    width: 20px; height: 20px;
-    border-top: 1px solid var(--neon);
-    border-right: 1px solid var(--neon);
-    opacity: 0; transition: opacity .3s;
-  }
-  .feat-card:hover { background: var(--bg3); }
-  .feat-card:hover::before,
-  .feat-card:hover::after { opacity: 1; }
+.hero-desc{
+  margin-top:28px;max-width:560px;
+  font-size:18px;font-weight:400;
+  color:#9ab4c4;line-height:1.75;
+  opacity:0;animation:fadeUp .6s .6s forwards;
+}
 
-  .feat-icon {
-    width: 48px; height: 48px;
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 6px;
-    margin-bottom: 20px;
-    transition: box-shadow .3s, transform .3s;
-    flex-shrink: 0;
-  }
-  .feat-icon svg { width: 22px; height: 22px; }
-  .feat-card:hover .feat-icon { transform: scale(1.08); }
+.hero-actions{
+  margin-top:44px;display:flex;gap:14px;flex-wrap:wrap;
+  opacity:0;animation:fadeUp .6s .8s forwards;
+}
+.btn{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:13px 28px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;font-weight:600;
+  letter-spacing:1.5px;text-decoration:none;
+  border-radius:2px;transition:all .25s;
+  cursor:none;border:none;
+  position:relative;overflow:hidden;
+}
+.btn-primary{background:var(--neon);color:var(--bg);}
+.btn-primary::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent);
+  transform:translateX(-100%);
+  transition:transform .5s;
+}
+.btn-primary:hover::before{transform:translateX(100%);}
+.btn-primary::after{
+  content:'';position:absolute;inset:-1px;
+  background:linear-gradient(90deg,var(--neon2),var(--neon),var(--neon4),var(--neon));
+  background-size:300%;
+  z-index:-1;border-radius:2px;
+  animation:border-anim 4s linear infinite;
+  opacity:0;transition:opacity .3s;
+}
+.btn-primary:hover::after{opacity:1;}
+@keyframes border-anim{0%{background-position:0%;}100%{background-position:300%;}}
+.btn-primary:hover{
+  box-shadow:0 0 40px rgba(0,229,255,0.6),0 0 80px rgba(0,229,255,0.3);
+  transform:translateY(-3px) scale(1.02);
+}
+.btn svg{width:15px;height:15px;flex-shrink:0;}
+.btn-outline{
+  background:transparent;
+  border:1px solid var(--border2);
+  color:var(--neon);
+}
+.btn-outline::after{
+  content:'';position:absolute;inset:0;
+  background:var(--neon);transform:scaleX(0);transform-origin:left;
+  transition:transform .3s cubic-bezier(0.4,0,0.2,1);z-index:-1;
+}
+.btn-outline:hover::after{transform:scaleX(1);}
+.btn-outline:hover{color:var(--bg);border-color:var(--neon);box-shadow:0 0 25px rgba(0,229,255,0.3);}
 
-  .feat-card.c-cyan .feat-icon  { color: var(--neon);  background: rgba(0,229,255,0.07);  border: 1px solid rgba(0,229,255,0.2); }
-  .feat-card.c-green .feat-icon { color: var(--neon2); background: rgba(0,255,136,0.07);  border: 1px solid rgba(0,255,136,0.2); }
-  .feat-card.c-orange .feat-icon{ color: var(--neon3); background: rgba(255,107,53,0.07); border: 1px solid rgba(255,107,53,0.2); }
-  .feat-card.c-purple .feat-icon{ color: var(--neon4); background: rgba(200,123,255,0.07);border: 1px solid rgba(200,123,255,0.2); }
+.hero-stats{
+  margin-top:64px;display:flex;gap:48px;flex-wrap:wrap;
+  opacity:0;animation:fadeUp .6s 1s forwards;
+  border-top:1px solid var(--border);padding-top:40px;
+  position:relative;
+}
+.hero-stats::before{
+  content:'';position:absolute;top:0;left:0;width:60px;height:1px;
+  background:linear-gradient(90deg,var(--neon2),var(--neon));
+  box-shadow:0 0 10px var(--neon);
+}
+.stat-num{
+  font-family:'Orbitron',monospace;
+  font-size:32px;font-weight:900;
+  color:var(--neon);
+  text-shadow:0 0 20px rgba(0,229,255,0.4),0 0 40px rgba(0,229,255,0.2);
+  position:relative;display:inline-block;
+}
+.stat-num::after{
+  content:'';position:absolute;bottom:-4px;left:0;right:0;
+  height:1px;background:linear-gradient(90deg,var(--neon),transparent);
+  opacity:0.5;
+}
+.stat-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;color:var(--muted);
+  letter-spacing:2.5px;text-transform:uppercase;margin-top:5px;
+}
 
-  .feat-card.c-cyan:hover .feat-icon  { box-shadow: 0 0 24px rgba(0,229,255,0.35);   }
-  .feat-card.c-green:hover .feat-icon { box-shadow: 0 0 24px rgba(0,255,136,0.35);   }
-  .feat-card.c-orange:hover .feat-icon{ box-shadow: 0 0 24px rgba(255,107,53,0.35);  }
-  .feat-card.c-purple:hover .feat-icon{ box-shadow: 0 0 24px rgba(200,123,255,0.35); }
+.sec-header{margin-bottom:56px;}
+.sec-tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;color:var(--neon);
+  letter-spacing:3px;text-transform:uppercase;
+  margin-bottom:14px;display:block;opacity:0.8;
+  animation:tag-glow 3s ease-in-out infinite;
+}
+@keyframes tag-glow{
+  0%,100%{text-shadow:none;}
+  50%{text-shadow:0 0 10px rgba(0,229,255,0.5);}
+}
+.sec-title{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(26px,4vw,40px);
+  font-weight:700;line-height:1.15;letter-spacing:-0.5px;
+}
+.sec-title em{
+  font-style:normal;color:transparent;
+  -webkit-text-stroke:1px var(--neon);
+  animation:hue-shift 6s linear infinite;
+}
+.sec-sub{
+  margin-top:14px;font-size:17px;color:#8aa4b4;
+  font-weight:400;max-width:520px;line-height:1.7;
+}
 
-  .feat-title {
-    font-family: 'Orbitron', monospace;
-    font-size: 12px; font-weight: 700;
-    letter-spacing: 1px; margin-bottom: 10px;
-    text-transform: uppercase;
-  }
-  .feat-card.c-cyan .feat-title  { color: var(--neon);  }
-  .feat-card.c-green .feat-title { color: var(--neon2); }
-  .feat-card.c-orange .feat-title{ color: var(--neon3); }
-  .feat-card.c-purple .feat-title{ color: var(--neon4); }
+.features-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(270px,1fr));
+  gap:2px;border:1px solid var(--border);
+  border-radius:4px;overflow:hidden;
+  position:relative;
+}
+.features-grid::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(0,229,255,0.03) 0%,transparent 50%,rgba(200,123,255,0.02) 100%);
+  pointer-events:none;z-index:0;
+}
+.feat-card{
+  background:var(--bg2);padding:32px 28px;
+  position:relative;transition:background .3s,transform .3s;
+  overflow:hidden;z-index:1;
+  transform-style:preserve-3d;
+}
+.feat-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(0,229,255,0.06),transparent 60%);
+  opacity:0;transition:opacity .3s;
+}
+.feat-card::after{
+  content:'';position:absolute;top:0;right:0;
+  width:24px;height:24px;
+  border-top:1px solid var(--neon);
+  border-right:1px solid var(--neon);
+  opacity:0;transition:opacity .3s,box-shadow .3s;
+}
+.feat-card:hover{background:var(--bg3);transform:translateY(-2px);}
+.feat-card:hover::before,.feat-card:hover::after{opacity:1;}
+.feat-card:hover::after{box-shadow:4px -4px 12px rgba(0,229,255,0.3);}
 
-  .feat-desc {
-    font-size: 15px; color: #7a9aaa; font-weight: 400; line-height: 1.65;
-  }
+.feat-card .scan-line{
+  position:absolute;inset:0;overflow:hidden;pointer-events:none;
+}
+.feat-card .scan-line::after{
+  content:'';position:absolute;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(0,229,255,0.15),transparent);
+  transform:translateY(-100%);
+  transition:none;
+}
+.feat-card:hover .scan-line::after{
+  animation:card-scan .6s ease forwards;
+}
+@keyframes card-scan{
+  0%{transform:translateY(-100%);}
+  100%{transform:translateY(1000%);}
+}
 
-  .modules-list { display: flex; flex-direction: column; gap: 3px; }
-  .module-row {
-    display: grid;
-    grid-template-columns: 210px 1fr auto;
-    align-items: center; gap: 24px;
-    padding: 20px 24px;
-    background: var(--bg2);
-    border-radius: 2px;
-    border-left: 2px solid transparent;
-    transition: all .2s;
-    cursor: default;
-  }
-  .module-row:hover {
-    background: var(--bg3);
-    border-left-color: var(--neon);
-    padding-left: 30px;
-    box-shadow: inset 0 0 30px rgba(0,229,255,0.03);
-  }
-  .module-name {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px; font-weight: 600;
-    color: var(--neon);
-  }
-  .module-file {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; color: var(--muted);
-    margin-top: 3px; letter-spacing: 0.5px;
-  }
-  .module-desc {
-    font-size: 15px; color: var(--text); font-weight: 400; line-height: 1.6;
-  }
-  .module-tag {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; letter-spacing: 1px;
-    padding: 4px 10px; border-radius: 2px;
-    white-space: nowrap; font-weight: 600;
-  }
-  .tag-core   { background: rgba(0,229,255,0.1);  color: var(--neon);  border: 1px solid rgba(0,229,255,0.2); }
-  .tag-util   { background: rgba(0,255,136,0.1);  color: var(--neon2); border: 1px solid rgba(0,255,136,0.2); }
-  .tag-logic  { background: rgba(255,107,53,0.1); color: var(--neon3); border: 1px solid rgba(255,107,53,0.2); }
-  .tag-config { background: rgba(200,123,255,0.1);color: var(--neon4); border: 1px solid rgba(200,123,255,0.2); }
+.feat-icon{
+  width:48px;height:48px;display:flex;
+  align-items:center;justify-content:center;
+  border-radius:6px;margin-bottom:20px;
+  transition:box-shadow .3s,transform .3s;
+  flex-shrink:0;position:relative;
+}
+.feat-icon::before{
+  content:'';position:absolute;inset:-4px;
+  border-radius:8px;
+  opacity:0;transition:opacity .3s;
+  animation:icon-pulse 2s ease-in-out infinite;
+}
+.feat-card:hover .feat-icon::before{opacity:1;}
+.feat-card:hover .feat-icon{transform:scale(1.1) rotateY(10deg);}
+@keyframes icon-pulse{
+  0%,100%{transform:scale(1);}50%{transform:scale(1.08);}
+}
+.feat-icon svg{width:22px;height:22px;}
 
-  .themes-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-    gap: 10px;
-  }
-  .theme-card {
-    border-radius: 4px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    transition: transform .2s, box-shadow .2s, border-color .2s;
-    cursor: default;
-  }
-  .theme-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-    border-color: var(--border2);
-  }
-  .theme-preview {
-    height: 80px; display: flex; align-items: center;
-    justify-content: center; gap: 6px; padding: 12px;
-    position: relative;
-  }
-  .theme-dot { width: 10px; height: 10px; border-radius: 50%; }
-  .theme-bar { height: 4px; border-radius: 2px; flex: 1; opacity: 0.6; }
-  .theme-info { padding: 10px 14px; background: var(--bg2); }
-  .theme-name {
-    font-family: 'Orbitron', monospace;
-    font-size: 10px; font-weight: 700;
-    letter-spacing: 1.5px; color: var(--text);
-  }
-  .theme-neon {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px; color: var(--muted); margin-top: 3px;
-  }
+.feat-card.c-cyan .feat-icon{color:var(--neon);background:rgba(0,229,255,0.07);border:1px solid rgba(0,229,255,0.2);}
+.feat-card.c-green .feat-icon{color:var(--neon2);background:rgba(0,255,136,0.07);border:1px solid rgba(0,255,136,0.2);}
+.feat-card.c-orange .feat-icon{color:var(--neon3);background:rgba(255,107,53,0.07);border:1px solid rgba(255,107,53,0.2);}
+.feat-card.c-purple .feat-icon{color:var(--neon4);background:rgba(200,123,255,0.07);border:1px solid rgba(200,123,255,0.2);}
 
-  .scripts-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 14px;
-  }
-  .script-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 4px; padding: 28px;
-    position: relative; overflow: hidden;
-    transition: border-color .25s, box-shadow .25s;
-  }
-  .script-card:hover { border-color: rgba(0,229,255,0.35); box-shadow: 0 0 40px rgba(0,229,255,0.08); }
-  .script-card::after {
-    content: '';
-    position: absolute; top: 0; right: 0;
-    width: 90px; height: 90px;
-    background: radial-gradient(circle at top right, rgba(0,229,255,0.06), transparent 70%);
-  }
-  .script-version {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; color: var(--muted);
-    letter-spacing: 2px; text-transform: uppercase;
-    margin-bottom: 10px;
-  }
-  .script-name {
-    font-family: 'Orbitron', monospace;
-    font-size: 19px; font-weight: 700;
-    color: var(--neon); margin-bottom: 14px;
-  }
-  .script-desc {
-    font-size: 15px; color: #7a9aaa;
-    font-weight: 400; line-height: 1.65;
-    margin-bottom: 20px;
-  }
-  .script-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-  .script-tag {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; padding: 3px 10px;
-    border-radius: 2px; background: rgba(0,229,255,0.05);
-    color: var(--neon); border: 1px solid rgba(0,229,255,0.13);
-  }
+.feat-card.c-cyan:hover .feat-icon{box-shadow:0 0 30px rgba(0,229,255,0.5),0 0 60px rgba(0,229,255,0.2);}
+.feat-card.c-green:hover .feat-icon{box-shadow:0 0 30px rgba(0,255,136,0.5),0 0 60px rgba(0,255,136,0.2);}
+.feat-card.c-orange:hover .feat-icon{box-shadow:0 0 30px rgba(255,107,53,0.5),0 0 60px rgba(255,107,53,0.2);}
+.feat-card.c-purple:hover .feat-icon{box-shadow:0 0 30px rgba(200,123,255,0.5),0 0 60px rgba(200,123,255,0.2);}
 
-  .usage-container { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 40px; }
-  .tabs-nav { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 32px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
-  .tab-btn {
-    background: transparent; border: 1px solid transparent; color: var(--muted);
-    font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; letter-spacing: 1px;
-    padding: 12px 24px; border-radius: 4px; cursor: pointer; transition: all 0.3s;
-  }
-  .tab-btn:hover { color: var(--text); background: rgba(0,229,255,0.05); }
-  .tab-btn.active { color: var(--neon); background: rgba(0,229,255,0.1); border-color: var(--border); box-shadow: var(--glow); }
+.feat-card.c-cyan .feat-icon::before{background:radial-gradient(circle,rgba(0,229,255,0.1),transparent);}
+.feat-card.c-green .feat-icon::before{background:radial-gradient(circle,rgba(0,255,136,0.1),transparent);}
+.feat-card.c-orange .feat-icon::before{background:radial-gradient(circle,rgba(255,107,53,0.1),transparent);}
+.feat-card.c-purple .feat-icon::before{background:radial-gradient(circle,rgba(200,123,255,0.1),transparent);}
 
-  .tab-pane { display: none; animation: fadeIn 0.4s ease; }
-  .tab-pane.active { display: block; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.feat-title{
+  font-family:'Orbitron',monospace;
+  font-size:12px;font-weight:700;
+  letter-spacing:1px;margin-bottom:10px;text-transform:uppercase;
+}
+.feat-card.c-cyan .feat-title{color:var(--neon);}
+.feat-card.c-green .feat-title{color:var(--neon2);}
+.feat-card.c-orange .feat-title{color:var(--neon3);}
+.feat-card.c-purple .feat-title{color:var(--neon4);}
+.feat-desc{font-size:15px;color:#7a9aaa;font-weight:400;line-height:1.65;}
 
-  .api-heading { font-family: 'Orbitron', monospace; font-size: 18px; font-weight: 700; color: var(--text); margin: 32px 0 16px 0; display: flex; align-items: center; gap: 12px; }
-  .api-heading::before { content: ''; display: inline-block; width: 8px; height: 8px; background: var(--neon); border-radius: 50%; box-shadow: var(--glow); }
-  .api-heading:first-child { margin-top: 0; }
-  .api-desc { font-size: 16px; color: var(--muted); margin-bottom: 20px; line-height: 1.7; }
+.modules-list{display:flex;flex-direction:column;gap:3px;}
+.module-row{
+  display:grid;
+  grid-template-columns:210px 1fr auto;
+  align-items:center;gap:24px;
+  padding:20px 24px;
+  background:var(--bg2);border-radius:2px;
+  border-left:2px solid transparent;
+  transition:all .3s cubic-bezier(0.4,0,0.2,1);
+  cursor:none;position:relative;overflow:hidden;
+}
+.module-row::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,rgba(0,229,255,0.04),transparent);
+  transform:translateX(-100%);
+  transition:transform .4s cubic-bezier(0.4,0,0.2,1);
+}
+.module-row:hover::before{transform:translateX(0);}
+.module-row:hover{
+  background:var(--bg3);
+  border-left-color:var(--neon);
+  padding-left:30px;
+  box-shadow:inset 0 0 40px rgba(0,229,255,0.04),0 0 20px rgba(0,229,255,0.04);
+}
+.module-name{
+  font-family:'JetBrains Mono',monospace;
+  font-size:13px;font-weight:600;color:var(--neon);
+  transition:text-shadow .3s;
+}
+.module-row:hover .module-name{
+  text-shadow:0 0 12px rgba(0,229,255,0.6);
+}
+.module-file{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:0.5px;
+}
+.module-desc{font-size:15px;color:var(--text);font-weight:400;line-height:1.6;}
+.module-tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;letter-spacing:1px;
+  padding:4px 10px;border-radius:2px;
+  white-space:nowrap;font-weight:600;
+  transition:box-shadow .3s;
+}
+.module-row:hover .tag-core{box-shadow:0 0 10px rgba(0,229,255,0.3);}
+.module-row:hover .tag-util{box-shadow:0 0 10px rgba(0,255,136,0.3);}
+.module-row:hover .tag-logic{box-shadow:0 0 10px rgba(255,107,53,0.3);}
+.module-row:hover .tag-config{box-shadow:0 0 10px rgba(200,123,255,0.3);}
+.tag-core{background:rgba(0,229,255,0.1);color:var(--neon);border:1px solid rgba(0,229,255,0.2);}
+.tag-util{background:rgba(0,255,136,0.1);color:var(--neon2);border:1px solid rgba(0,255,136,0.2);}
+.tag-logic{background:rgba(255,107,53,0.1);color:var(--neon3);border:1px solid rgba(255,107,53,0.2);}
+.tag-config{background:rgba(200,123,255,0.1);color:var(--neon4);border:1px solid rgba(200,123,255,0.2);}
 
-  .code-block {
-    background: #040810;
-    border: 1px solid var(--border);
-    border-radius: 4px; overflow: hidden;
-    margin-bottom: 24px;
-  }
-  .code-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 11px 20px;
-    background: var(--bg2);
-    border-bottom: 1px solid var(--border);
-  }
-  .code-dots { display: flex; gap: 6px; }
-  .code-dot { width: 10px; height: 10px; border-radius: 50%; }
-  .d1 { background: #ff5f57; }
-  .d2 { background: #febc2e; }
-  .d3 { background: #28c840; }
-  .code-lang {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase;
-  }
-  .code-copy {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; color: var(--neon);
-    background: transparent; border: 1px solid var(--border2);
-    padding: 4px 12px; border-radius: 2px; cursor: pointer;
-    transition: all .2s; letter-spacing: 1px;
-  }
-  .code-copy:hover { background: rgba(0,229,255,0.1); box-shadow: 0 0 12px rgba(0,229,255,0.15); }
-  .code-body { padding: 24px; overflow-x: auto; }
-  pre { margin: 0; }
-  code { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.85; }
-  .c-kw  { color: #c87bff; }
-  .c-fn  { color: #00e5ff; }
-  .c-str { color: #00ff88; }
-  .c-cm  { color: #3a5060; font-style: italic; }
-  .c-op  { color: #ff6b35; }
-  .c-num { color: #ffd700; }
+.themes-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
+  gap:10px;
+}
+.theme-card{
+  border-radius:4px;overflow:hidden;
+  border:1px solid var(--border);
+  transition:transform .3s cubic-bezier(0.4,0,0.2,1),box-shadow .3s,border-color .3s;
+  cursor:none;position:relative;
+}
+.theme-card::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,0.03),transparent);
+  pointer-events:none;opacity:0;transition:opacity .3s;
+}
+.theme-card:hover::after{opacity:1;}
+.theme-card:hover{
+  transform:translateY(-6px) scale(1.02);
+  box-shadow:0 15px 50px rgba(0,0,0,0.6),0 0 30px rgba(0,229,255,0.08);
+  border-color:var(--border2);
+}
+.theme-preview{
+  height:80px;display:flex;align-items:center;
+  justify-content:center;gap:6px;padding:12px;
+  position:relative;overflow:hidden;
+}
+.theme-preview::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);
+}
+.theme-dot{width:10px;height:10px;border-radius:50%;transition:transform .3s;}
+.theme-bar{height:4px;border-radius:2px;flex:1;opacity:0.6;transition:opacity .3s;}
+.theme-card:hover .theme-dot:last-child{transform:scale(1.4);}
+.theme-card:hover .theme-bar{opacity:0.9;}
+.theme-info{padding:10px 14px;background:var(--bg2);}
+.theme-name{
+  font-family:'Orbitron',monospace;
+  font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text);
+}
+.theme-neon{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:3px;}
 
-  .disclaimer-box {
-    background: rgba(255,107,53,0.04);
-    border: 1px solid rgba(255,107,53,0.18);
-    border-radius: 4px; padding: 36px;
-    position: relative; overflow: hidden;
-  }
-  .disclaimer-box::before {
-    content: '!';
-    position: absolute; right: -8px; top: -20px;
-    font-family: 'Orbitron', monospace;
-    font-size: 130px; font-weight: 900;
-    color: rgba(255,107,53,0.04); line-height: 1;
-    pointer-events: none;
-  }
-  .disclaimer-title {
-    font-family: 'Orbitron', monospace;
-    font-size: 13px; font-weight: 700;
-    color: var(--neon3); letter-spacing: 2px;
-    margin-bottom: 16px; text-transform: uppercase;
-    display: flex; align-items: center; gap: 10px;
-  }
-  .disclaimer-title svg { width: 16px; height: 16px; flex-shrink: 0; }
-  .disclaimer-text {
-    font-size: 15px; color: #7a9aaa; font-weight: 400; line-height: 1.85;
-  }
-  .disclaimer-text strong { color: var(--text); font-weight: 600; }
+.scripts-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:14px;
+}
+.script-card{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:4px;padding:28px;
+  position:relative;overflow:hidden;
+  transition:border-color .3s,box-shadow .3s,transform .3s;
+}
+.script-card::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at top right,rgba(0,229,255,0.06),transparent 70%);
+  opacity:0;transition:opacity .3s;
+}
+.script-card::after{
+  content:'';position:absolute;top:0;left:0;right:0;
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--neon),transparent);
+  transform:scaleX(0);
+  transition:transform .4s cubic-bezier(0.4,0,0.2,1);
+  box-shadow:0 0 8px var(--neon);
+}
+.script-card:hover::before{opacity:1;}
+.script-card:hover::after{transform:scaleX(1);}
+.script-card:hover{
+  border-color:rgba(0,229,255,0.35);
+  box-shadow:0 0 50px rgba(0,229,255,0.1),0 10px 40px rgba(0,0,0,0.4);
+  transform:translateY(-3px);
+}
+.script-version{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;color:var(--muted);
+  letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;
+}
+.script-name{
+  font-family:'Orbitron',monospace;
+  font-size:19px;font-weight:700;
+  color:var(--neon);margin-bottom:14px;
+  transition:text-shadow .3s;
+}
+.script-card:hover .script-name{
+  text-shadow:0 0 20px rgba(0,229,255,0.5);
+}
+.script-desc{font-size:15px;color:#7a9aaa;font-weight:400;line-height:1.65;margin-bottom:20px;}
+.script-tags{display:flex;flex-wrap:wrap;gap:6px;}
+.script-tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;padding:3px 10px;
+  border-radius:2px;background:rgba(0,229,255,0.05);
+  color:var(--neon);border:1px solid rgba(0,229,255,0.13);
+  transition:background .2s,box-shadow .2s;
+}
+.script-card:hover .script-tag{
+  background:rgba(0,229,255,0.08);
+}
 
-  footer {
-    border-top: 1px solid var(--border);
-    padding: 48px 0;
-    position: relative; z-index: 1;
-  }
-  .footer-inner {
-    max-width: 1100px; margin: 0 auto; padding: 0 32px;
-    display: flex; align-items: center; justify-content: space-between;
-    flex-wrap: wrap; gap: 24px;
-  }
-  .footer-logo {
-    font-family: 'Orbitron', monospace;
-    font-weight: 900; font-size: 15px;
-    color: var(--neon); letter-spacing: 3px;
-    text-shadow: 0 0 16px rgba(0,229,255,0.3);
-  }
-  .footer-copy {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; color: var(--muted); letter-spacing: 1px;
-  }
-  .footer-links { display: flex; gap: 20px; }
-  .footer-links a {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; color: var(--muted);
-    text-decoration: none; letter-spacing: 1px;
-    transition: color .2s;
-  }
-  .footer-links a:hover { color: var(--neon); }
+.usage-container{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:4px;padding:40px;
+  position:relative;overflow:hidden;
+}
+.usage-container::before{
+  content:'';position:absolute;top:0;left:0;right:0;
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--neon),transparent);
+  animation:sweep 4s ease-in-out infinite;
+}
+@keyframes sweep{
+  0%{transform:scaleX(0);opacity:0;}
+  50%{transform:scaleX(1);opacity:1;}
+  100%{transform:scaleX(0);opacity:0;transform-origin:right;}
+}
+.tabs-nav{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:32px;border-bottom:1px solid var(--border);padding-bottom:16px;}
+.tab-btn{
+  background:transparent;border:1px solid transparent;color:var(--muted);
+  font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;letter-spacing:1px;
+  padding:12px 24px;border-radius:4px;cursor:none;transition:all .3s;
+  position:relative;overflow:hidden;
+}
+.tab-btn::before{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--neon),transparent);
+  transform:scaleX(0);transition:transform .3s;
+}
+.tab-btn:hover{color:var(--text);background:rgba(0,229,255,0.05);}
+.tab-btn:hover::before{transform:scaleX(1);}
+.tab-btn.active{
+  color:var(--neon);background:rgba(0,229,255,0.1);
+  border-color:var(--border);
+  box-shadow:0 0 20px rgba(0,229,255,0.15),inset 0 0 20px rgba(0,229,255,0.05);
+}
+.tab-btn.active::before{transform:scaleX(1);}
 
-  .neon-divider {
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--neon), transparent);
-    opacity: 0.25;
-  }
+.tab-pane{display:none;animation:tab-in .35s cubic-bezier(0.4,0,0.2,1);}
+.tab-pane.active{display:block;}
+@keyframes tab-in{
+  from{opacity:0;transform:translateY(12px);}
+  to{opacity:1;transform:translateY(0);}
+}
 
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(28px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes blink { 50% { opacity: 0; } }
-  @keyframes scanline {
-    0%   { transform: translateY(-100%); }
-    100% { transform: translateY(100vh); }
-  }
-  @keyframes glitch {
-    0%   { text-shadow: 2px 0 #ff0080, -2px 0 #00e5ff; }
-    25%  { text-shadow: -2px 0 #ff0080, 2px 0 #00e5ff; clip-path: inset(20% 0 40% 0); }
-    50%  { text-shadow: 2px 0 #00e5ff, -2px 0 #ff0080; clip-path: inset(60% 0 10% 0); }
-    75%  { text-shadow: -2px 0 #00e5ff, 2px 0 #ff0080; clip-path: inset(5% 0 70% 0); }
-    100% { text-shadow: none; clip-path: none; }
-  }
+.api-heading{
+  font-family:'Orbitron',monospace;font-size:18px;font-weight:700;
+  color:var(--text);margin:32px 0 16px 0;
+  display:flex;align-items:center;gap:12px;
+}
+.api-heading::before{
+  content:'';display:inline-block;width:8px;height:8px;
+  background:var(--neon);border-radius:50%;
+  box-shadow:0 0 10px var(--neon),0 0 20px rgba(0,229,255,0.5);
+  animation:dot-pulse 2s ease-in-out infinite;
+}
+@keyframes dot-pulse{
+  0%,100%{box-shadow:0 0 10px var(--neon),0 0 20px rgba(0,229,255,0.5);}
+  50%{box-shadow:0 0 20px var(--neon),0 0 40px rgba(0,229,255,0.7),0 0 60px rgba(0,229,255,0.3);}
+}
+.api-heading:first-child{margin-top:0;}
+.api-desc{font-size:16px;color:var(--muted);margin-bottom:20px;line-height:1.7;}
 
-  .scanline {
-    position: fixed; left: 0; right: 0; height: 2px;
-    background: linear-gradient(transparent, rgba(0,229,255,0.04), transparent);
-    z-index: 0; pointer-events: none;
-    animation: scanline 10s linear infinite;
-  }
+.code-block{
+  background:#040810;border:1px solid var(--border);
+  border-radius:4px;overflow:hidden;margin-bottom:24px;
+  transition:border-color .3s,box-shadow .3s;
+}
+.code-block:hover{border-color:rgba(0,229,255,0.25);box-shadow:0 0 30px rgba(0,229,255,0.06);}
+.code-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:11px 20px;background:var(--bg2);
+  border-bottom:1px solid var(--border);
+}
+.code-dots{display:flex;gap:6px;}
+.code-dot{
+  width:10px;height:10px;border-radius:50%;
+  transition:box-shadow .2s;
+}
+.code-block:hover .code-dot.d1{box-shadow:0 0 8px #ff5f57;}
+.code-block:hover .code-dot.d2{box-shadow:0 0 8px #febc2e;}
+.code-block:hover .code-dot.d3{box-shadow:0 0 8px #28c840;}
+.d1{background:#ff5f57;}.d2{background:#febc2e;}.d3{background:#28c840;}
+.code-lang{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;
+}
+.code-copy{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;color:var(--neon);
+  background:transparent;border:1px solid var(--border2);
+  padding:4px 12px;border-radius:2px;cursor:none;
+  transition:all .2s;letter-spacing:1px;
+  position:relative;overflow:hidden;
+}
+.code-copy::before{
+  content:'';position:absolute;inset:0;background:var(--neon);
+  transform:scaleX(0);transform-origin:left;transition:transform .2s;z-index:-1;
+}
+.code-copy:hover::before{transform:scaleX(1);}
+.code-copy:hover{color:var(--bg);border-color:var(--neon);}
+.code-body{padding:24px;overflow-x:auto;}
+pre{margin:0;}
+code{font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.85;}
+.c-kw{color:#c87bff;}.c-fn{color:#00e5ff;}.c-str{color:#00ff88;}
+.c-cm{color:#3a5060;font-style:italic;}.c-op{color:#ff6b35;}.c-num{color:#ffd700;}
 
-  .reveal {
-    opacity: 0; transform: translateY(30px);
-    transition: opacity .6s ease, transform .6s ease;
-  }
-  .reveal.visible { opacity: 1; transform: translateY(0); }
+.disclaimer-box{
+  background:rgba(255,107,53,0.04);
+  border:1px solid rgba(255,107,53,0.18);
+  border-radius:4px;padding:36px;
+  position:relative;overflow:hidden;
+  transition:border-color .3s,box-shadow .3s;
+}
+.disclaimer-box:hover{
+  border-color:rgba(255,107,53,0.3);
+  box-shadow:0 0 40px rgba(255,107,53,0.06);
+}
+.disclaimer-box::before{
+  content:'!';position:absolute;right:-8px;top:-20px;
+  font-family:'Orbitron',monospace;
+  font-size:130px;font-weight:900;
+  color:rgba(255,107,53,0.04);line-height:1;
+  pointer-events:none;
+}
+.disclaimer-box::after{
+  content:'';position:absolute;top:0;left:0;right:0;
+  height:1px;background:linear-gradient(90deg,transparent,var(--neon3),transparent);
+  opacity:0.5;
+}
+.disclaimer-title{
+  font-family:'Orbitron',monospace;
+  font-size:13px;font-weight:700;
+  color:var(--neon3);letter-spacing:2px;
+  margin-bottom:16px;text-transform:uppercase;
+  display:flex;align-items:center;gap:10px;
+}
+.disclaimer-title svg{width:16px;height:16px;flex-shrink:0;}
+.disclaimer-text{font-size:15px;color:#7a9aaa;font-weight:400;line-height:1.85;}
+.disclaimer-text strong{color:var(--text);font-weight:600;}
 
-  @media (max-width: 700px) {
-    nav { padding: 12px 16px; }
-    .nav-links { display: none; }
-    .container { padding: 0 18px; }
-    .hero-inner { padding: 0 18px; }
-    .module-row { grid-template-columns: 1fr; gap: 8px; }
-    .hero-stats { gap: 28px; }
-    .footer-inner { flex-direction: column; text-align: center; }
-    .footer-links { justify-content: center; }
-    .tabs-nav { flex-direction: column; }
-    .tab-btn { text-align: center; }
-  }
+footer{
+  border-top:1px solid var(--border);
+  padding:48px 0;position:relative;z-index:2;
+  background:linear-gradient(180deg,transparent,rgba(0,229,255,0.01));
+}
+.footer-inner{
+  max-width:1100px;margin:0 auto;padding:0 32px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:24px;
+}
+.footer-logo{
+  font-family:'Orbitron',monospace;
+  font-weight:900;font-size:15px;
+  color:var(--neon);letter-spacing:3px;
+  text-shadow:0 0 20px rgba(0,229,255,0.4);
+  animation:logo-breathe 4s ease-in-out infinite;
+}
+@keyframes logo-breathe{
+  0%,100%{text-shadow:0 0 20px rgba(0,229,255,0.4);}
+  50%{text-shadow:0 0 30px rgba(0,229,255,0.7),0 0 60px rgba(0,229,255,0.3);}
+}
+.footer-copy{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;}
+.footer-links{display:flex;gap:20px;}
+.footer-links a{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:var(--muted);
+  text-decoration:none;letter-spacing:1px;transition:color .2s;
+}
+.footer-links a:hover{color:var(--neon);}
+
+.neon-divider{
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--neon2),var(--neon),var(--neon4),transparent);
+  opacity:0.2;animation:divider-pulse 4s ease-in-out infinite;
+}
+@keyframes divider-pulse{
+  0%,100%{opacity:0.2;}50%{opacity:0.4;}
+}
+
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(28px);}
+  to{opacity:1;transform:translateY(0);}
+}
+@keyframes blink{50%{opacity:0;}}
+
+.scanline{
+  position:fixed;left:0;right:0;height:2px;
+  background:linear-gradient(transparent,rgba(0,229,255,0.05),transparent);
+  z-index:1;pointer-events:none;
+  animation:scanline 12s linear infinite;
+}
+@keyframes scanline{
+  0%{transform:translateY(-2px);}
+  100%{transform:translateY(100vh);}
+}
+
+.reveal{
+  opacity:0;transform:translateY(32px);
+  transition:opacity .7s cubic-bezier(0.4,0,0.2,1),transform .7s cubic-bezier(0.4,0,0.2,1);
+}
+.reveal.visible{opacity:1;transform:translateY(0);}
+
+.glitch-box{
+  position:relative;
+  display:inline-block;
+}
+.glitch-box::before,.glitch-box::after{
+  content:attr(data-text);
+  position:absolute;top:0;left:0;
+  font-family:inherit;font-size:inherit;font-weight:inherit;
+  color:transparent;-webkit-text-stroke:inherit;
+  pointer-events:none;
+}
+.glitch-box::before{
+  animation:glitch-shift-a 8s infinite;
+  clip-path:polygon(0 20%,100% 20%,100% 40%,0 40%);
+}
+.glitch-box::after{
+  animation:glitch-shift-b 8s infinite;
+  clip-path:polygon(0 60%,100% 60%,100% 80%,0 80%);
+}
+@keyframes glitch-shift-a{
+  0%,95%,100%{transform:translate(0);opacity:0;}
+  96%{transform:translate(-2px,1px);opacity:0.6;color:#ff0080;}
+  97%{transform:translate(2px,-1px);opacity:0.6;color:#00e5ff;}
+  98%{transform:translate(-1px,2px);opacity:0;}
+}
+@keyframes glitch-shift-b{
+  0%,92%,100%{transform:translate(0);opacity:0;}
+  93%{transform:translate(3px,0);opacity:0.5;color:#00e5ff;}
+  94%{transform:translate(-3px,1px);opacity:0.5;color:#ff0080;}
+  95%{transform:translate(0);opacity:0;}
+}
+
+@media(max-width:700px){
+  nav{padding:12px 16px;}
+  .nav-links{display:none;}
+  .container{padding:0 18px;}
+  .hero-inner{padding:0 18px;}
+  .module-row{grid-template-columns:1fr;gap:8px;}
+  .hero-stats{gap:28px;}
+  .footer-inner{flex-direction:column;text-align:center;}
+  .footer-links{justify-content:center;}
+  .tabs-nav{flex-direction:column;}
+  .tab-btn{text-align:center;}
+  #cursor,#cursor-ring{display:none;}
+}
 </style>
 </head>
 <body>
 
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<div id="progress-bar"></div>
 <div class="scanline"></div>
+<div class="aurora"></div>
+<div id="grain"></div>
 <canvas id="bg-canvas"></canvas>
 
-<nav>
+<nav id="main-nav">
   <div class="nav-logo">HX<span>_</span>SCRIPT</div>
   <div class="nav-links">
     <a href="#features" data-i18n="nav-features">FEATURES</a>
@@ -638,7 +938,7 @@
     <p class="hero-eyebrow" data-i18n="hero-eyebrow">open source · roblox lua library</p>
     <h1 class="hero-title">
       <span class="line1">CHAOS</span>
-      <span class="line2">SYSTEM<span class="cursor"></span></span>
+      <span class="line2 glitch-box" data-text="SYSTEM">SYSTEM<span class="cursor"></span></span>
     </h1>
     <p class="hero-desc" data-i18n="hero-desc">
       Thư viện UI &amp; tiện ích modular mã nguồn mở cho Roblox.
@@ -656,19 +956,19 @@
     </div>
     <div class="hero-stats">
       <div class="stat-item">
-        <div class="stat-num">12</div>
+        <div class="stat-num" data-target="12">0</div>
         <div class="stat-label" data-i18n="stat-themes">UI Themes</div>
       </div>
       <div class="stat-item">
-        <div class="stat-num">3</div>
+        <div class="stat-num" data-target="3">0</div>
         <div class="stat-label" data-i18n="stat-scripts">Main Scripts</div>
       </div>
       <div class="stat-item">
-        <div class="stat-num">8+</div>
+        <div class="stat-num" data-target="8" data-suffix="+">0</div>
         <div class="stat-label" data-i18n="stat-modules">Logic Modules</div>
       </div>
       <div class="stat-item">
-        <div class="stat-num">MIT</div>
+        <div class="stat-num" data-text="MIT">MIT</div>
         <div class="stat-label" data-i18n="stat-license">License</div>
       </div>
     </div>
@@ -685,71 +985,70 @@
       <p class="sec-sub" data-i18n="feat-sub">Từ UI library đến các module logic phức tạp — mọi thứ đã được module hoá và sẵn sàng dùng.</p>
     </div>
     <div class="features-grid">
-
       <div class="feat-card c-cyan reveal">
+        <div class="scan-line"></div>
         <div class="feat-icon">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/></svg>
         </div>
         <div class="feat-title" data-i18n="f1-title">Custom UI Library</div>
         <p class="feat-desc" data-i18n="f1-desc">Tab system, toggle, dropdown, slider, input, danh sách cuộn — tất cả với animation tween mượt mà và đầy đủ theme hỗ trợ.</p>
       </div>
-
       <div class="feat-card c-green reveal">
+        <div class="scan-line"></div>
         <div class="feat-icon">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
         </div>
         <div class="feat-title" data-i18n="f2-title">Potato Mode</div>
         <p class="feat-desc" data-i18n="f2-desc">Tắt particle, shadow, texture, fog, PostEffect và hàng loạt hiệu ứng đồ hoạ theo batch — giảm lag đáng kể mà không cần restart.</p>
       </div>
-
       <div class="feat-card c-orange reveal">
+        <div class="scan-line"></div>
         <div class="feat-icon">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12.296 3.464 3.02 3.956"/><path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3z"/><path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="m6.18 5.276 3.1 3.899"/></svg>
         </div>
         <div class="feat-title" data-i18n="f3-title">Animation Engine</div>
         <p class="feat-desc" data-i18n="f3-desc">Hệ thống tween đa lớp: mở/đóng UI với icon shrink, hover, drag-to-move, click feedback — mọi trạng thái đều có hiệu ứng.</p>
       </div>
-
       <div class="feat-card c-purple reveal">
+        <div class="scan-line"></div>
         <div class="feat-icon">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
         </div>
         <div class="feat-title" data-i18n="f4-title">Search &amp; Highlight</div>
         <p class="feat-desc" data-i18n="f4-desc">Tìm kiếm realtime trong UI với auto-scroll tới kết quả, highlight nền và viền neon vàng, cache descendants cho hiệu suất cao.</p>
       </div>
-
       <div class="feat-card c-green reveal">
+        <div class="scan-line"></div>
         <div class="feat-icon">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="7"/><path d="M12 6v4"/></svg>
         </div>
         <div class="feat-title" data-i18n="f5-title">Auto Clicker</div>
         <p class="feat-desc" data-i18n="f5-desc">Tối đa 20 điểm click kéo-thả được, tốc độ tuỳ chỉnh theo mili giây, hiệu ứng chớp sáng khi click, hỗ trợ cả mouse lẫn touch.</p>
       </div>
-
       <div class="feat-card c-cyan reveal">
+        <div class="scan-line"></div>
         <div class="feat-icon">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><path d="m9 20 3-6 3 6"/><path d="m6 8 6 2 6-2"/><path d="M12 10v4"/></svg>
         </div>
         <div class="feat-title" data-i18n="f6-title">Player Tools</div>
         <p class="feat-desc" data-i18n="f6-desc">Fly, Noclip, Teleport tới player/chuột/click, Target Lock, ESP outline, Anti-AFK tự động — tất cả có thể toggle realtime.</p>
       </div>
-
       <div class="feat-card c-orange reveal">
+        <div class="scan-line"></div>
         <div class="feat-icon">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 22V7a1 1 0 0 0-1-1H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5a1 1 0 0 0-1-1H2"/><rect x="14" y="2" width="8" height="8" rx="1"/></svg>
         </div>
         <div class="feat-title" data-i18n="f7-title">Hx Build</div>
         <p class="feat-desc" data-i18n="f7-desc">Chọn, di chuyển, neo và hàn các khối trong workspace. Hỗ trợ nhóm khối, undo, outline vùng chọn trực quan.</p>
       </div>
-
       <div class="feat-card c-purple reveal">
+        <div class="scan-line"></div>
         <div class="feat-icon">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg>
         </div>
         <div class="feat-title" data-i18n="f8-title">Config Manager</div>
         <p class="feat-desc" data-i18n="f8-desc">Lưu/đọc cấu hình riêng theo từng game và global. Tự động áp dụng theme, phím tắt, kích thước UI khi mở lại.</p>
       </div>
-
     </div>
   </div>
 </section>
@@ -762,106 +1061,17 @@
       <p class="sec-sub" data-i18n-html="mod-sub">Mỗi module hoạt động độc lập và có thể được load riêng lẻ qua <code style="color:var(--neon);font-family:'JetBrains Mono',monospace">loadstring(HttpGet(...))()</code></p>
     </div>
     <div class="modules-list">
-
-      <div class="module-row reveal">
-        <div>
-          <div class="module-name">ThuVienUI</div>
-          <div class="module-file">ThuVienUI.lua</div>
-        </div>
-        <div class="module-desc" data-i18n="m1-desc">UI library đầy đủ — tạo cửa sổ, tab, toggle, dropdown, slider, input, nút, danh sách, theme selector tích hợp</div>
-        <span class="module-tag tag-core">CORE</span>
-      </div>
-
-      <div class="module-row reveal">
-        <div>
-          <div class="module-name">Animation</div>
-          <div class="module-file">Animation.lua</div>
-        </div>
-        <div class="module-desc" data-i18n="m2-desc">Engine tween: mở/đóng giao diện với icon shrink, hover chuột, nhấn chuột, kéo-thả cửa sổ, cache transparency</div>
-        <span class="module-tag tag-core">CORE</span>
-      </div>
-
-      <div class="module-row reveal">
-        <div>
-          <div class="module-name">ChuDe</div>
-          <div class="module-file">ChuDe.lua</div>
-        </div>
-        <div class="module-desc" data-i18n="m3-desc">12 bộ theme màu sắc: Dark, Matrix, Ocean, Violet, Crimson, Gold, Sakura, Emerald, Cyberpunk, Ice, Sunset, Neon</div>
-        <span class="module-tag tag-util">UTIL</span>
-      </div>
-
-      <div class="module-row reveal">
-        <div>
-          <div class="module-name">ThongBao</div>
-          <div class="module-file">ThongBao.lua</div>
-        </div>
-        <div class="module-desc" data-i18n="m4-desc">Hệ thống thông báo nổi — thông báo thường và thông báo lỗi với animation xuất hiện/biến mất mượt mà</div>
-        <span class="module-tag tag-util">UTIL</span>
-      </div>
-
-      <div class="module-row reveal">
-        <div>
-          <div class="module-name">TimKiem</div>
-          <div class="module-file">TimKiem.lua</div>
-        </div>
-        <div class="module-desc" data-i18n="m5-desc">Tìm kiếm realtime trong UI, highlight nền + viền neon vàng, auto-scroll tới kết quả đầu tiên, cache descendants</div>
-        <span class="module-tag tag-util">UTIL</span>
-      </div>
-
-      <div class="module-row reveal">
-        <div>
-          <div class="module-name">MenuConfigManager</div>
-          <div class="module-file">MenuConfigManager.lua</div>
-        </div>
-        <div class="module-desc" data-i18n="m6-desc">Quản lý config global + per-game, Potato Mode, FullBright, No Shadows, Remove Fog, Anti-AFK tự động</div>
-        <span class="module-tag tag-config">CONFIG</span>
-      </div>
-
-      <div class="module-row reveal">
-        <div>
-          <div class="module-name">ETC_Logic</div>
-          <div class="module-file">ETC_Logic.lua</div>
-        </div>
-        <div class="module-desc" data-i18n="m7-desc">Fly, Noclip, Teleport (tới player / chuột / click), Target Lock, ESP outline player, Click Teleport với phím tắt</div>
-        <span class="module-tag tag-logic">LOGIC</span>
-      </div>
-
-      <div class="module-row reveal">
-        <div>
-          <div class="module-name">AutoClick_Logic</div>
-          <div class="module-file">AutoClick_Logic.lua</div>
-        </div>
-        <div class="module-desc" data-i18n="m8-desc">Multi-point auto clicker kéo-thả, tối đa 20 điểm, tốc độ tuỳ chỉnh ms, hiệu ứng chớp sáng, hỗ trợ touch</div>
-        <span class="module-tag tag-logic">LOGIC</span>
-      </div>
-
-      <div class="module-row reveal">
-        <div>
-          <div class="module-name">Transform_Logic</div>
-          <div class="module-file">Transform_Logic.lua</div>
-        </div>
-        <div class="module-desc" data-i18n="m9-desc">Biến hình nhân vật hoặc mô hình: chọn part, undo, outline vùng chọn, set mode, lưu/xoá phần đã transform</div>
-        <span class="module-tag tag-logic">LOGIC</span>
-      </div>
-
-      <div class="module-row reveal">
-        <div>
-          <div class="module-name">Khoi_Logic</div>
-          <div class="module-file">Khoi_Logic.lua</div>
-        </div>
-        <div class="module-desc" data-i18n="m10-desc">Tạo, chọn, di chuyển, neo, hàn/tháo khối trong workspace. Hỗ trợ nhóm khối và event khi thay đổi</div>
-        <span class="module-tag tag-logic">LOGIC</span>
-      </div>
-
-      <div class="module-row reveal">
-        <div>
-          <div class="module-name">NhanVat_Logic</div>
-          <div class="module-file">NhanVat_Logic.lua</div>
-        </div>
-        <div class="module-desc" data-i18n="m11-desc">Tạo/xoá dummy, chọn model từ workspace, mở menu tuỳ chỉnh nhân vật, toggle chế độ chọn mẫu</div>
-        <span class="module-tag tag-logic">LOGIC</span>
-      </div>
-
+      <div class="module-row reveal"><div><div class="module-name">ThuVienUI</div><div class="module-file">ThuVienUI.lua</div></div><div class="module-desc" data-i18n="m1-desc">UI library đầy đủ — tạo cửa sổ, tab, toggle, dropdown, slider, input, nút, danh sách, theme selector tích hợp</div><span class="module-tag tag-core">CORE</span></div>
+      <div class="module-row reveal"><div><div class="module-name">Animation</div><div class="module-file">Animation.lua</div></div><div class="module-desc" data-i18n="m2-desc">Engine tween: mở/đóng giao diện với icon shrink, hover chuột, nhấn chuột, kéo-thả cửa sổ, cache transparency</div><span class="module-tag tag-core">CORE</span></div>
+      <div class="module-row reveal"><div><div class="module-name">ChuDe</div><div class="module-file">ChuDe.lua</div></div><div class="module-desc" data-i18n="m3-desc">12 bộ theme màu sắc: Dark, Matrix, Ocean, Violet, Crimson, Gold, Sakura, Emerald, Cyberpunk, Ice, Sunset, Neon</div><span class="module-tag tag-util">UTIL</span></div>
+      <div class="module-row reveal"><div><div class="module-name">ThongBao</div><div class="module-file">ThongBao.lua</div></div><div class="module-desc" data-i18n="m4-desc">Hệ thống thông báo nổi — thông báo thường và thông báo lỗi với animation xuất hiện/biến mất mượt mà</div><span class="module-tag tag-util">UTIL</span></div>
+      <div class="module-row reveal"><div><div class="module-name">TimKiem</div><div class="module-file">TimKiem.lua</div></div><div class="module-desc" data-i18n="m5-desc">Tìm kiếm realtime trong UI, highlight nền + viền neon vàng, auto-scroll tới kết quả đầu tiên, cache descendants</div><span class="module-tag tag-util">UTIL</span></div>
+      <div class="module-row reveal"><div><div class="module-name">MenuConfigManager</div><div class="module-file">MenuConfigManager.lua</div></div><div class="module-desc" data-i18n="m6-desc">Quản lý config global + per-game, Potato Mode, FullBright, No Shadows, Remove Fog, Anti-AFK tự động</div><span class="module-tag tag-config">CONFIG</span></div>
+      <div class="module-row reveal"><div><div class="module-name">ETC_Logic</div><div class="module-file">ETC_Logic.lua</div></div><div class="module-desc" data-i18n="m7-desc">Fly, Noclip, Teleport (tới player / chuột / click), Target Lock, ESP outline player, Click Teleport với phím tắt</div><span class="module-tag tag-logic">LOGIC</span></div>
+      <div class="module-row reveal"><div><div class="module-name">AutoClick_Logic</div><div class="module-file">AutoClick_Logic.lua</div></div><div class="module-desc" data-i18n="m8-desc">Multi-point auto clicker kéo-thả, tối đa 20 điểm, tốc độ tuỳ chỉnh ms, hiệu ứng chớp sáng, hỗ trợ touch</div><span class="module-tag tag-logic">LOGIC</span></div>
+      <div class="module-row reveal"><div><div class="module-name">Transform_Logic</div><div class="module-file">Transform_Logic.lua</div></div><div class="module-desc" data-i18n="m9-desc">Biến hình nhân vật hoặc mô hình: chọn part, undo, outline vùng chọn, set mode, lưu/xoá phần đã transform</div><span class="module-tag tag-logic">LOGIC</span></div>
+      <div class="module-row reveal"><div><div class="module-name">Khoi_Logic</div><div class="module-file">Khoi_Logic.lua</div></div><div class="module-desc" data-i18n="m10-desc">Tạo, chọn, di chuyển, neo, hàn/tháo khối trong workspace. Hỗ trợ nhóm khối và event khi thay đổi</div><span class="module-tag tag-logic">LOGIC</span></div>
+      <div class="module-row reveal"><div><div class="module-name">NhanVat_Logic</div><div class="module-file">NhanVat_Logic.lua</div></div><div class="module-desc" data-i18n="m11-desc">Tạo/xoá dummy, chọn model từ workspace, mở menu tuỳ chỉnh nhân vật, toggle chế độ chọn mẫu</div><span class="module-tag tag-logic">LOGIC</span></div>
     </div>
   </div>
 </section>
@@ -874,138 +1084,18 @@
       <p class="sec-sub" data-i18n="theme-sub">Chuyển đổi ngay trong UI — theme được lưu và áp dụng tự động lần sau.</p>
     </div>
     <div class="themes-grid">
-      <div class="theme-card reveal">
-        <div class="theme-preview" style="background:rgb(15,15,15)">
-          <div class="theme-dot" style="background:#505050"></div>
-          <div class="theme-bar" style="background:#505050"></div>
-          <div class="theme-dot" style="background:#fff;box-shadow:0 0 10px #fff"></div>
-        </div>
-        <div class="theme-info">
-          <div class="theme-name">DARK</div>
-          <div class="theme-neon" style="color:#fff">#ffffff neon</div>
-        </div>
-      </div>
-      <div class="theme-card reveal">
-        <div class="theme-preview" style="background:rgb(8,18,10)">
-          <div class="theme-dot" style="background:#143318"></div>
-          <div class="theme-bar" style="background:#143318"></div>
-          <div class="theme-dot" style="background:#00ff46;box-shadow:0 0 10px #00ff46"></div>
-        </div>
-        <div class="theme-info">
-          <div class="theme-name">MATRIX</div>
-          <div class="theme-neon" style="color:#00ff46">#00ff46 neon</div>
-        </div>
-      </div>
-      <div class="theme-card reveal">
-        <div class="theme-preview" style="background:rgb(8,15,22)">
-          <div class="theme-dot" style="background:#143350"></div>
-          <div class="theme-bar" style="background:#143350"></div>
-          <div class="theme-dot" style="background:#00c8ff;box-shadow:0 0 10px #00c8ff"></div>
-        </div>
-        <div class="theme-info">
-          <div class="theme-name">OCEAN</div>
-          <div class="theme-neon" style="color:#00c8ff">#00c8ff neon</div>
-        </div>
-      </div>
-      <div class="theme-card reveal">
-        <div class="theme-preview" style="background:rgb(15,8,22)">
-          <div class="theme-dot" style="background:#2a1040"></div>
-          <div class="theme-bar" style="background:#2a1040"></div>
-          <div class="theme-dot" style="background:#c864ff;box-shadow:0 0 10px #c864ff"></div>
-        </div>
-        <div class="theme-info">
-          <div class="theme-name">VIOLET</div>
-          <div class="theme-neon" style="color:#c864ff">#c864ff neon</div>
-        </div>
-      </div>
-      <div class="theme-card reveal">
-        <div class="theme-preview" style="background:rgb(20,8,8)">
-          <div class="theme-dot" style="background:#501414"></div>
-          <div class="theme-bar" style="background:#501414"></div>
-          <div class="theme-dot" style="background:#ff3c3c;box-shadow:0 0 10px #ff3c3c"></div>
-        </div>
-        <div class="theme-info">
-          <div class="theme-name">CRIMSON</div>
-          <div class="theme-neon" style="color:#ff3c3c">#ff3c3c neon</div>
-        </div>
-      </div>
-      <div class="theme-card reveal">
-        <div class="theme-preview" style="background:rgb(20,16,6)">
-          <div class="theme-dot" style="background:#503212"></div>
-          <div class="theme-bar" style="background:#503212"></div>
-          <div class="theme-dot" style="background:#ffc832;box-shadow:0 0 10px #ffc832"></div>
-        </div>
-        <div class="theme-info">
-          <div class="theme-name">GOLD</div>
-          <div class="theme-neon" style="color:#ffc832">#ffc832 neon</div>
-        </div>
-      </div>
-      <div class="theme-card reveal">
-        <div class="theme-preview" style="background:rgb(22,10,15)">
-          <div class="theme-dot" style="background:#501826"></div>
-          <div class="theme-bar" style="background:#501826"></div>
-          <div class="theme-dot" style="background:#ff8cb9;box-shadow:0 0 10px #ff8cb9"></div>
-        </div>
-        <div class="theme-info">
-          <div class="theme-name">SAKURA</div>
-          <div class="theme-neon" style="color:#ff8cb9">#ff8cb9 neon</div>
-        </div>
-      </div>
-      <div class="theme-card reveal">
-        <div class="theme-preview" style="background:rgb(6,18,10)">
-          <div class="theme-dot" style="background:#0e3216"></div>
-          <div class="theme-bar" style="background:#0e3216"></div>
-          <div class="theme-dot" style="background:#32ff78;box-shadow:0 0 10px #32ff78"></div>
-        </div>
-        <div class="theme-info">
-          <div class="theme-name">EMERALD</div>
-          <div class="theme-neon" style="color:#32ff78">#32ff78 neon</div>
-        </div>
-      </div>
-      <div class="theme-card reveal">
-        <div class="theme-preview" style="background:rgb(18,16,4)">
-          <div class="theme-dot" style="background:#46400c"></div>
-          <div class="theme-bar" style="background:#46400c"></div>
-          <div class="theme-dot" style="background:#ffe600;box-shadow:0 0 10px #ffe600"></div>
-        </div>
-        <div class="theme-info">
-          <div class="theme-name">CYBERPUNK</div>
-          <div class="theme-neon" style="color:#ffe600">#ffe600 neon</div>
-        </div>
-      </div>
-      <div class="theme-card reveal">
-        <div class="theme-preview" style="background:rgb(10,16,22)">
-          <div class="theme-dot" style="background:#1a3050"></div>
-          <div class="theme-bar" style="background:#1a3050"></div>
-          <div class="theme-dot" style="background:#91e4ff;box-shadow:0 0 10px #91e4ff"></div>
-        </div>
-        <div class="theme-info">
-          <div class="theme-name">ICE</div>
-          <div class="theme-neon" style="color:#91e4ff">#91e4ff neon</div>
-        </div>
-      </div>
-      <div class="theme-card reveal">
-        <div class="theme-preview" style="background:rgb(22,12,8)">
-          <div class="theme-dot" style="background:#502014"></div>
-          <div class="theme-bar" style="background:#502014"></div>
-          <div class="theme-dot" style="background:#ff7337;box-shadow:0 0 10px #ff7337"></div>
-        </div>
-        <div class="theme-info">
-          <div class="theme-name">SUNSET</div>
-          <div class="theme-neon" style="color:#ff7337">#ff7337 neon</div>
-        </div>
-      </div>
-      <div class="theme-card reveal">
-        <div class="theme-preview" style="background:rgb(6,18,15)">
-          <div class="theme-dot" style="background:#0c3228"></div>
-          <div class="theme-bar" style="background:#0c3228"></div>
-          <div class="theme-dot" style="background:#00ffc3;box-shadow:0 0 10px #00ffc3"></div>
-        </div>
-        <div class="theme-info">
-          <div class="theme-name">NEON</div>
-          <div class="theme-neon" style="color:#00ffc3">#00ffc3 neon</div>
-        </div>
-      </div>
+      <div class="theme-card reveal"><div class="theme-preview" style="background:rgb(15,15,15)"><div class="theme-dot" style="background:#505050"></div><div class="theme-bar" style="background:#505050"></div><div class="theme-dot" style="background:#fff;box-shadow:0 0 10px #fff"></div></div><div class="theme-info"><div class="theme-name">DARK</div><div class="theme-neon" style="color:#fff">#ffffff neon</div></div></div>
+      <div class="theme-card reveal"><div class="theme-preview" style="background:rgb(8,18,10)"><div class="theme-dot" style="background:#143318"></div><div class="theme-bar" style="background:#143318"></div><div class="theme-dot" style="background:#00ff46;box-shadow:0 0 10px #00ff46"></div></div><div class="theme-info"><div class="theme-name">MATRIX</div><div class="theme-neon" style="color:#00ff46">#00ff46 neon</div></div></div>
+      <div class="theme-card reveal"><div class="theme-preview" style="background:rgb(8,15,22)"><div class="theme-dot" style="background:#143350"></div><div class="theme-bar" style="background:#143350"></div><div class="theme-dot" style="background:#00c8ff;box-shadow:0 0 10px #00c8ff"></div></div><div class="theme-info"><div class="theme-name">OCEAN</div><div class="theme-neon" style="color:#00c8ff">#00c8ff neon</div></div></div>
+      <div class="theme-card reveal"><div class="theme-preview" style="background:rgb(15,8,22)"><div class="theme-dot" style="background:#2a1040"></div><div class="theme-bar" style="background:#2a1040"></div><div class="theme-dot" style="background:#c864ff;box-shadow:0 0 10px #c864ff"></div></div><div class="theme-info"><div class="theme-name">VIOLET</div><div class="theme-neon" style="color:#c864ff">#c864ff neon</div></div></div>
+      <div class="theme-card reveal"><div class="theme-preview" style="background:rgb(20,8,8)"><div class="theme-dot" style="background:#501414"></div><div class="theme-bar" style="background:#501414"></div><div class="theme-dot" style="background:#ff3c3c;box-shadow:0 0 10px #ff3c3c"></div></div><div class="theme-info"><div class="theme-name">CRIMSON</div><div class="theme-neon" style="color:#ff3c3c">#ff3c3c neon</div></div></div>
+      <div class="theme-card reveal"><div class="theme-preview" style="background:rgb(20,16,6)"><div class="theme-dot" style="background:#503212"></div><div class="theme-bar" style="background:#503212"></div><div class="theme-dot" style="background:#ffc832;box-shadow:0 0 10px #ffc832"></div></div><div class="theme-info"><div class="theme-name">GOLD</div><div class="theme-neon" style="color:#ffc832">#ffc832 neon</div></div></div>
+      <div class="theme-card reveal"><div class="theme-preview" style="background:rgb(22,10,15)"><div class="theme-dot" style="background:#501826"></div><div class="theme-bar" style="background:#501826"></div><div class="theme-dot" style="background:#ff8cb9;box-shadow:0 0 10px #ff8cb9"></div></div><div class="theme-info"><div class="theme-name">SAKURA</div><div class="theme-neon" style="color:#ff8cb9">#ff8cb9 neon</div></div></div>
+      <div class="theme-card reveal"><div class="theme-preview" style="background:rgb(6,18,10)"><div class="theme-dot" style="background:#0e3216"></div><div class="theme-bar" style="background:#0e3216"></div><div class="theme-dot" style="background:#32ff78;box-shadow:0 0 10px #32ff78"></div></div><div class="theme-info"><div class="theme-name">EMERALD</div><div class="theme-neon" style="color:#32ff78">#32ff78 neon</div></div></div>
+      <div class="theme-card reveal"><div class="theme-preview" style="background:rgb(18,16,4)"><div class="theme-dot" style="background:#46400c"></div><div class="theme-bar" style="background:#46400c"></div><div class="theme-dot" style="background:#ffe600;box-shadow:0 0 10px #ffe600"></div></div><div class="theme-info"><div class="theme-name">CYBERPUNK</div><div class="theme-neon" style="color:#ffe600">#ffe600 neon</div></div></div>
+      <div class="theme-card reveal"><div class="theme-preview" style="background:rgb(10,16,22)"><div class="theme-dot" style="background:#1a3050"></div><div class="theme-bar" style="background:#1a3050"></div><div class="theme-dot" style="background:#91e4ff;box-shadow:0 0 10px #91e4ff"></div></div><div class="theme-info"><div class="theme-name">ICE</div><div class="theme-neon" style="color:#91e4ff">#91e4ff neon</div></div></div>
+      <div class="theme-card reveal"><div class="theme-preview" style="background:rgb(22,12,8)"><div class="theme-dot" style="background:#502014"></div><div class="theme-bar" style="background:#502014"></div><div class="theme-dot" style="background:#ff7337;box-shadow:0 0 10px #ff7337"></div></div><div class="theme-info"><div class="theme-name">SUNSET</div><div class="theme-neon" style="color:#ff7337">#ff7337 neon</div></div></div>
+      <div class="theme-card reveal"><div class="theme-preview" style="background:rgb(6,18,15)"><div class="theme-dot" style="background:#0c3228"></div><div class="theme-bar" style="background:#0c3228"></div><div class="theme-dot" style="background:#00ffc3;box-shadow:0 0 10px #00ffc3"></div></div><div class="theme-info"><div class="theme-name">NEON</div><div class="theme-neon" style="color:#00ffc3">#00ffc3 neon</div></div></div>
     </div>
   </div>
 </section>
@@ -1018,45 +1108,33 @@
       <p class="sec-sub" data-i18n="scr-sub">Được chọn qua Hx Loader — chỉ cần click, script sẽ tự tải và chạy.</p>
     </div>
     <div class="scripts-grid">
-
       <div class="script-card reveal">
         <div class="script-version">main_v1.lua</div>
         <div class="script-name">Transform</div>
         <p class="script-desc" data-i18n="s1-desc">Giao diện biến hình nhân vật cổ điển với danh sách bộ phận, toggle từng phần, undo, và lưu trạng thái tức thì.</p>
         <div class="script-tags">
-          <span class="script-tag">Transform</span>
-          <span class="script-tag">Undo</span>
-          <span class="script-tag">Part Select</span>
-          <span class="script-tag">Save State</span>
+          <span class="script-tag">Transform</span><span class="script-tag">Undo</span>
+          <span class="script-tag">Part Select</span><span class="script-tag">Save State</span>
         </div>
       </div>
-
       <div class="script-card reveal">
         <div class="script-version">main_v2.lua</div>
         <div class="script-name">Transform v2</div>
         <p class="script-desc" data-i18n="s2-desc">Phiên bản nâng cấp dùng ThuVienUI đầy đủ — tab Nhân Vật, Khối, Settings. Hỗ trợ dummy, model chọn từ workspace, Hx Build.</p>
         <div class="script-tags">
-          <span class="script-tag">ThuVienUI</span>
-          <span class="script-tag">Tabs</span>
-          <span class="script-tag">Hx Build</span>
-          <span class="script-tag">Dummy</span>
-          <span class="script-tag">Config Save</span>
+          <span class="script-tag">ThuVienUI</span><span class="script-tag">Tabs</span>
+          <span class="script-tag">Hx Build</span><span class="script-tag">Dummy</span><span class="script-tag">Config Save</span>
         </div>
       </div>
-
       <div class="script-card reveal">
         <div class="script-version">main_v3.lua</div>
         <div class="script-name">Something</div>
         <p class="script-desc" data-i18n="s3-desc">Script thử nghiệm tích hợp ETC module — Fly, Noclip, Teleport, Target Lock, ESP, Auto Clicker với giao diện ThuVienUI.</p>
         <div class="script-tags">
-          <span class="script-tag">Testing</span>
-          <span class="script-tag">ETC</span>
-          <span class="script-tag">Auto Clicker</span>
-          <span class="script-tag">ESP</span>
-          <span class="script-tag">Fly</span>
+          <span class="script-tag">Testing</span><span class="script-tag">ETC</span>
+          <span class="script-tag">Auto Clicker</span><span class="script-tag">ESP</span><span class="script-tag">Fly</span>
         </div>
       </div>
-
     </div>
   </div>
 </section>
@@ -1068,58 +1146,37 @@
       <h2 class="sec-title" data-i18n-html="use-title">Tài Liệu <em>Sử Dụng</em></h2>
       <p class="sec-sub" data-i18n="use-sub">Toàn bộ API được chia theo từng Module để dễ dàng tra cứu và tích hợp vào dự án của bạn.</p>
     </div>
-
     <div class="usage-container reveal">
       <div class="tabs-nav">
-        <button class="tab-btn active" onclick="openTab('tab-loader', this)" data-i18n="tab-loader-btn">1. Hx Loader</button>
-        <button class="tab-btn" onclick="openTab('tab-ui', this)" data-i18n="tab-ui-btn">2. ThuVienUI</button>
-        <button class="tab-btn" onclick="openTab('tab-notify', this)" data-i18n="tab-notify-btn">3. ThongBao</button>
-        <button class="tab-btn" onclick="openTab('tab-logic', this)" data-i18n="tab-logic-btn">4. Config &amp; Logic</button>
+        <button class="tab-btn active" onclick="openTab('tab-loader',this)" data-i18n="tab-loader-btn">1. Hx Loader</button>
+        <button class="tab-btn" onclick="openTab('tab-ui',this)" data-i18n="tab-ui-btn">2. ThuVienUI</button>
+        <button class="tab-btn" onclick="openTab('tab-notify',this)" data-i18n="tab-notify-btn">3. ThongBao</button>
+        <button class="tab-btn" onclick="openTab('tab-logic',this)" data-i18n="tab-logic-btn">4. Config &amp; Logic</button>
       </div>
-
       <div id="tab-loader" class="tab-pane active">
         <h4 class="api-heading" data-i18n="loader-h1">Khởi chạy qua Hub trung tâm</h4>
         <p class="api-desc" data-i18n="loader-desc">Chỉ cần dùng Executor (Delta, Fluxus, Evon,...) thực thi đoạn mã dưới đây. Một Menu UI sẽ hiện ra cho phép chọn các Script đã được viết sẵn trong thư viện ChaosSystem.</p>
         <div class="code-block">
-          <div class="code-header">
-            <div class="code-dots"><div class="code-dot d1"></div><div class="code-dot d2"></div><div class="code-dot d3"></div></div>
-            <span class="code-lang">LUA</span>
-            <button class="code-copy" onclick="copyCode(this)">COPY CODE</button>
-          </div>
-          <div class="code-body">
-            <pre><code><span class="c-fn">loadstring</span>(<span class="c-fn">game</span>:<span class="c-fn">HttpGet</span>(<span class="c-str">"https://raw.githubusercontent.com/9311-nex4/Hx/main/Hx_Loader.lua"</span>))()</code></pre>
-          </div>
+          <div class="code-header"><div class="code-dots"><div class="code-dot d1"></div><div class="code-dot d2"></div><div class="code-dot d3"></div></div><span class="code-lang">LUA</span><button class="code-copy" onclick="copyCode(this)">COPY CODE</button></div>
+          <div class="code-body"><pre><code><span class="c-fn">loadstring</span>(<span class="c-fn">game</span>:<span class="c-fn">HttpGet</span>(<span class="c-str">"https://raw.githubusercontent.com/9311-nex4/Hx/main/Hx_Loader.lua"</span>))()</code></pre></div>
         </div>
       </div>
-
       <div id="tab-ui" class="tab-pane">
         <h4 class="api-heading" data-i18n="ui-h1">Khởi tạo Cửa sổ &amp; Tab</h4>
         <p class="api-desc" data-i18n="ui-desc1">Load trực tiếp module `ThuVienUI.lua`. Sử dụng `TaoWindow` để dựng khung UI, sau đó gọi `TaoTab` để thêm các trang nội dung độc lập.</p>
         <div class="code-block">
-          <div class="code-header">
-            <div class="code-dots"><div class="code-dot d1"></div><div class="code-dot d2"></div><div class="code-dot d3"></div></div>
-            <span class="code-lang">LUA</span>
-            <button class="code-copy" onclick="copyCode(this)">COPY CODE</button>
-          </div>
-          <div class="code-body">
-            <pre><code><span class="c-kw">local</span> UI <span class="c-op">=</span> <span class="c-fn">loadstring</span>(<span class="c-fn">game</span>:<span class="c-fn">HttpGet</span>(<span class="c-str">"https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ThuVienUI.lua"</span>))()
+          <div class="code-header"><div class="code-dots"><div class="code-dot d1"></div><div class="code-dot d2"></div><div class="code-dot d3"></div></div><span class="code-lang">LUA</span><button class="code-copy" onclick="copyCode(this)">COPY CODE</button></div>
+          <div class="code-body"><pre><code><span class="c-kw">local</span> UI <span class="c-op">=</span> <span class="c-fn">loadstring</span>(<span class="c-fn">game</span>:<span class="c-fn">HttpGet</span>(<span class="c-str">"https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ThuVienUI.lua"</span>))()
 
 <span class="c-kw">local</span> Window <span class="c-op">=</span> UI:<span class="c-fn">TaoWindow</span>({ TieuDe <span class="c-op">=</span> <span class="c-str">"My Custom Script"</span> })
 <span class="c-kw">local</span> Tab1 <span class="c-op">=</span> Window:<span class="c-fn">TaoTab</span>(<span class="c-str">"Người Chơi"</span>)
-<span class="c-kw">local</span> Tab2 <span class="c-op">=</span> Window:<span class="c-fn">TaoTab</span>(<span class="c-str">"Cài Đặt"</span>)</code></pre>
-          </div>
+<span class="c-kw">local</span> Tab2 <span class="c-op">=</span> Window:<span class="c-fn">TaoTab</span>(<span class="c-str">"Cài Đặt"</span>)</code></pre></div>
         </div>
-
         <h4 class="api-heading" data-i18n="ui-h2">Thêm các Elements điều khiển</h4>
         <p class="api-desc" data-i18n="ui-desc2">Gọi các hàm từ đối tượng Tab để sinh ra Button, Toggle, Slider, hoặc Dropdown. Các hàm đều có callback Event trả về giá trị realtime.</p>
         <div class="code-block">
-          <div class="code-header">
-            <div class="code-dots"><div class="code-dot d1"></div><div class="code-dot d2"></div><div class="code-dot d3"></div></div>
-            <span class="code-lang">LUA</span>
-            <button class="code-copy" onclick="copyCode(this)">COPY CODE</button>
-          </div>
-          <div class="code-body">
-            <pre><code>Tab1:<span class="c-fn">TaoButton</span>({
+          <div class="code-header"><div class="code-dots"><div class="code-dot d1"></div><div class="code-dot d2"></div><div class="code-dot d3"></div></div><span class="code-lang">LUA</span><button class="code-copy" onclick="copyCode(this)">COPY CODE</button></div>
+          <div class="code-body"><pre><code>Tab1:<span class="c-fn">TaoButton</span>({
     Ten <span class="c-op">=</span> <span class="c-str">"Nhấn Để Dịch Chuyển"</span>,
     SuKien <span class="c-op">=</span> <span class="c-kw">function</span>() <span class="c-fn">print</span>(<span class="c-str">"Đã click!"</span>) <span class="c-kw">end</span>
 })
@@ -1131,9 +1188,7 @@ Tab1:<span class="c-fn">TaoToggle</span>({
 
 Tab2:<span class="c-fn">TaoSlider</span>({
     Ten <span class="c-op">=</span> <span class="c-str">"Tốc Độ Chạy (WalkSpeed)"</span>,
-    Min <span class="c-op">=</span> <span class="c-num">16</span>,
-    Max <span class="c-op">=</span> <span class="c-num">100</span>,
-    MacDinh <span class="c-op">=</span> <span class="c-num">16</span>,
+    Min <span class="c-op">=</span> <span class="c-num">16</span>, Max <span class="c-op">=</span> <span class="c-num">100</span>, MacDinh <span class="c-op">=</span> <span class="c-num">16</span>,
     SuKien <span class="c-op">=</span> <span class="c-kw">function</span>(GiaTri) <span class="c-fn">game.Players.LocalPlayer.Character.Humanoid.WalkSpeed</span> <span class="c-op">=</span> GiaTri <span class="c-kw">end</span>
 })
 
@@ -1142,22 +1197,15 @@ Tab2:<span class="c-fn">TaoDropdown</span>({
     DanhSach <span class="c-op">=</span> {<span class="c-str">"Mục Tiêu A"</span>, <span class="c-str">"Mục Tiêu B"</span>, <span class="c-str">"Mục Tiêu C"</span>},
     MacDinh <span class="c-op">=</span> <span class="c-str">"Mục Tiêu A"</span>,
     SuKien <span class="c-op">=</span> <span class="c-kw">function</span>(LuaChon) <span class="c-fn">print</span>(<span class="c-str">"Đang chọn:"</span>, LuaChon) <span class="c-kw">end</span>
-})</code></pre>
-          </div>
+})</code></pre></div>
         </div>
       </div>
-
       <div id="tab-notify" class="tab-pane">
         <h4 class="api-heading" data-i18n="not-h1">Gọi hộp thoại Thông báo</h4>
         <p class="api-desc" data-i18n="not-desc">Module `ThongBao.lua` xử lý các Notify nổi mượt mà trên màn hình người dùng. Rất hữu ích để báo cáo trạng thái chức năng.</p>
         <div class="code-block">
-          <div class="code-header">
-            <div class="code-dots"><div class="code-dot d1"></div><div class="code-dot d2"></div><div class="code-dot d3"></div></div>
-            <span class="code-lang">LUA</span>
-            <button class="code-copy" onclick="copyCode(this)">COPY CODE</button>
-          </div>
-          <div class="code-body">
-            <pre><code><span class="c-kw">local</span> TB <span class="c-op">=</span> <span class="c-fn">loadstring</span>(<span class="c-fn">game</span>:<span class="c-fn">HttpGet</span>(<span class="c-str">"https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ThongBao.lua"</span>))()
+          <div class="code-header"><div class="code-dots"><div class="code-dot d1"></div><div class="code-dot d2"></div><div class="code-dot d3"></div></div><span class="code-lang">LUA</span><button class="code-copy" onclick="copyCode(this)">COPY CODE</button></div>
+          <div class="code-body"><pre><code><span class="c-kw">local</span> TB <span class="c-op">=</span> <span class="c-fn">loadstring</span>(<span class="c-fn">game</span>:<span class="c-fn">HttpGet</span>(<span class="c-str">"https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ThongBao.lua"</span>))()
 
 TB.<span class="c-fn">thongbao</span>(<span class="c-str">"Hx Script"</span>, <span class="c-str">"Tính năng đã bật thành công!"</span>, <span class="c-num">3</span>)
 
@@ -1166,48 +1214,32 @@ TB.<span class="c-fn">thongbaoloi</span>(<span class="c-str">"Cảnh Báo Lỗi"
 TB.<span class="c-fn">thongbaoxacnhan</span>(<span class="c-str">"Xác nhận hành động"</span>, <span class="c-str">"Bạn có chắc chắn muốn rời Server?"</span>, 
     <span class="c-kw">function</span>() <span class="c-fn">game</span>:<span class="c-fn">Shutdown</span>() <span class="c-kw">end</span>, 
     <span class="c-kw">function</span>() <span class="c-fn">print</span>(<span class="c-str">"Đã hủy!"</span>) <span class="c-kw">end</span>
-)</code></pre>
-          </div>
+)</code></pre></div>
         </div>
       </div>
-
       <div id="tab-logic" class="tab-pane">
         <h4 class="api-heading" data-i18n="log-h1">Tối ưu Client với ConfigManager</h4>
         <p class="api-desc" data-i18n="log-desc1">Loại bỏ bóng đổ, sương mù và kích hoạt FullBright để tăng FPS cho máy yếu.</p>
         <div class="code-block">
-          <div class="code-header">
-            <div class="code-dots"><div class="code-dot d1"></div><div class="code-dot d2"></div><div class="code-dot d3"></div></div>
-            <span class="code-lang">LUA</span>
-            <button class="code-copy" onclick="copyCode(this)">COPY CODE</button>
-          </div>
-          <div class="code-body">
-            <pre><code><span class="c-kw">local</span> Config <span class="c-op">=</span> <span class="c-fn">loadstring</span>(<span class="c-fn">game</span>:<span class="c-fn">HttpGet</span>(<span class="c-str">"https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/MenuConfigManager.lua"</span>))()
+          <div class="code-header"><div class="code-dots"><div class="code-dot d1"></div><div class="code-dot d2"></div><div class="code-dot d3"></div></div><span class="code-lang">LUA</span><button class="code-copy" onclick="copyCode(this)">COPY CODE</button></div>
+          <div class="code-body"><pre><code><span class="c-kw">local</span> Config <span class="c-op">=</span> <span class="c-fn">loadstring</span>(<span class="c-fn">game</span>:<span class="c-fn">HttpGet</span>(<span class="c-str">"https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/MenuConfigManager.lua"</span>))()
 
 Config.<span class="c-fn">ReduceLags</span>(<span class="c-kw">true</span>)
 Config.<span class="c-fn">NoShadows</span>(<span class="c-kw">true</span>)
 Config.<span class="c-fn">RemoveFog</span>(<span class="c-kw">true</span>)
-Config.<span class="c-fn">FullBright</span>(<span class="c-kw">true</span>)</code></pre>
-          </div>
+Config.<span class="c-fn">FullBright</span>(<span class="c-kw">true</span>)</code></pre></div>
         </div>
-
         <h4 class="api-heading" data-i18n="log-h2">Gọi Utils Logic phổ biến</h4>
         <p class="api-desc" data-i18n="log-desc2">Module `ETC_Logic.lua` chứa sẵn các Script thông dụng cho dân Exploit như Fly, Noclip hay Click TP.</p>
         <div class="code-block">
-          <div class="code-header">
-            <div class="code-dots"><div class="code-dot d1"></div><div class="code-dot d2"></div><div class="code-dot d3"></div></div>
-            <span class="code-lang">LUA</span>
-            <button class="code-copy" onclick="copyCode(this)">COPY CODE</button>
-          </div>
-          <div class="code-body">
-            <pre><code><span class="c-kw">local</span> Logic <span class="c-op">=</span> <span class="c-fn">loadstring</span>(<span class="c-fn">game</span>:<span class="c-fn">HttpGet</span>(<span class="c-str">"https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ETC_Logic.lua"</span>))()
+          <div class="code-header"><div class="code-dots"><div class="code-dot d1"></div><div class="code-dot d2"></div><div class="code-dot d3"></div></div><span class="code-lang">LUA</span><button class="code-copy" onclick="copyCode(this)">COPY CODE</button></div>
+          <div class="code-body"><pre><code><span class="c-kw">local</span> Logic <span class="c-op">=</span> <span class="c-fn">loadstring</span>(<span class="c-fn">game</span>:<span class="c-fn">HttpGet</span>(<span class="c-str">"https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ETC_Logic.lua"</span>))()
 
 Logic.<span class="c-fn">ToggleFly</span>(<span class="c-kw">true</span>)
 Logic.<span class="c-fn">ToggleNoclip</span>(<span class="c-kw">true</span>)
-Logic.<span class="c-fn">SetClickTP</span>(<span class="c-kw">true</span>) </code></pre>
-          </div>
+Logic.<span class="c-fn">SetClickTP</span>(<span class="c-kw">true</span>)</code></pre></div>
         </div>
       </div>
-
     </div>
   </div>
 </section>
@@ -1247,62 +1279,155 @@ Logic.<span class="c-fn">SetClickTP</span>(<span class="c-kw">true</span>) </cod
 </footer>
 
 <script>
+const cursor = document.getElementById('cursor');
+const cursorRing = document.getElementById('cursor-ring');
+let mx = -100, my = -100, rx = -100, ry = -100;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx + 'px';
+  cursor.style.top = my + 'px';
+});
+
+function lerpRing() {
+  rx += (mx - rx) * 0.12;
+  ry += (my - ry) * 0.12;
+  cursorRing.style.left = rx + 'px';
+  cursorRing.style.top = ry + 'px';
+  requestAnimationFrame(lerpRing);
+}
+lerpRing();
+
 const canvas = document.getElementById('bg-canvas');
 const ctx = canvas.getContext('2d');
-let W, H, particles = [];
+let W, H;
 
 function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
 resize();
 window.addEventListener('resize', resize);
 
-for (let i = 0; i < 70; i++) {
+const particles = [];
+for (let i = 0; i < 80; i++) {
   particles.push({
-    x: Math.random() * 2000, y: Math.random() * 1200,
-    r: Math.random() * 1.3 + 0.2,
-    vx: (Math.random() - 0.5) * 0.18,
-    vy: (Math.random() - 0.5) * 0.18,
-    a: Math.random() * 0.55 + 0.08
+    x: Math.random() * 3000, y: Math.random() * 2000,
+    r: Math.random() * 1.5 + 0.3,
+    vx: (Math.random() - 0.5) * 0.22,
+    vy: (Math.random() - 0.5) * 0.22,
+    a: Math.random() * 0.5 + 0.08,
+    phase: Math.random() * Math.PI * 2
   });
 }
 
+let frame = 0;
 function drawParticles() {
+  frame++;
   ctx.clearRect(0, 0, W, H);
+
+  ctx.save();
+  ctx.globalAlpha = 0.03;
+  const grad = ctx.createRadialGradient(W * 0.3, H * 0.2, 0, W * 0.3, H * 0.2, W * 0.6);
+  grad.addColorStop(0, '#00e5ff');
+  grad.addColorStop(1, 'transparent');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+
   particles.forEach(p => {
+    const px = p.x % W, py = p.y % H;
+    const pulse = Math.sin(frame * 0.02 + p.phase) * 0.3 + 0.7;
     ctx.beginPath();
-    ctx.arc(p.x % W, p.y % H, p.r, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(0,229,255,${p.a})`;
+    ctx.arc(px, py, p.r * pulse, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(0,229,255,${p.a * pulse})`;
     ctx.fill();
     p.x += p.vx; p.y += p.vy;
   });
+
   for (let i = 0; i < particles.length; i++) {
     for (let j = i + 1; j < particles.length; j++) {
-      const dx = (particles[i].x % W) - (particles[j].x % W);
-      const dy = (particles[i].y % H) - (particles[j].y % H);
-      const dist = Math.sqrt(dx*dx + dy*dy);
-      if (dist < 130) {
+      const ax = particles[i].x % W, ay = particles[i].y % H;
+      const bx = particles[j].x % W, by = particles[j].y % H;
+      const dist = Math.hypot(ax - bx, ay - by);
+      if (dist < 140) {
         ctx.beginPath();
-        ctx.moveTo(particles[i].x % W, particles[i].y % H);
-        ctx.lineTo(particles[j].x % W, particles[j].y % H);
-        ctx.strokeStyle = `rgba(0,229,255,${0.07 * (1 - dist/130)})`;
-        ctx.lineWidth = 0.5;
+        ctx.moveTo(ax, ay);
+        ctx.lineTo(bx, by);
+        ctx.strokeStyle = `rgba(0,229,255,${0.08 * (1 - dist / 140)})`;
+        ctx.lineWidth = 0.6;
         ctx.stroke();
       }
     }
   }
+
+  const mdx = mx / W, mdy = my / H;
+  particles.forEach(p => {
+    const px = p.x % W, py = p.y % H;
+    const dist = Math.hypot(px - mx, py - my);
+    if (dist < 180) {
+      ctx.beginPath();
+      ctx.moveTo(px, py);
+      ctx.lineTo(mx, my);
+      ctx.strokeStyle = `rgba(0,229,255,${0.06 * (1 - dist / 180)})`;
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+    }
+  });
+
   requestAnimationFrame(drawParticles);
 }
 drawParticles();
+
+const progressBar = document.getElementById('progress-bar');
+const nav = document.getElementById('main-nav');
+window.addEventListener('scroll', () => {
+  const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+  progressBar.style.width = pct + '%';
+  nav.classList.toggle('scrolled', window.scrollY > 50);
+});
 
 const reveals = document.querySelectorAll('.reveal');
 const observer = new IntersectionObserver((entries) => {
   entries.forEach((e, i) => {
     if (e.isIntersecting) {
-      setTimeout(() => e.target.classList.add('visible'), i * 55);
+      setTimeout(() => e.target.classList.add('visible'), i * 60);
       observer.unobserve(e.target);
     }
   });
 }, { threshold: 0.07 });
 reveals.forEach(el => observer.observe(el));
+
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-links a');
+window.addEventListener('scroll', () => {
+  let cur = '';
+  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 120) cur = s.id; });
+  navLinks.forEach(a => {
+    const active = a.getAttribute('href') === `#${cur}`;
+    a.classList.toggle('active-link', active);
+  });
+});
+
+const statNums = document.querySelectorAll('.stat-num[data-target]');
+let counted = false;
+const statsObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting && !counted) {
+      counted = true;
+      statNums.forEach(el => {
+        const target = parseInt(el.dataset.target);
+        const suffix = el.dataset.suffix || '';
+        let current = 0;
+        const step = target / 40;
+        const timer = setInterval(() => {
+          current = Math.min(current + step, target);
+          el.textContent = Math.ceil(current) + suffix;
+          if (current >= target) clearInterval(timer);
+        }, 30);
+      });
+    }
+  });
+}, { threshold: 0.5 });
+const heroStats = document.querySelector('.hero-stats');
+if (heroStats) statsObserver.observe(heroStats);
 
 function copyCode(btn) {
   const code = btn.closest('.code-block').querySelector('code').textContent;
@@ -1321,209 +1446,184 @@ function openTab(tabId, btn) {
   btn.classList.add('active');
 }
 
-const sections = document.querySelectorAll('section[id]');
-const navLinks = document.querySelectorAll('.nav-links a');
-window.addEventListener('scroll', () => {
-  let cur = '';
-  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 120) cur = s.id; });
-  navLinks.forEach(a => {
-    const active = a.getAttribute('href') === `#${cur}`;
-    a.style.color = active ? 'var(--neon)' : '';
+document.querySelectorAll('.feat-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const rect = card.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    card.style.transform = `translateY(-2px) rotateX(${-y * 6}deg) rotateY(${x * 6}deg)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = '';
+    card.style.transition = 'transform .5s cubic-bezier(0.4,0,0.2,1), background .3s';
+  });
+  card.addEventListener('mouseenter', () => {
+    card.style.transition = 'transform .1s, background .3s';
+  });
+});
+
+document.querySelectorAll('.script-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const rect = card.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    card.style.transform = `translateY(-3px) rotateX(${-y * 4}deg) rotateY(${x * 4}deg)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = '';
+    card.style.transition = 'transform .5s cubic-bezier(0.4,0,0.2,1), border-color .3s, box-shadow .3s';
+  });
+  card.addEventListener('mouseenter', () => {
+    card.style.transition = 'transform .1s, border-color .3s, box-shadow .3s';
+  });
+});
+
+document.querySelectorAll('.theme-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const rect = card.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    card.style.transform = `translateY(-6px) scale(1.02) rotateX(${-y * 8}deg) rotateY(${x * 8}deg)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = '';
+    card.style.transition = 'transform .5s cubic-bezier(0.4,0,0.2,1), box-shadow .3s, border-color .3s';
+  });
+  card.addEventListener('mouseenter', () => {
+    card.style.transition = 'transform .1s, box-shadow .3s, border-color .3s';
   });
 });
 
 const translations = {
   vi: {
-    'nav-features': 'FEATURES',
-    'nav-modules': 'MODULES',
-    'nav-themes': 'THEMES',
-    'nav-scripts': 'SCRIPTS',
-    'nav-usage': 'USAGE',
-    'hero-eyebrow': 'open source · roblox lua library',
-    'hero-desc': 'Thư viện UI & tiện ích modular mã nguồn mở cho Roblox. Animation mượt mà, 12 theme màu sắc, tối ưu hiệu năng, và hệ thống script đầy đủ.',
-    'btn-github': 'XEM GITHUB',
-    'btn-usage': 'CÁCH SỬ DỤNG',
-    'stat-themes': 'UI Themes',
-    'stat-scripts': 'Main Scripts',
-    'stat-modules': 'Logic Modules',
-    'stat-license': 'License',
-    'feat-tag': '// features',
-    'feat-title': 'Tất Cả Trong <em>Một</em>',
-    'feat-sub': 'Từ UI library đến các module logic phức tạp — mọi thứ đã được module hoá và sẵn sàng dùng.',
-    'f1-title': 'Custom UI Library',
-    'f1-desc': 'Tab system, toggle, dropdown, slider, input, danh sách cuộn — tất cả với animation tween mượt mà và đầy đủ theme hỗ trợ.',
-    'f2-title': 'Potato Mode',
-    'f2-desc': 'Tắt particle, shadow, texture, fog, PostEffect và hàng loạt hiệu ứng đồ hoạ theo batch — giảm lag đáng kể mà không cần restart.',
-    'f3-title': 'Animation Engine',
-    'f3-desc': 'Hệ thống tween đa lớp: mở/đóng UI với icon shrink, hover, drag-to-move, click feedback — mọi trạng thái đều có hiệu ứng.',
-    'f4-title': 'Search & Highlight',
-    'f4-desc': 'Tìm kiếm realtime trong UI với auto-scroll tới kết quả, highlight nền và viền neon vàng, cache descendants cho hiệu suất cao.',
-    'f5-title': 'Auto Clicker',
-    'f5-desc': 'Tối đa 20 điểm click kéo-thả được, tốc độ tuỳ chỉnh theo mili giây, hiệu ứng chớp sáng khi click, hỗ trợ cả mouse lẫn touch.',
-    'f6-title': 'Player Tools',
-    'f6-desc': 'Fly, Noclip, Teleport tới player/chuột/click, Target Lock, ESP outline, Anti-AFK tự động — tất cả có thể toggle realtime.',
-    'f7-title': 'Hx Build',
-    'f7-desc': 'Chọn, di chuyển, neo và hàn các khối trong workspace. Hỗ trợ nhóm khối, undo, outline vùng chọn trực quan.',
-    'f8-title': 'Config Manager',
-    'f8-desc': 'Lưu/đọc cấu hình riêng theo từng game và global. Tự động áp dụng theme, phím tắt, kích thước UI khi mở lại.',
-    'mod-tag': '// modules',
-    'mod-title': 'Kiến Trúc <em>Modular</em>',
-    'mod-sub': 'Mỗi module hoạt động độc lập và có thể được load riêng lẻ qua <code style="color:var(--neon);font-family:\'JetBrains Mono\',monospace">loadstring(HttpGet(...))()</code>',
-    'm1-desc': 'UI library đầy đủ — tạo cửa sổ, tab, toggle, dropdown, slider, input, nút, danh sách, theme selector tích hợp',
-    'm2-desc': 'Engine tween: mở/đóng giao diện với icon shrink, hover chuột, nhấn chuột, kéo-thả cửa sổ, cache transparency',
-    'm3-desc': '12 bộ theme màu sắc: Dark, Matrix, Ocean, Violet, Crimson, Gold, Sakura, Emerald, Cyberpunk, Ice, Sunset, Neon',
-    'm4-desc': 'Hệ thống thông báo nổi — thông báo thường và thông báo lỗi với animation xuất hiện/biến mất mượt mà',
-    'm5-desc': 'Tìm kiếm realtime trong UI, highlight nền + viền neon vàng, auto-scroll tới kết quả đầu tiên, cache descendants',
-    'm6-desc': 'Quản lý config global + per-game, Potato Mode, FullBright, No Shadows, Remove Fog, Anti-AFK tự động',
-    'm7-desc': 'Fly, Noclip, Teleport (tới player / chuột / click), Target Lock, ESP outline player, Click Teleport với phím tắt',
-    'm8-desc': 'Multi-point auto clicker kéo-thả, tối đa 20 điểm, tốc độ tuỳ chỉnh ms, hiệu ứng chớp sáng, hỗ trợ touch',
-    'm9-desc': 'Biến hình nhân vật hoặc mô hình: chọn part, undo, outline vùng chọn, set mode, lưu/xoá phần đã transform',
-    'm10-desc': 'Tạo, chọn, di chuyển, neo, hàn/tháo khối trong workspace. Hỗ trợ nhóm khối và event khi thay đổi',
-    'm11-desc': 'Tạo/xoá dummy, chọn model từ workspace, mở menu tuỳ chỉnh nhân vật, toggle chế độ chọn mẫu',
-    'theme-tag': '// themes',
-    'theme-title': '12 Bộ <em>Giao Diện</em>',
-    'theme-sub': 'Chuyển đổi ngay trong UI — theme được lưu và áp dụng tự động lần sau.',
-    'scr-tag': '// main scripts',
-    'scr-title': 'Scripts <em>Có Sẵn</em>',
-    'scr-sub': 'Được chọn qua Hx Loader — chỉ cần click, script sẽ tự tải và chạy.',
-    's1-desc': 'Giao diện biến hình nhân vật cổ điển với danh sách bộ phận, toggle từng phần, undo, và lưu trạng thái tức thì.',
-    's2-desc': 'Phiên bản nâng cấp dùng ThuVienUI đầy đủ — tab Nhân Vật, Khối, Settings. Hỗ trợ dummy, model chọn từ workspace, Hx Build.',
-    's3-desc': 'Script thử nghiệm tích hợp ETC module — Fly, Noclip, Teleport, Target Lock, ESP, Auto Clicker với giao diện ThuVienUI.',
-    'use-tag': '// how to use',
-    'use-title': 'Tài Liệu <em>Sử Dụng</em>',
-    'use-sub': 'Toàn bộ API được chia theo từng Module để dễ dàng tra cứu và tích hợp vào dự án của bạn.',
-    
-    'tab-loader-btn': '1. Hx Loader',
-    'tab-ui-btn': '2. ThuVienUI',
-    'tab-notify-btn': '3. ThongBao',
-    'tab-logic-btn': '4. Config & Logic',
-    'loader-h1': 'Khởi chạy qua Hub trung tâm',
-    'loader-desc': 'Chỉ cần dùng Executor (Delta, Fluxus, Evon,...) thực thi đoạn mã dưới đây. Một Menu UI sẽ hiện ra cho phép chọn các Script đã được viết sẵn trong thư viện ChaosSystem.',
-    'ui-h1': 'Khởi tạo Cửa sổ & Tab',
-    'ui-desc1': 'Load trực tiếp module `ThuVienUI.lua`. Sử dụng `TaoWindow` để dựng khung UI, sau đó gọi `TaoTab` để thêm các trang nội dung độc lập.',
-    'ui-h2': 'Thêm các Elements điều khiển',
-    'ui-desc2': 'Gọi các hàm từ đối tượng Tab để sinh ra Button, Toggle, Slider, hoặc Dropdown. Các hàm đều có callback Event trả về giá trị realtime.',
-    'not-h1': 'Gọi hộp thoại Thông báo',
-    'not-desc': 'Module `ThongBao.lua` xử lý các Notify nổi mượt mà trên màn hình người dùng. Rất hữu ích để báo cáo trạng thái chức năng.',
-    'log-h1': 'Tối ưu Client với ConfigManager',
-    'log-desc1': 'Loại bỏ bóng đổ, sương mù và kích hoạt FullBright để tăng FPS cho máy yếu.',
-    'log-h2': 'Gọi Utils Logic phổ biến',
-    'log-desc2': 'Module `ETC_Logic.lua` chứa sẵn các Script thông dụng cho dân Exploit như Fly, Noclip hay Click TP.',
-
-    'disc-title': 'Disclaimer — Chỉ Dành Cho Mục Đích Giáo Dục',
-    'disc-text': 'Repository này và toàn bộ nội dung được cung cấp <strong>chỉ cho mục đích học tập và nghiên cứu bảo mật</strong>. Các script minh hoạ lập trình Lua, kỹ thuật UI và cơ chế game trong Roblox engine.<br><br><strong>Tác giả không chịu trách nhiệm</strong> về cách người khác sử dụng code này. Mọi thiệt hại, ban tài khoản hoặc đình chỉ phát sinh từ việc sử dụng các script này là hoàn toàn trách nhiệm của người dùng. Sử dụng executor của bên thứ ba hoặc inject script vào game vi phạm Điều khoản Dịch vụ của Roblox.<br><br>Project này <strong>không chứa bất kỳ payload độc hại, stealer hay logger nào</strong>.',
-    'footer-copy': '© 2025 · MIT License · Made with Lua & Love'
+    'nav-features':'FEATURES','nav-modules':'MODULES','nav-themes':'THEMES','nav-scripts':'SCRIPTS','nav-usage':'USAGE',
+    'hero-eyebrow':'open source · roblox lua library',
+    'hero-desc':'Thư viện UI & tiện ích modular mã nguồn mở cho Roblox. Animation mượt mà, 12 theme màu sắc, tối ưu hiệu năng, và hệ thống script đầy đủ.',
+    'btn-github':'XEM GITHUB','btn-usage':'CÁCH SỬ DỤNG',
+    'stat-themes':'UI Themes','stat-scripts':'Main Scripts','stat-modules':'Logic Modules','stat-license':'License',
+    'feat-tag':'// features','feat-title':'Tất Cả Trong <em>Một</em>',
+    'feat-sub':'Từ UI library đến các module logic phức tạp — mọi thứ đã được module hoá và sẵn sàng dùng.',
+    'f1-title':'Custom UI Library','f1-desc':'Tab system, toggle, dropdown, slider, input, danh sách cuộn — tất cả với animation tween mượt mà và đầy đủ theme hỗ trợ.',
+    'f2-title':'Potato Mode','f2-desc':'Tắt particle, shadow, texture, fog, PostEffect và hàng loạt hiệu ứng đồ hoạ theo batch — giảm lag đáng kể mà không cần restart.',
+    'f3-title':'Animation Engine','f3-desc':'Hệ thống tween đa lớp: mở/đóng UI với icon shrink, hover, drag-to-move, click feedback — mọi trạng thái đều có hiệu ứng.',
+    'f4-title':'Search & Highlight','f4-desc':'Tìm kiếm realtime trong UI với auto-scroll tới kết quả, highlight nền và viền neon vàng, cache descendants cho hiệu suất cao.',
+    'f5-title':'Auto Clicker','f5-desc':'Tối đa 20 điểm click kéo-thả được, tốc độ tuỳ chỉnh theo mili giây, hiệu ứng chớp sáng khi click, hỗ trợ cả mouse lẫn touch.',
+    'f6-title':'Player Tools','f6-desc':'Fly, Noclip, Teleport tới player/chuột/click, Target Lock, ESP outline, Anti-AFK tự động — tất cả có thể toggle realtime.',
+    'f7-title':'Hx Build','f7-desc':'Chọn, di chuyển, neo và hàn các khối trong workspace. Hỗ trợ nhóm khối, undo, outline vùng chọn trực quan.',
+    'f8-title':'Config Manager','f8-desc':'Lưu/đọc cấu hình riêng theo từng game và global. Tự động áp dụng theme, phím tắt, kích thước UI khi mở lại.',
+    'mod-tag':'// modules','mod-title':'Kiến Trúc <em>Modular</em>',
+    'mod-sub':'Mỗi module hoạt động độc lập và có thể được load riêng lẻ qua <code style="color:var(--neon);font-family:\'JetBrains Mono\',monospace">loadstring(HttpGet(...))()</code>',
+    'm1-desc':'UI library đầy đủ — tạo cửa sổ, tab, toggle, dropdown, slider, input, nút, danh sách, theme selector tích hợp',
+    'm2-desc':'Engine tween: mở/đóng giao diện với icon shrink, hover chuột, nhấn chuột, kéo-thả cửa sổ, cache transparency',
+    'm3-desc':'12 bộ theme màu sắc: Dark, Matrix, Ocean, Violet, Crimson, Gold, Sakura, Emerald, Cyberpunk, Ice, Sunset, Neon',
+    'm4-desc':'Hệ thống thông báo nổi — thông báo thường và thông báo lỗi với animation xuất hiện/biến mất mượt mà',
+    'm5-desc':'Tìm kiếm realtime trong UI, highlight nền + viền neon vàng, auto-scroll tới kết quả đầu tiên, cache descendants',
+    'm6-desc':'Quản lý config global + per-game, Potato Mode, FullBright, No Shadows, Remove Fog, Anti-AFK tự động',
+    'm7-desc':'Fly, Noclip, Teleport (tới player / chuột / click), Target Lock, ESP outline player, Click Teleport với phím tắt',
+    'm8-desc':'Multi-point auto clicker kéo-thả, tối đa 20 điểm, tốc độ tuỳ chỉnh ms, hiệu ứng chớp sáng, hỗ trợ touch',
+    'm9-desc':'Biến hình nhân vật hoặc mô hình: chọn part, undo, outline vùng chọn, set mode, lưu/xoá phần đã transform',
+    'm10-desc':'Tạo, chọn, di chuyển, neo, hàn/tháo khối trong workspace. Hỗ trợ nhóm khối và event khi thay đổi',
+    'm11-desc':'Tạo/xoá dummy, chọn model từ workspace, mở menu tuỳ chỉnh nhân vật, toggle chế độ chọn mẫu',
+    'theme-tag':'// themes','theme-title':'12 Bộ <em>Giao Diện</em>',
+    'theme-sub':'Chuyển đổi ngay trong UI — theme được lưu và áp dụng tự động lần sau.',
+    'scr-tag':'// main scripts','scr-title':'Scripts <em>Có Sẵn</em>',
+    'scr-sub':'Được chọn qua Hx Loader — chỉ cần click, script sẽ tự tải và chạy.',
+    's1-desc':'Giao diện biến hình nhân vật cổ điển với danh sách bộ phận, toggle từng phần, undo, và lưu trạng thái tức thì.',
+    's2-desc':'Phiên bản nâng cấp dùng ThuVienUI đầy đủ — tab Nhân Vật, Khối, Settings. Hỗ trợ dummy, model chọn từ workspace, Hx Build.',
+    's3-desc':'Script thử nghiệm tích hợp ETC module — Fly, Noclip, Teleport, Target Lock, ESP, Auto Clicker với giao diện ThuVienUI.',
+    'use-tag':'// how to use','use-title':'Tài Liệu <em>Sử Dụng</em>',
+    'use-sub':'Toàn bộ API được chia theo từng Module để dễ dàng tra cứu và tích hợp vào dự án của bạn.',
+    'tab-loader-btn':'1. Hx Loader','tab-ui-btn':'2. ThuVienUI','tab-notify-btn':'3. ThongBao','tab-logic-btn':'4. Config & Logic',
+    'loader-h1':'Khởi chạy qua Hub trung tâm',
+    'loader-desc':'Chỉ cần dùng Executor (Delta, Fluxus, Evon,...) thực thi đoạn mã dưới đây. Một Menu UI sẽ hiện ra cho phép chọn các Script đã được viết sẵn trong thư viện ChaosSystem.',
+    'ui-h1':'Khởi tạo Cửa sổ & Tab',
+    'ui-desc1':'Load trực tiếp module `ThuVienUI.lua`. Sử dụng `TaoWindow` để dựng khung UI, sau đó gọi `TaoTab` để thêm các trang nội dung độc lập.',
+    'ui-h2':'Thêm các Elements điều khiển',
+    'ui-desc2':'Gọi các hàm từ đối tượng Tab để sinh ra Button, Toggle, Slider, hoặc Dropdown. Các hàm đều có callback Event trả về giá trị realtime.',
+    'not-h1':'Gọi hộp thoại Thông báo',
+    'not-desc':'Module `ThongBao.lua` xử lý các Notify nổi mượt mà trên màn hình người dùng. Rất hữu ích để báo cáo trạng thái chức năng.',
+    'log-h1':'Tối ưu Client với ConfigManager',
+    'log-desc1':'Loại bỏ bóng đổ, sương mù và kích hoạt FullBright để tăng FPS cho máy yếu.',
+    'log-h2':'Gọi Utils Logic phổ biến',
+    'log-desc2':'Module `ETC_Logic.lua` chứa sẵn các Script thông dụng cho dân Exploit như Fly, Noclip hay Click TP.',
+    'disc-title':'Disclaimer — Chỉ Dành Cho Mục Đích Giáo Dục',
+    'disc-text':'Repository này và toàn bộ nội dung được cung cấp <strong>chỉ cho mục đích học tập và nghiên cứu bảo mật</strong>. Các script minh hoạ lập trình Lua, kỹ thuật UI và cơ chế game trong Roblox engine.<br><br><strong>Tác giả không chịu trách nhiệm</strong> về cách người khác sử dụng code này. Mọi thiệt hại, ban tài khoản hoặc đình chỉ phát sinh từ việc sử dụng các script này là hoàn toàn trách nhiệm của người dùng. Sử dụng executor của bên thứ ba hoặc inject script vào game vi phạm Điều khoản Dịch vụ của Roblox.<br><br>Project này <strong>không chứa bất kỳ payload độc hại, stealer hay logger nào</strong>.',
+    'footer-copy':'© 2025 · MIT License · Made with Lua & Love'
   },
   en: {
-    'nav-features': 'FEATURES',
-    'nav-modules': 'MODULES',
-    'nav-themes': 'THEMES',
-    'nav-scripts': 'SCRIPTS',
-    'nav-usage': 'USAGE',
-    'hero-eyebrow': 'open source · roblox lua library',
-    'hero-desc': 'Open source modular UI library & utilities for Roblox. Smooth animations, 12 color themes, performance optimized, and a complete script system.',
-    'btn-github': 'VIEW GITHUB',
-    'btn-usage': 'HOW TO USE',
-    'stat-themes': 'UI Themes',
-    'stat-scripts': 'Main Scripts',
-    'stat-modules': 'Logic Modules',
-    'stat-license': 'License',
-    'feat-tag': '// features',
-    'feat-title': 'Everything In <em>One</em>',
-    'feat-sub': 'From UI library to complex logic modules — everything is modularized and ready to use.',
-    'f1-title': 'Custom UI Library',
-    'f1-desc': 'Tab system, toggles, dropdowns, sliders, inputs, scrollable lists — all with smooth tween animations and full theme support.',
-    'f2-title': 'Potato Mode',
-    'f2-desc': 'Batch-disable particles, shadows, textures, fog, PostEffects and visual layers — significantly reduces lag without needing a restart.',
-    'f3-title': 'Animation Engine',
-    'f3-desc': 'Multi-layer tween system: open/close UI with icon shrink, hover, drag-to-move, click feedback — every state has an effect.',
-    'f4-title': 'Search & Highlight',
-    'f4-desc': 'Realtime UI search with auto-scroll to results, neon yellow highlight on background and border, cached descendants for performance.',
-    'f5-title': 'Auto Clicker',
-    'f5-desc': 'Up to 20 draggable click points, customizable speed in milliseconds, flash effect on click, supports both mouse and touch.',
-    'f6-title': 'Player Tools',
-    'f6-desc': 'Fly, Noclip, Teleport to player/cursor/click, Target Lock, ESP outline, auto Anti-AFK — all toggleable in realtime.',
-    'f7-title': 'Hx Build',
-    'f7-desc': 'Select, move, anchor and weld parts in the workspace. Supports part groups, undo, and visual selection outlines.',
-    'f8-title': 'Config Manager',
-    'f8-desc': 'Save/load per-game and global configs. Automatically applies theme, keybinds, and UI size on next open.',
-    'mod-tag': '// modules',
-    'mod-title': '<em>Modular</em> Architecture',
-    'mod-sub': 'Each module works independently and can be loaded separately via <code style="color:var(--neon);font-family:\'JetBrains Mono\',monospace">loadstring(HttpGet(...))()</code>',
-    'm1-desc': 'Full UI library — create windows, tabs, toggles, dropdowns, sliders, inputs, buttons, lists, built-in theme selector',
-    'm2-desc': 'Tween engine: open/close UI with icon shrink, mouse hover, click press, window drag, transparency cache',
-    'm3-desc': '12 color themes: Dark, Matrix, Ocean, Violet, Crimson, Gold, Sakura, Emerald, Cyberpunk, Ice, Sunset, Neon',
-    'm4-desc': 'Floating notification system — standard and error notifications with smooth appear/disappear animations',
-    'm5-desc': 'Realtime UI search, neon yellow highlight on background + border, auto-scroll to first result, cached descendants',
-    'm6-desc': 'Global + per-game config manager, Potato Mode, FullBright, No Shadows, Remove Fog, auto Anti-AFK',
-    'm7-desc': 'Fly, Noclip, Teleport (to player / cursor / click), Target Lock, ESP player outline, Click Teleport with hotkeys',
-    'm8-desc': 'Multi-point drag-and-drop auto clicker, up to 20 points, customizable ms speed, flash effect, touch support',
-    'm9-desc': 'Transform character or model: select parts, undo, selection outline, set mode, save/clear transformed parts',
-    'm10-desc': 'Create, select, move, anchor, weld/unweld parts in workspace. Supports part groups and change events',
-    'm11-desc': 'Create/delete dummies, select model from workspace, open character customization menu, toggle model selection mode',
-    'theme-tag': '// themes',
-    'theme-title': '12 <em>Color Themes</em>',
-    'theme-sub': 'Switch instantly in the UI — themes are saved and auto-applied next time.',
-    'scr-tag': '// main scripts',
-    'scr-title': 'Available <em>Scripts</em>',
-    'scr-sub': 'Selected via Hx Loader — just click and the script will load and run automatically.',
-    's1-desc': 'Classic character transform UI with part list, per-part toggle, undo, and instant state saving.',
-    's2-desc': 'Upgraded version using full ThuVienUI — Character, Blocks, Settings tabs. Supports dummy, workspace model selection, Hx Build.',
-    's3-desc': 'Experimental script integrating the ETC module — Fly, Noclip, Teleport, Target Lock, ESP, Auto Clicker with ThuVienUI.',
-    'use-tag': '// how to use',
-    'use-title': 'Documentation <em>Guide</em>',
-    'use-sub': 'The entire API is divided into individual Modules for easy reference and integration into your projects.',
-    
-    'tab-loader-btn': '1. Main Loader',
-    'tab-ui-btn': '2. ThuVienUI',
-    'tab-notify-btn': '3. ThongBao',
-    'tab-logic-btn': '4. Config & Logic',
-    'loader-h1': 'Launch via Master Hub',
-    'loader-desc': 'Simply execute the code below in any Executor (Delta, Fluxus, Evon,...). A UI Menu will appear allowing you to select pre-written scripts from the ChaosSystem library.',
-    'ui-h1': 'Initialize Window & Tabs',
-    'ui-desc1': 'Require the `ThuVienUI.lua` module directly. Use `TaoWindow` to build the UI frame, then call `TaoTab` to add independent content pages.',
-    'ui-h2': 'Add UI Elements',
-    'ui-desc2': 'Call functions from the Tab object to generate Buttons, Toggles, Sliders, or Dropdowns. Each function has an Event callback returning real-time values.',
-    'not-h1': 'Trigger Notifications',
-    'not-desc': 'The `ThongBao.lua` module handles smooth floating Notifications on the user\'s screen. Extremely useful for reporting feature states.',
-    'log-h1': 'Optimize Client with ConfigManager',
-    'log-desc1': 'Remove shadows, fog, and enable FullBright to drastically boost FPS for low-end devices.',
-    'log-h2': 'Call Common Logic Utils',
-    'log-desc2': 'The `ETC_Logic.lua` module contains standard Scripts used by Exploit developers like Fly, Noclip, and Click TP.',
-
-    'disc-title': 'Disclaimer — For Educational Purposes Only',
-    'disc-text': 'This repository and all its content is provided <strong>for educational and security research purposes only</strong>. The scripts demonstrate Lua programming, UI techniques, and game mechanics within the Roblox engine.<br><br><strong>The author bears no responsibility</strong> for how others use this code. Any damage, account bans or suspensions resulting from the use of these scripts are entirely the user\'s responsibility. Using third-party executors or injecting scripts into games violates Roblox\'s Terms of Service.<br><br>This project <strong>contains no malicious payloads, stealers or loggers of any kind</strong>.',
-    'footer-copy': '© 2025 · MIT License · Made with Lua & Love'
+    'nav-features':'FEATURES','nav-modules':'MODULES','nav-themes':'THEMES','nav-scripts':'SCRIPTS','nav-usage':'USAGE',
+    'hero-eyebrow':'open source · roblox lua library',
+    'hero-desc':'Open source modular UI library & utilities for Roblox. Smooth animations, 12 color themes, performance optimized, and a complete script system.',
+    'btn-github':'VIEW GITHUB','btn-usage':'HOW TO USE',
+    'stat-themes':'UI Themes','stat-scripts':'Main Scripts','stat-modules':'Logic Modules','stat-license':'License',
+    'feat-tag':'// features','feat-title':'Everything In <em>One</em>',
+    'feat-sub':'From UI library to complex logic modules — everything is modularized and ready to use.',
+    'f1-title':'Custom UI Library','f1-desc':'Tab system, toggles, dropdowns, sliders, inputs, scrollable lists — all with smooth tween animations and full theme support.',
+    'f2-title':'Potato Mode','f2-desc':'Batch-disable particles, shadows, textures, fog, PostEffects and visual layers — significantly reduces lag without needing a restart.',
+    'f3-title':'Animation Engine','f3-desc':'Multi-layer tween system: open/close UI with icon shrink, hover, drag-to-move, click feedback — every state has an effect.',
+    'f4-title':'Search & Highlight','f4-desc':'Realtime UI search with auto-scroll to results, neon yellow highlight on background and border, cached descendants for performance.',
+    'f5-title':'Auto Clicker','f5-desc':'Up to 20 draggable click points, customizable speed in milliseconds, flash effect on click, supports both mouse and touch.',
+    'f6-title':'Player Tools','f6-desc':'Fly, Noclip, Teleport to player/cursor/click, Target Lock, ESP outline, auto Anti-AFK — all toggleable in realtime.',
+    'f7-title':'Hx Build','f7-desc':'Select, move, anchor and weld parts in the workspace. Supports part groups, undo, and visual selection outlines.',
+    'f8-title':'Config Manager','f8-desc':'Save/load per-game and global configs. Automatically applies theme, keybinds, and UI size on next open.',
+    'mod-tag':'// modules','mod-title':'<em>Modular</em> Architecture',
+    'mod-sub':'Each module works independently and can be loaded separately via <code style="color:var(--neon);font-family:\'JetBrains Mono\',monospace">loadstring(HttpGet(...))()</code>',
+    'm1-desc':'Full UI library — create windows, tabs, toggles, dropdowns, sliders, inputs, buttons, lists, built-in theme selector',
+    'm2-desc':'Tween engine: open/close UI with icon shrink, mouse hover, click press, window drag, transparency cache',
+    'm3-desc':'12 color themes: Dark, Matrix, Ocean, Violet, Crimson, Gold, Sakura, Emerald, Cyberpunk, Ice, Sunset, Neon',
+    'm4-desc':'Floating notification system — standard and error notifications with smooth appear/disappear animations',
+    'm5-desc':'Realtime UI search, neon yellow highlight on background + border, auto-scroll to first result, cached descendants',
+    'm6-desc':'Global + per-game config manager, Potato Mode, FullBright, No Shadows, Remove Fog, auto Anti-AFK',
+    'm7-desc':'Fly, Noclip, Teleport (to player / cursor / click), Target Lock, ESP player outline, Click Teleport with hotkeys',
+    'm8-desc':'Multi-point drag-and-drop auto clicker, up to 20 points, customizable ms speed, flash effect, touch support',
+    'm9-desc':'Transform character or model: select parts, undo, selection outline, set mode, save/clear transformed parts',
+    'm10-desc':'Create, select, move, anchor, weld/unweld parts in workspace. Supports part groups and change events',
+    'm11-desc':'Create/delete dummies, select model from workspace, open character customization menu, toggle model selection mode',
+    'theme-tag':'// themes','theme-title':'12 <em>Color Themes</em>',
+    'theme-sub':'Switch instantly in the UI — themes are saved and auto-applied next time.',
+    'scr-tag':'// main scripts','scr-title':'Available <em>Scripts</em>',
+    'scr-sub':'Selected via Hx Loader — just click and the script will load and run automatically.',
+    's1-desc':'Classic character transform UI with part list, per-part toggle, undo, and instant state saving.',
+    's2-desc':'Upgraded version using full ThuVienUI — Character, Blocks, Settings tabs. Supports dummy, workspace model selection, Hx Build.',
+    's3-desc':'Experimental script integrating the ETC module — Fly, Noclip, Teleport, Target Lock, ESP, Auto Clicker with ThuVienUI.',
+    'use-tag':'// how to use','use-title':'Documentation <em>Guide</em>',
+    'use-sub':'The entire API is divided into individual Modules for easy reference and integration into your projects.',
+    'tab-loader-btn':'1. Main Loader','tab-ui-btn':'2. ThuVienUI','tab-notify-btn':'3. ThongBao','tab-logic-btn':'4. Config & Logic',
+    'loader-h1':'Launch via Master Hub',
+    'loader-desc':'Simply execute the code below in any Executor (Delta, Fluxus, Evon,...). A UI Menu will appear allowing you to select pre-written scripts from the ChaosSystem library.',
+    'ui-h1':'Initialize Window & Tabs',
+    'ui-desc1':'Require the `ThuVienUI.lua` module directly. Use `TaoWindow` to build the UI frame, then call `TaoTab` to add independent content pages.',
+    'ui-h2':'Add UI Elements',
+    'ui-desc2':'Call functions from the Tab object to generate Buttons, Toggles, Sliders, or Dropdowns. Each function has an Event callback returning real-time values.',
+    'not-h1':'Trigger Notifications',
+    'not-desc':'The `ThongBao.lua` module handles smooth floating Notifications on the user\'s screen. Extremely useful for reporting feature states.',
+    'log-h1':'Optimize Client with ConfigManager',
+    'log-desc1':'Remove shadows, fog, and enable FullBright to drastically boost FPS for low-end devices.',
+    'log-h2':'Call Common Logic Utils',
+    'log-desc2':'The `ETC_Logic.lua` module contains standard Scripts used by Exploit developers like Fly, Noclip, and Click TP.',
+    'disc-title':'Disclaimer — For Educational Purposes Only',
+    'disc-text':'This repository and all its content is provided <strong>for educational and security research purposes only</strong>. The scripts demonstrate Lua programming, UI techniques, and game mechanics within the Roblox engine.<br><br><strong>The author bears no responsibility</strong> for how others use this code. Any damage, account bans or suspensions resulting from the use of these scripts are entirely the user\'s responsibility. Using third-party executors or injecting scripts into games violates Roblox\'s Terms of Service.<br><br>This project <strong>contains no malicious payloads, stealers or loggers of any kind</strong>.',
+    'footer-copy':'© 2025 · MIT License · Made with Lua & Love'
   }
 };
 
 let currentLang = 'vi';
-
 function setLang(lang) {
   currentLang = lang;
   const btn = document.getElementById('langBtn');
   btn.classList.toggle('is-vi', lang === 'vi');
   btn.classList.toggle('is-en', lang === 'en');
   document.documentElement.lang = lang;
-
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
-    if (translations[lang][key] !== undefined) {
-      el.textContent = translations[lang][key];
-    }
+    if (translations[lang][key] !== undefined) el.textContent = translations[lang][key];
   });
   document.querySelectorAll('[data-i18n-html]').forEach(el => {
     const key = el.getAttribute('data-i18n-html');
-    if (translations[lang][key] !== undefined) {
-      el.innerHTML = translations[lang][key];
-    }
+    if (translations[lang][key] !== undefined) el.innerHTML = translations[lang][key];
   });
 }
-
-function toggleLang() {
-  setLang(currentLang === 'vi' ? 'en' : 'vi');
-}
-
+function toggleLang() { setLang(currentLang === 'vi' ? 'en' : 'vi'); }
 setLang('vi');
 </script>
 </body>
