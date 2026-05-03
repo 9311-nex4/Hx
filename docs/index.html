@@ -1,892 +1,1161 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WCaO — Windows Cleanup & Optimizer</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --bg: #06080f;
-      --bg2: #0c1120;
-      --surface: #101827;
-      --border: #1e2d47;
-      --cyan: #00f5ff;
-      --green: #00ff88;
-      --red: #ff3c5c;
-      --yellow: #ffd200;
-      --text: #c8d8f0;
-      --muted: #4a6080;
-      --glow-cyan: 0 0 20px rgba(0,245,255,0.4);
-      --glow-green: 0 0 20px rgba(0,255,136,0.4);
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hx Script — ChaosSystem</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@300;400;600&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #080c0f;
+    --bg2:      #0d1318;
+    --bg3:      #111820;
+    --neon:     #00e5ff;
+    --neon2:    #00ff88;
+    --neon3:    #ff6b35;
+    --neon4:    #c87bff;
+    --text:     #e0eaf0;
+    --muted:    #607080;
+    --border:   rgba(0,229,255,0.12);
+    --border2:  rgba(0,229,255,0.25);
+    --card:     rgba(13,19,24,0.8);
+    --glow:     0 0 20px rgba(0,229,255,0.3);
+    --glow2:    0 0 40px rgba(0,229,255,0.15);
+  }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-weight: 300;
-      overflow-x: hidden;
-    }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
 
-    /* ── SCANLINE OVERLAY ── */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0,0,0,0.08) 2px,
-        rgba(0,0,0,0.08) 4px
-      );
-      pointer-events: none;
-      z-index: 9999;
-    }
+  /* ─── CANVAS BG ─── */
+  #bg-canvas {
+    position: fixed; inset: 0; z-index: 0;
+    pointer-events: none; opacity: 0.4;
+  }
 
-    /* ── GRID BG ── */
-    body::after {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(0,245,255,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,245,255,0.03) 1px, transparent 1px);
-      background-size: 60px 60px;
-      pointer-events: none;
-      z-index: 0;
-    }
+  /* ─── GRID OVERLAY ─── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
 
-    /* ── NAV ── */
-    nav {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 18px 48px;
-      background: rgba(6,8,15,0.85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-    }
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--neon); border-radius: 2px; }
 
-    .nav-logo {
-      font-family: 'Orbitron', monospace;
-      font-weight: 900;
-      font-size: 18px;
-      color: var(--cyan);
-      letter-spacing: 3px;
-      text-shadow: var(--glow-cyan);
-    }
+  /* ─── LAYOUT ─── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 1; }
 
-    .nav-logo span { color: var(--green); }
+  section { padding: 80px 0; }
 
-    .nav-links {
-      display: flex;
-      gap: 32px;
-      list-style: none;
-    }
+  /* ─── NAV ─── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 16px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(8,12,15,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900; font-size: 18px;
+    color: var(--neon);
+    letter-spacing: 3px;
+    text-shadow: var(--glow);
+  }
+  .nav-logo span { color: var(--text); }
+  .nav-links { display: flex; gap: 28px; }
+  .nav-links a {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; color: var(--muted);
+    text-decoration: none; letter-spacing: 1px;
+    transition: color .2s;
+  }
+  .nav-links a:hover { color: var(--neon); }
+  .nav-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--bg);
+    background: var(--neon); padding: 4px 12px;
+    border-radius: 2px; font-weight: 600;
+    text-decoration: none; letter-spacing: 1px;
+    transition: box-shadow .2s;
+  }
+  .nav-badge:hover { box-shadow: var(--glow); }
 
-    .nav-links a {
-      color: var(--muted);
-      text-decoration: none;
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 13px;
-      letter-spacing: 1px;
-      transition: color 0.2s;
-    }
-    .nav-links a:hover { color: var(--cyan); }
+  /* ─── HERO ─── */
+  #hero {
+    min-height: 100vh;
+    display: flex; align-items: center;
+    padding-top: 80px;
+    position: relative; overflow: hidden;
+  }
+  .hero-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; z-index: 1; }
 
-    .nav-btn {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 13px;
-      letter-spacing: 2px;
-      color: var(--bg);
-      background: var(--cyan);
-      border: none;
-      padding: 9px 22px;
-      cursor: pointer;
-      clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
-      transition: background 0.2s, box-shadow 0.2s;
-    }
-    .nav-btn:hover {
-      background: var(--green);
-      box-shadow: var(--glow-green);
-    }
+  .hero-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; color: var(--neon);
+    letter-spacing: 4px; text-transform: uppercase;
+    margin-bottom: 24px;
+    opacity: 0; animation: fadeUp .6s .2s forwards;
+  }
+  .hero-eyebrow::before { content: '// '; color: var(--muted); }
 
-    /* ── HERO ── */
-    .hero {
-      position: relative;
-      z-index: 1;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      text-align: center;
-      padding: 100px 24px 60px;
-      overflow: hidden;
-    }
+  .hero-title {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(42px, 7vw, 90px);
+    font-weight: 900; line-height: 1;
+    letter-spacing: -1px;
+    opacity: 0; animation: fadeUp .6s .4s forwards;
+  }
+  .hero-title .line1 { color: var(--text); display: block; }
+  .hero-title .line2 {
+    color: transparent;
+    -webkit-text-stroke: 1px var(--neon);
+    display: block;
+  }
+  .hero-title .cursor {
+    display: inline-block;
+    width: 3px; height: .85em;
+    background: var(--neon);
+    margin-left: 4px;
+    vertical-align: middle;
+    animation: blink 1s step-end infinite;
+  }
 
-    .hero-glow {
-      position: absolute;
-      width: 600px; height: 600px;
-      background: radial-gradient(circle, rgba(0,245,255,0.08) 0%, transparent 70%);
-      top: 50%; left: 50%;
-      transform: translate(-50%, -55%);
-      pointer-events: none;
-    }
+  .hero-desc {
+    margin-top: 28px;
+    max-width: 560px;
+    font-size: 18px; font-weight: 300;
+    color: var(--muted); line-height: 1.7;
+    opacity: 0; animation: fadeUp .6s .6s forwards;
+  }
 
-    .badge {
-      display: inline-flex;
-      align-items: center;
+  .hero-actions {
+    margin-top: 44px;
+    display: flex; gap: 16px; flex-wrap: wrap;
+    opacity: 0; animation: fadeUp .6s .8s forwards;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; font-weight: 600;
+    letter-spacing: 1px; text-decoration: none;
+    border-radius: 3px; transition: all .25s;
+    cursor: pointer; border: none;
+  }
+  .btn-primary {
+    background: var(--neon); color: var(--bg);
+  }
+  .btn-primary:hover { box-shadow: 0 0 30px rgba(0,229,255,0.5); transform: translateY(-2px); }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border2);
+    color: var(--neon);
+  }
+  .btn-outline:hover { background: rgba(0,229,255,0.07); border-color: var(--neon); }
+
+  .hero-stats {
+    margin-top: 64px;
+    display: flex; gap: 48px; flex-wrap: wrap;
+    opacity: 0; animation: fadeUp .6s 1s forwards;
+    border-top: 1px solid var(--border);
+    padding-top: 40px;
+  }
+  .stat-item {}
+  .stat-num {
+    font-family: 'Orbitron', monospace;
+    font-size: 28px; font-weight: 900;
+    color: var(--neon);
+  }
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--muted);
+    letter-spacing: 2px; text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* ─── SECTION HEADER ─── */
+  .sec-header { margin-bottom: 56px; }
+  .sec-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--neon);
+    letter-spacing: 3px; text-transform: uppercase;
+    margin-bottom: 12px; display: block;
+  }
+  .sec-title {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(24px, 4vw, 38px);
+    font-weight: 700; line-height: 1.2;
+  }
+  .sec-title em {
+    font-style: normal;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--neon);
+  }
+  .sec-sub {
+    margin-top: 14px;
+    font-size: 17px; color: var(--muted); font-weight: 300;
+    max-width: 520px;
+  }
+
+  /* ─── FEATURES GRID ─── */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .feat-card {
+    background: var(--bg2);
+    padding: 32px 28px;
+    position: relative;
+    transition: background .25s;
+    overflow: hidden;
+  }
+  .feat-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(0,229,255,0.04), transparent);
+    opacity: 0; transition: opacity .3s;
+  }
+  .feat-card:hover { background: var(--bg3); }
+  .feat-card:hover::before { opacity: 1; }
+  .feat-card:hover .feat-icon { text-shadow: 0 0 20px currentColor; }
+
+  .feat-icon {
+    font-size: 28px; margin-bottom: 16px;
+    display: block; transition: text-shadow .3s;
+  }
+  .feat-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 13px; font-weight: 700;
+    letter-spacing: 1px; color: var(--neon);
+    margin-bottom: 10px; text-transform: uppercase;
+  }
+  .feat-desc {
+    font-size: 15px; color: var(--muted); font-weight: 300; line-height: 1.6;
+  }
+
+  /* ─── MODULES ─── */
+  .modules-list { display: flex; flex-direction: column; gap: 3px; }
+  .module-row {
+    display: grid;
+    grid-template-columns: 200px 1fr auto;
+    align-items: center; gap: 24px;
+    padding: 20px 24px;
+    background: var(--bg2);
+    border-radius: 3px;
+    border-left: 2px solid transparent;
+    transition: all .2s;
+    cursor: default;
+  }
+  .module-row:hover {
+    background: var(--bg3);
+    border-left-color: var(--neon);
+    padding-left: 28px;
+  }
+  .module-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; font-weight: 600;
+    color: var(--neon);
+  }
+  .module-file {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--muted);
+    margin-top: 3px;
+  }
+  .module-desc {
+    font-size: 15px; color: var(--text); font-weight: 300;
+  }
+  .module-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 1px;
+    padding: 3px 10px; border-radius: 2px;
+    white-space: nowrap;
+  }
+  .tag-core   { background: rgba(0,229,255,0.1);  color: var(--neon);  border: 1px solid rgba(0,229,255,0.2); }
+  .tag-util   { background: rgba(0,255,136,0.1);  color: var(--neon2); border: 1px solid rgba(0,255,136,0.2); }
+  .tag-logic  { background: rgba(255,107,53,0.1); color: var(--neon3); border: 1px solid rgba(255,107,53,0.2); }
+  .tag-config { background: rgba(200,123,255,0.1);color: var(--neon4); border: 1px solid rgba(200,123,255,0.2); }
+
+  /* ─── THEMES ─── */
+  .themes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 12px;
+  }
+  .theme-card {
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    transition: transform .2s, box-shadow .2s;
+    cursor: default;
+  }
+  .theme-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  }
+  .theme-preview {
+    height: 80px; display: flex; align-items: center;
+    justify-content: center; gap: 6px;
+    position: relative; padding: 12px;
+  }
+  .theme-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .theme-bar {
+    height: 4px; border-radius: 2px;
+    flex: 1; opacity: 0.6;
+  }
+  .theme-info {
+    padding: 10px 14px;
+    background: var(--bg2);
+  }
+  .theme-name {
+    font-family: 'Orbitron', monospace;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 1px; color: var(--text);
+  }
+  .theme-neon {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* ─── SCRIPTS ─── */
+  .scripts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+  }
+  .script-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px; padding: 28px;
+    position: relative; overflow: hidden;
+    transition: border-color .25s, box-shadow .25s;
+  }
+  .script-card:hover {
+    border-color: var(--neon);
+    box-shadow: var(--glow2);
+  }
+  .script-card::after {
+    content: '';
+    position: absolute; top: 0; right: 0;
+    width: 80px; height: 80px;
+    background: radial-gradient(circle at top right, rgba(0,229,255,0.08), transparent 70%);
+  }
+  .script-version {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--muted);
+    letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .script-name {
+    font-family: 'Orbitron', monospace;
+    font-size: 18px; font-weight: 700;
+    color: var(--neon); margin-bottom: 14px;
+  }
+  .script-desc {
+    font-size: 15px; color: var(--muted);
+    font-weight: 300; line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .script-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .script-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; padding: 3px 10px;
+    border-radius: 2px; background: rgba(0,229,255,0.06);
+    color: var(--neon); border: 1px solid rgba(0,229,255,0.15);
+  }
+
+  /* ─── CODE ─── */
+  .code-block {
+    background: #060a0d;
+    border: 1px solid var(--border);
+    border-radius: 6px; overflow: hidden;
+    position: relative;
+  }
+  .code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 20px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+  }
+  .code-dots { display: flex; gap: 6px; }
+  .code-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+  }
+  .d1 { background: #ff5f57; }
+  .d2 { background: #febc2e; }
+  .d3 { background: #28c840; }
+  .code-lang {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--muted);
+    letter-spacing: 1px;
+  }
+  .code-copy {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--neon);
+    background: transparent; border: 1px solid var(--border2);
+    padding: 4px 12px; border-radius: 2px; cursor: pointer;
+    transition: all .2s;
+  }
+  .code-copy:hover { background: rgba(0,229,255,0.1); }
+  .code-body { padding: 24px; overflow-x: auto; }
+  pre { margin: 0; }
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; line-height: 1.8;
+  }
+  .c-kw  { color: #c87bff; }
+  .c-fn  { color: #00e5ff; }
+  .c-str { color: #00ff88; }
+  .c-cm  { color: #405060; font-style: italic; }
+  .c-op  { color: #ff6b35; }
+  .c-num { color: #ffd700; }
+
+  /* ─── DISCLAIMER ─── */
+  .disclaimer-box {
+    background: rgba(255,107,53,0.05);
+    border: 1px solid rgba(255,107,53,0.2);
+    border-radius: 6px; padding: 32px;
+    position: relative; overflow: hidden;
+  }
+  .disclaimer-box::before {
+    content: '!';
+    position: absolute; right: -10px; top: -20px;
+    font-family: 'Orbitron', monospace;
+    font-size: 120px; font-weight: 900;
+    color: rgba(255,107,53,0.05); line-height: 1;
+    pointer-events: none;
+  }
+  .disclaimer-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 14px; font-weight: 700;
+    color: var(--neon3); letter-spacing: 2px;
+    margin-bottom: 16px; text-transform: uppercase;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .disclaimer-title::before { content: '⚠'; }
+  .disclaimer-text {
+    font-size: 15px; color: var(--muted); font-weight: 300;
+    line-height: 1.8;
+  }
+  .disclaimer-text strong { color: var(--text); font-weight: 600; }
+
+  /* ─── FOOTER ─── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 48px 0;
+    position: relative; z-index: 1;
+  }
+  .footer-inner {
+    max-width: 1100px; margin: 0 auto; padding: 0 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 24px;
+  }
+  .footer-logo {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900; font-size: 16px;
+    color: var(--neon); letter-spacing: 3px;
+  }
+  .footer-copy {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--muted);
+    letter-spacing: 1px;
+  }
+  .footer-links { display: flex; gap: 20px; }
+  .footer-links a {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--muted);
+    text-decoration: none; letter-spacing: 1px;
+    transition: color .2s;
+  }
+  .footer-links a:hover { color: var(--neon); }
+
+  /* ─── DIVIDER ─── */
+  .neon-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--neon), transparent);
+    margin: 0; opacity: 0.3;
+  }
+
+  /* ─── KEYFRAMES ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 12px rgba(0,229,255,0.2); }
+    50%       { box-shadow: 0 0 28px rgba(0,229,255,0.5); }
+  }
+  @keyframes scanline {
+    0%   { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+  }
+
+  /* ─── SCAN LINE ─── */
+  .scanline {
+    position: fixed; left: 0; right: 0; height: 2px;
+    background: linear-gradient(transparent, rgba(0,229,255,0.05), transparent);
+    z-index: 0; pointer-events: none;
+    animation: scanline 8s linear infinite;
+  }
+
+  /* ─── SCROLL REVEAL ─── */
+  .reveal {
+    opacity: 0; transform: translateY(32px);
+    transition: opacity .6s ease, transform .6s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ─── MOBILE ─── */
+  @media (max-width: 700px) {
+    nav { padding: 12px 20px; }
+    .nav-links { display: none; }
+    .container { padding: 0 20px; }
+    .module-row {
+      grid-template-columns: 1fr;
       gap: 8px;
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 12px;
-      letter-spacing: 2px;
-      color: var(--green);
-      border: 1px solid rgba(0,255,136,0.3);
-      padding: 6px 16px;
-      margin-bottom: 28px;
-      animation: fadeIn 0.6s ease both;
     }
-
-    .badge::before {
-      content: '';
-      width: 6px; height: 6px;
-      background: var(--green);
-      border-radius: 50%;
-      box-shadow: 0 0 8px var(--green);
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
-
-    h1 {
-      font-family: 'Orbitron', monospace;
-      font-size: clamp(36px, 6vw, 80px);
-      font-weight: 900;
-      line-height: 1.1;
-      letter-spacing: -1px;
-      animation: fadeUp 0.8s ease both 0.1s;
-    }
-
-    h1 .line1 { color: #fff; display: block; }
-    h1 .line2 { 
-      color: var(--cyan); 
-      display: block;
-      text-shadow: var(--glow-cyan);
-    }
-
-    .hero-sub {
-      margin-top: 20px;
-      font-size: 17px;
-      color: var(--muted);
-      max-width: 520px;
-      line-height: 1.7;
-      animation: fadeUp 0.8s ease both 0.2s;
-    }
-
-    .hero-actions {
-      display: flex;
-      gap: 16px;
-      margin-top: 40px;
-      flex-wrap: wrap;
-      justify-content: center;
-      animation: fadeUp 0.8s ease both 0.3s;
-    }
-
-    .btn-primary {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--cyan);
-      color: #000;
-      font-family: 'Orbitron', monospace;
-      font-weight: 700;
-      font-size: 13px;
-      letter-spacing: 2px;
-      padding: 16px 32px;
-      text-decoration: none;
-      clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
-      transition: all 0.2s;
-      box-shadow: var(--glow-cyan);
-    }
-    .btn-primary:hover {
-      background: #fff;
-      box-shadow: 0 0 40px rgba(0,245,255,0.6);
-      transform: translateY(-2px);
-    }
-
-    .btn-secondary {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: transparent;
-      color: var(--cyan);
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 13px;
-      letter-spacing: 2px;
-      padding: 16px 28px;
-      text-decoration: none;
-      border: 1px solid rgba(0,245,255,0.4);
-      transition: all 0.2s;
-    }
-    .btn-secondary:hover {
-      border-color: var(--cyan);
-      background: rgba(0,245,255,0.06);
-      color: #fff;
-    }
-
-    .version-tag {
-      margin-top: 48px;
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 12px;
-      color: var(--muted);
-      letter-spacing: 2px;
-      animation: fadeUp 0.8s ease both 0.4s;
-    }
-
-    /* ── TERMINAL PREVIEW ── */
-    .terminal-wrap {
-      position: relative;
-      z-index: 1;
-      max-width: 700px;
-      margin: 0 auto;
-      padding: 0 24px;
-      animation: fadeUp 0.8s ease both 0.5s;
-    }
-
-    .terminal {
-      background: rgba(0,0,0,0.7);
-      border: 1px solid var(--border);
-      border-top: 2px solid var(--cyan);
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 13px;
-      padding: 20px 24px 24px;
-      margin-top: -10px;
-      box-shadow: 0 40px 80px rgba(0,0,0,0.6), var(--glow-cyan);
-    }
-
-    .terminal-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-
-    .t-dot { width: 10px; height: 10px; border-radius: 50%; }
-    .t-dot.r { background: #ff5f56; }
-    .t-dot.y { background: #ffbd2e; }
-    .t-dot.g { background: #27c93f; }
-
-    .t-title {
-      margin-left: auto;
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 1px;
-    }
-
-    .t-line { line-height: 1.9; }
-    .t-cyan { color: var(--cyan); }
-    .t-green { color: var(--green); }
-    .t-red { color: var(--red); }
-    .t-yellow { color: var(--yellow); }
-    .t-muted { color: var(--muted); }
-    .t-white { color: #fff; }
-
-    .cursor {
-      display: inline-block;
-      width: 8px; height: 14px;
-      background: var(--cyan);
-      animation: blink 1s step-end infinite;
-      vertical-align: middle;
-    }
-
-    @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
-
-    /* ── STATS BAR ── */
-    .stats {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      justify-content: center;
-      gap: 0;
-      margin: 80px auto;
-      max-width: 900px;
-      padding: 0 24px;
-      flex-wrap: wrap;
-      animation: fadeUp 0.8s ease both;
-    }
-
-    .stat-item {
-      flex: 1;
-      min-width: 180px;
-      text-align: center;
-      padding: 32px 24px;
-      border: 1px solid var(--border);
-      border-right: none;
-      background: var(--surface);
-      position: relative;
-    }
-    .stat-item:last-child { border-right: 1px solid var(--border); }
-    .stat-item::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-    }
-    .stat-item:nth-child(1)::before { background: var(--cyan); }
-    .stat-item:nth-child(2)::before { background: var(--green); }
-    .stat-item:nth-child(3)::before { background: var(--yellow); }
-    .stat-item:nth-child(4)::before { background: var(--red); }
-
-    .stat-num {
-      font-family: 'Orbitron', monospace;
-      font-size: 36px;
-      font-weight: 900;
-      color: #fff;
-      letter-spacing: -1px;
-    }
-    .stat-label {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 2px;
-      color: var(--muted);
-      margin-top: 6px;
-    }
-
-    /* ── SECTION ── */
-    section {
-      position: relative;
-      z-index: 1;
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 80px 24px;
-    }
-
-    .section-label {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 3px;
-      color: var(--cyan);
-      margin-bottom: 12px;
-    }
-
-    .section-title {
-      font-family: 'Orbitron', monospace;
-      font-size: clamp(24px, 3vw, 38px);
-      font-weight: 900;
-      color: #fff;
-      letter-spacing: -0.5px;
-      margin-bottom: 16px;
-    }
-
-    .section-desc {
-      color: var(--muted);
-      line-height: 1.8;
-      max-width: 500px;
-      font-size: 15px;
-    }
-
-    /* ── FEATURES GRID ── */
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-      margin-top: 56px;
-    }
-
-    .feature-card {
-      background: var(--surface);
-      padding: 32px 28px;
-      transition: background 0.2s;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .feature-card::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0;
-      height: 2px;
-      width: 0;
-      transition: width 0.3s;
-    }
-
-    .feature-card:hover::after { width: 100%; }
-    .feature-card:nth-child(1)::after { background: var(--green); }
-    .feature-card:nth-child(2)::after { background: var(--red); }
-    .feature-card:nth-child(3)::after { background: var(--cyan); }
-    .feature-card:nth-child(4)::after { background: var(--yellow); }
-    .feature-card:nth-child(5)::after { background: var(--green); }
-    .feature-card:nth-child(6)::after { background: var(--cyan); }
-    .feature-card:nth-child(7)::after { background: var(--red); }
-    .feature-card:nth-child(8)::after { background: var(--yellow); }
-
-    .feature-card:hover { background: #131e30; }
-
-    .feat-icon {
-      font-size: 28px;
-      margin-bottom: 14px;
-      display: block;
-    }
-
-    .feat-num {
-      font-family: 'Orbitron', monospace;
-      font-size: 11px;
-      letter-spacing: 2px;
-      color: var(--muted);
-      margin-bottom: 8px;
-    }
-
-    .feat-title {
-      font-family: 'Orbitron', monospace;
-      font-size: 14px;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 10px;
-      letter-spacing: 0.5px;
-    }
-
-    .feat-desc {
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.7;
-    }
-
-    .feat-tag {
-      display: inline-block;
-      margin-top: 12px;
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 10px;
-      letter-spacing: 1px;
-      padding: 3px 8px;
-      border: 1px solid;
-    }
-
-    .tag-admin { color: var(--red); border-color: rgba(255,60,92,0.4); }
-    .tag-free { color: var(--green); border-color: rgba(0,255,136,0.4); }
-    .tag-pro { color: var(--cyan); border-color: rgba(0,245,255,0.4); }
-
-    /* ── REQUIREMENTS ── */
-    .req-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 16px;
-      margin-top: 48px;
-    }
-
-    .req-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      padding: 24px;
-      border-left: 3px solid var(--cyan);
-    }
-
-    .req-icon { font-size: 22px; margin-bottom: 10px; }
-    .req-label {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 2px;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-    .req-val {
-      font-size: 15px;
-      color: #fff;
-      font-weight: 500;
-    }
-
-    /* ── DOWNLOAD CTA ── */
-    .cta {
-      position: relative;
-      z-index: 1;
-      background: var(--bg2);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      overflow: hidden;
-    }
-
-    .cta::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse at 50% 100%, rgba(0,245,255,0.06) 0%, transparent 70%);
-      pointer-events: none;
-    }
-
-    .cta-inner {
-      max-width: 700px;
-      margin: 0 auto;
-      padding: 100px 24px;
-      text-align: center;
-    }
-
-    .cta-inner h2 {
-      font-family: 'Orbitron', monospace;
-      font-size: clamp(26px, 4vw, 46px);
-      font-weight: 900;
-      color: #fff;
-      margin-bottom: 16px;
-      line-height: 1.2;
-    }
-
-    .cta-inner h2 span { color: var(--cyan); text-shadow: var(--glow-cyan); }
-
-    .cta-inner p {
-      color: var(--muted);
-      margin-bottom: 40px;
-      font-size: 15px;
-      line-height: 1.8;
-    }
-
-    .download-box {
-      background: rgba(0,0,0,0.5);
-      border: 1px solid var(--border);
-      border-top: 2px solid var(--cyan);
-      padding: 24px 32px;
-      margin-bottom: 24px;
-      text-align: left;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .dl-info { flex: 1; }
-
-    .dl-name {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 14px;
-      color: var(--cyan);
-      margin-bottom: 4px;
-    }
-    .dl-meta {
-      font-size: 12px;
-      color: var(--muted);
-      font-family: 'Share Tech Mono', monospace;
-    }
-
-    .dl-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--green);
-      color: #000;
-      font-family: 'Orbitron', monospace;
-      font-weight: 700;
-      font-size: 12px;
-      letter-spacing: 2px;
-      padding: 12px 24px;
-      text-decoration: none;
-      clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
-      transition: all 0.2s;
-      white-space: nowrap;
-    }
-    .dl-btn:hover {
-      background: #fff;
-      box-shadow: var(--glow-green);
-    }
-
-    .warn-box {
-      background: rgba(255,60,92,0.06);
-      border: 1px solid rgba(255,60,92,0.3);
-      padding: 14px 20px;
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 12px;
-      color: rgba(255,60,92,0.8);
-      letter-spacing: 0.5px;
-      line-height: 1.6;
-    }
-
-    /* ── FOOTER ── */
-    footer {
-      position: relative;
-      z-index: 1;
-      border-top: 1px solid var(--border);
-      padding: 40px 48px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-
-    .footer-logo {
-      font-family: 'Orbitron', monospace;
-      font-weight: 900;
-      font-size: 14px;
-      color: var(--cyan);
-      letter-spacing: 2px;
-    }
-    .footer-logo span { color: var(--green); }
-
-    .footer-links {
-      display: flex;
-      gap: 24px;
-      list-style: none;
-    }
-    .footer-links a {
-      color: var(--muted);
-      text-decoration: none;
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 12px;
-      letter-spacing: 1px;
-      transition: color 0.2s;
-    }
-    .footer-links a:hover { color: var(--cyan); }
-
-    .footer-copy {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 1px;
-    }
-
-    /* ── ANIMATIONS ── */
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 640px) {
-      nav { padding: 14px 20px; }
-      .nav-links { display: none; }
-      footer { padding: 28px 20px; flex-direction: column; align-items: flex-start; }
-      .stat-item { border-right: 1px solid var(--border); border-bottom: none; }
-      .stats { gap: 1px; background: var(--border); }
-    }
-  </style>
+    .hero-stats { gap: 28px; }
+    .footer-inner { flex-direction: column; text-align: center; }
+    .footer-links { justify-content: center; }
+  }
+</style>
 </head>
 <body>
 
-<!-- NAV -->
+<div class="scanline"></div>
+<canvas id="bg-canvas"></canvas>
+
+<!-- ─── NAV ─── -->
 <nav>
-  <div class="nav-logo">WC<span>a</span>O</div>
-  <ul class="nav-links">
-    <li><a href="#features">FEATURES</a></li>
-    <li><a href="#requirements">REQUIREMENTS</a></li>
-    <li><a href="#download">DOWNLOAD</a></li>
-    <li><a href="https://github.com/SpaceheroVN/Windows_Cleanup_And_Optimizer" target="_blank">GITHUB</a></li>
-  </ul>
-  <a href="#download" class="nav-btn">↓ DOWNLOAD</a>
+  <div class="nav-logo">HX<span>_</span>SCRIPT</div>
+  <div class="nav-links">
+    <a href="#features">FEATURES</a>
+    <a href="#modules">MODULES</a>
+    <a href="#themes">THEMES</a>
+    <a href="#scripts">SCRIPTS</a>
+    <a href="#usage">USAGE</a>
+  </div>
+  <a href="https://github.com/9311-nex4/Hx" class="nav-badge" target="_blank">GITHUB ↗</a>
 </nav>
 
-<!-- HERO -->
-<div class="hero">
-  <div class="hero-glow"></div>
-
-  <div class="badge">v6.1.8 — LATEST RELEASE</div>
-
-  <h1>
-    <span class="line1">WINDOWS CLEANUP</span>
-    <span class="line2">&amp; OPTIMIZER</span>
-  </h1>
-
-  <p class="hero-sub">
-    Bộ công cụ tối ưu hóa Windows toàn diện — dọn dẹp, sửa lỗi hệ thống, quản lý tệp, và tăng tốc máy tính chỉ với một file <code style="color:var(--cyan)">.bat</code>.
-  </p>
-
-  <div class="hero-actions">
-    <a href="#download" class="btn-primary">
-      ⬇ TẢI NGAY — FREE
-    </a>
-    <a href="https://github.com/SpaceheroVN/Windows_Cleanup_And_Optimizer" target="_blank" class="btn-secondary">
-      ★ GitHub
-    </a>
-  </div>
-
-  <div class="version-tag">// RELEASE 6.1.8 &nbsp;·&nbsp; WINDOWS 10 / 11 &nbsp;·&nbsp; BATCH SCRIPT</div>
-</div>
-
-<!-- TERMINAL -->
-<div class="terminal-wrap">
-  <div class="terminal">
-    <div class="terminal-bar">
-      <div class="t-dot r"></div>
-      <div class="t-dot y"></div>
-      <div class="t-dot g"></div>
-      <div class="t-title">Windows Cleanup & Optimizer v6.1.8</div>
-    </div>
-    <div class="t-line"><span class="t-muted">System: C: &nbsp;|&nbsp; Admin: </span><span class="t-green">YES (Full)</span><span class="t-muted"> &nbsp;|&nbsp; Expert: </span><span class="t-muted">Off</span></div>
-    <div class="t-line">&nbsp;</div>
-    <div class="t-line"><span class="t-green">[1]</span><span class="t-white"> Quick Cleanup</span></div>
-    <div class="t-line"><span class="t-red">[2]</span><span class="t-white"> Deep Cleanup</span> <span class="t-red">(Admin)</span></div>
-    <div class="t-line"><span class="t-cyan">[3]</span><span class="t-white"> System Optimization</span></div>
-    <div class="t-line"><span class="t-muted">[4]</span><span class="t-white"> Advanced Tools</span></div>
-    <div class="t-line"><span class="t-muted">[5]</span><span class="t-white"> System Utilities</span></div>
-    <div class="t-line"><span class="t-yellow">[6]</span><span class="t-white"> Screen &amp; Power Tools</span></div>
-    <div class="t-line"><span class="t-green">[7]</span><span class="t-white"> Quick Rename Pro</span></div>
-    <div class="t-line"><span class="t-red">[8]</span><span class="t-white"> Auto Maintenance</span> <span class="t-red">(Admin)</span></div>
-    <div class="t-line"><span class="t-muted">--------------------------------------</span></div>
-    <div class="t-line"><span class="t-yellow">[9]</span><span class="t-white"> Toolkit Options</span></div>
-    <div class="t-line"><span class="t-white">[0] Exit</span></div>
-    <div class="t-line">&nbsp;</div>
-    <div class="t-line"><span class="t-cyan">&gt; Choose an option (0-9): </span><span class="cursor"></span></div>
-  </div>
-</div>
-
-<!-- STATS -->
-<div class="stats">
-  <div class="stat-item">
-    <div class="stat-num">8</div>
-    <div class="stat-label">MODULE CHỨC NĂNG</div>
-  </div>
-  <div class="stat-item">
-    <div class="stat-num">6.1.8</div>
-    <div class="stat-label">PHIÊN BẢN HIỆN TẠI</div>
-  </div>
-  <div class="stat-item">
-    <div class="stat-num">0MB</div>
-    <div class="stat-label">KHÔNG CẦN CÀI ĐẶT</div>
-  </div>
-  <div class="stat-item">
-    <div class="stat-num">FREE</div>
-    <div class="stat-label">MÃ NGUỒN MỞ</div>
-  </div>
-</div>
-
-<!-- FEATURES -->
-<section id="features">
-  <div class="section-label">// MODULES</div>
-  <h2 class="section-title">8 Bộ Công Cụ Mạnh Mẽ</h2>
-  <p class="section-desc">Tất cả trong một file — không cần cài đặt, không cần phụ thuộc thêm.</p>
-
-  <div class="features-grid">
-    <div class="feature-card">
-      <span class="feat-icon">🧹</span>
-      <div class="feat-num">MODULE 01</div>
-      <div class="feat-title">QUICK CLEANUP</div>
-      <div class="feat-desc">Dọn Temp folder, xóa file Recent, làm sạch Recycle Bin và flush DNS cache chỉ trong vài giây.</div>
-      <span class="feat-tag tag-free">FREE</span>
-    </div>
-    <div class="feature-card">
-      <span class="feat-icon">🔥</span>
-      <div class="feat-num">MODULE 02</div>
-      <div class="feat-title">DEEP CLEANUP</div>
-      <div class="feat-desc">Chạy DISM RestoreHealth, SFC scannow, và Disk Cleanup tự động để sửa lỗi hệ thống sâu.</div>
-      <span class="feat-tag tag-admin">ADMIN</span>
-    </div>
-    <div class="feature-card">
-      <span class="feat-icon">⚡</span>
-      <div class="feat-num">MODULE 03</div>
-      <div class="feat-title">SYSTEM OPTIMIZATION</div>
-      <div class="feat-desc">Check disk, defrag/TRIM ổ đĩa, rebuild cache, tối ưu Power Plan và Visual Effects.</div>
-      <span class="feat-tag tag-admin">ADMIN</span>
-    </div>
-    <div class="feature-card">
-      <span class="feat-icon">🛠</span>
-      <div class="feat-num">MODULE 04</div>
-      <div class="feat-title">ADVANCED TOOLS</div>
-      <div class="feat-desc">Các công cụ nâng cao cho người dùng chuyên nghiệp với chế độ Expert Mode tùy chỉnh.</div>
-      <span class="feat-tag tag-pro">EXPERT</span>
-    </div>
-    <div class="feature-card">
-      <span class="feat-icon">🖥</span>
-      <div class="feat-num">MODULE 05</div>
-      <div class="feat-title">SYSTEM UTILITIES</div>
-      <div class="feat-desc">Bộ tiện ích hệ thống đa năng cho các tác vụ quản trị và bảo trì thường ngày.</div>
-      <span class="feat-tag tag-free">FREE</span>
-    </div>
-    <div class="feature-card">
-      <span class="feat-icon">🔋</span>
-      <div class="feat-num">MODULE 06</div>
-      <div class="feat-title">SCREEN &amp; POWER</div>
-      <div class="feat-desc">Quản lý màn hình, nguồn điện và các thiết lập tiết kiệm pin cho laptop.</div>
-      <span class="feat-tag tag-free">FREE</span>
-    </div>
-    <div class="feature-card">
-      <span class="feat-icon">✏️</span>
-      <div class="feat-num">MODULE 07</div>
-      <div class="feat-title">QUICK RENAME PRO</div>
-      <div class="feat-desc">Đổi tên hàng loạt file/folder theo từng bước hoặc từ danh sách .txt với khả năng Undo.</div>
-      <span class="feat-tag tag-pro">PRO</span>
-    </div>
-    <div class="feature-card">
-      <span class="feat-icon">🤖</span>
-      <div class="feat-num">MODULE 08</div>
-      <div class="feat-title">AUTO MAINTENANCE</div>
-      <div class="feat-desc">Chạy toàn bộ quy trình bảo trì một lần duy nhất: Quick + Deep Clean + Windows Update.</div>
-      <span class="feat-tag tag-admin">ADMIN</span>
-    </div>
-  </div>
-</section>
-
-<!-- REQUIREMENTS -->
-<section id="requirements">
-  <div class="section-label">// SYSTEM REQUIREMENTS</div>
-  <h2 class="section-title">Yêu Cầu Hệ Thống</h2>
-  <p class="section-desc">Siêu nhẹ — chỉ cần Windows là đủ, không cài thêm bất kỳ thứ gì.</p>
-
-  <div class="req-grid">
-    <div class="req-card">
-      <div class="req-icon">🪟</div>
-      <div class="req-label">HỆ ĐIỀU HÀNH</div>
-      <div class="req-val">Windows 10 / 11</div>
-    </div>
-    <div class="req-card" style="border-left-color: var(--green)">
-      <div class="req-icon">📁</div>
-      <div class="req-label">RUNTIME</div>
-      <div class="req-val">CMD + PowerShell</div>
-    </div>
-    <div class="req-card" style="border-left-color: var(--yellow)">
-      <div class="req-icon">👤</div>
-      <div class="req-label">QUYỀN ADMIN</div>
-      <div class="req-val">Tùy tính năng</div>
-    </div>
-    <div class="req-card" style="border-left-color: var(--red)">
-      <div class="req-icon">💾</div>
-      <div class="req-label">DUNG LƯỢNG</div>
-      <div class="req-val">&lt; 100 KB</div>
-    </div>
-  </div>
-</section>
-
-<!-- DOWNLOAD CTA -->
-<div class="cta" id="download">
-  <div class="cta-inner">
-    <h2>Tải Về &amp; <span>Chạy Ngay</span></h2>
-    <p>Chỉ cần tải file <code style="color:var(--cyan)">WCaO.bat</code>, click chuột phải → <strong style="color:#fff">Run as Administrator</strong> và bắt đầu dọn dẹp hệ thống.</p>
-
-    <div class="download-box">
-      <div class="dl-info">
-        <div class="dl-name">📦 WCaO.bat</div>
-        <div class="dl-meta">Version 6.1.8 &nbsp;·&nbsp; Batch Script &nbsp;·&nbsp; Windows 10/11</div>
-      </div>
-      <a href="https://github.com/SpaceheroVN/Windows_Cleanup_And_Optimizer/releases/download/6.1.8/WCaO.bat" class="dl-btn">
-        ⬇ DOWNLOAD
+<!-- ─── HERO ─── -->
+<section id="hero">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">open source · roblox lua library</p>
+    <h1 class="hero-title">
+      <span class="line1">CHAOS</span>
+      <span class="line2">SYSTEM<span class="cursor"></span></span>
+    </h1>
+    <p class="hero-desc">
+      Thư viện UI &amp; tiện ích modular mã nguồn mở cho Roblox. 
+      Animation mượt mà, 12 theme màu sắc, tối ưu hiệu năng, và hệ thống script đầy đủ.
+    </p>
+    <div class="hero-actions">
+      <a href="https://github.com/9311-nex4/Hx" class="btn btn-primary" target="_blank">
+        ⬡ &nbsp;XEM GITHUB
+      </a>
+      <a href="#usage" class="btn btn-outline">
+        ▶ &nbsp;CÁCH SỬ DỤNG
       </a>
     </div>
-
-    <div class="warn-box">
-      ⚠ &nbsp;Một số tính năng yêu cầu chạy với quyền Administrator. Hãy right-click → "Run as Administrator" để có đầy đủ chức năng.
+    <div class="hero-stats">
+      <div class="stat-item">
+        <div class="stat-num">12</div>
+        <div class="stat-label">UI Themes</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">3</div>
+        <div class="stat-label">Main Scripts</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">8+</div>
+        <div class="stat-label">Logic Modules</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">MIT</div>
+        <div class="stat-label">License</div>
+      </div>
     </div>
   </div>
-</div>
+</section>
 
-<!-- FOOTER -->
+<div class="neon-divider"></div>
+
+<!-- ─── FEATURES ─── -->
+<section id="features">
+  <div class="container">
+    <div class="sec-header reveal">
+      <span class="sec-tag">// features</span>
+      <h2 class="sec-title">Tất Cả Trong <em>Một</em></h2>
+      <p class="sec-sub">Từ UI library đến các module logic phức tạp — mọi thứ đã được module hoá và sẵn sàng dùng.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feat-card reveal">
+        <span class="feat-icon">🎨</span>
+        <div class="feat-title">Custom UI Library</div>
+        <p class="feat-desc">Tab system, toggle, dropdown, slider, input, danh sách cuộn — tất cả với animation tween mượt mà và đầy đủ theme hỗ trợ.</p>
+      </div>
+      <div class="feat-card reveal">
+        <span class="feat-icon">⚡</span>
+        <div class="feat-title">Potato Mode</div>
+        <p class="feat-desc">Tắt particle, shadow, texture, fog, PostEffect và hàng loạt hiệu ứng đồ hoạ theo batch — giảm lag đáng kể mà không cần restart.</p>
+      </div>
+      <div class="feat-card reveal">
+        <span class="feat-icon">🎬</span>
+        <div class="feat-title">Animation Engine</div>
+        <p class="feat-desc">Hệ thống tween đa lớp: mở/đóng UI với icon shrink, hover, drag-to-move, click feedback — mọi trạng thái đều có hiệu ứng.</p>
+      </div>
+      <div class="feat-card reveal">
+        <span class="feat-icon">🔍</span>
+        <div class="feat-title">Search &amp; Highlight</div>
+        <p class="feat-desc">Tìm kiếm realtime trong UI với auto-scroll tới kết quả, highlight nền và viền neon vàng, cache descendants cho hiệu suất cao.</p>
+      </div>
+      <div class="feat-card reveal">
+        <span class="feat-icon">🖱️</span>
+        <div class="feat-title">Auto Clicker</div>
+        <p class="feat-desc">Tối đa 20 điểm click kéo-thả được, tốc độ tuỳ chỉnh theo mili giây, hiệu ứng chớp sáng khi click, hỗ trợ cả mouse lẫn touch.</p>
+      </div>
+      <div class="feat-card reveal">
+        <span class="feat-icon">✈️</span>
+        <div class="feat-title">Player Tools</div>
+        <p class="feat-desc">Fly, Noclip, Teleport tới player/chuột/click, Target Lock, ESP outline, Anti-AFK tự động — tất cả có thể toggle realtime.</p>
+      </div>
+      <div class="feat-card reveal">
+        <span class="feat-icon">🧱</span>
+        <div class="feat-title">Hx Build</div>
+        <p class="feat-desc">Chọn, di chuyển, neo và hàn các khối trong workspace. Hỗ trợ nhóm khối, undo, outline vùng chọn trực quan.</p>
+      </div>
+      <div class="feat-card reveal">
+        <span class="feat-icon">💾</span>
+        <div class="feat-title">Config Manager</div>
+        <p class="feat-desc">Lưu/đọc cấu hình riêng theo từng game và global. Tự động áp dụng theme, phím tắt, kích thước UI khi mở lại.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── MODULES ─── -->
+<section id="modules">
+  <div class="container">
+    <div class="sec-header reveal">
+      <span class="sec-tag">// modules</span>
+      <h2 class="sec-title">Kiến Trúc <em>Modular</em></h2>
+      <p class="sec-sub">Mỗi module hoạt động độc lập và có thể được load riêng lẻ qua <code style="color:var(--neon);font-family:'JetBrains Mono',monospace">loadstring(HttpGet(...))()</code></p>
+    </div>
+    <div class="modules-list">
+
+      <div class="module-row reveal">
+        <div>
+          <div class="module-name">ThuVienUI</div>
+          <div class="module-file">ThuVienUI.lua</div>
+        </div>
+        <div class="module-desc">UI library đầy đủ — tạo cửa sổ, tab, toggle, dropdown, slider, input, nút, danh sách, theme selector tích hợp</div>
+        <span class="module-tag tag-core">CORE</span>
+      </div>
+
+      <div class="module-row reveal">
+        <div>
+          <div class="module-name">Animation</div>
+          <div class="module-file">Animation.lua</div>
+        </div>
+        <div class="module-desc">Engine tween: mở/đóng giao diện với icon shrink, hover chuột, nhấn chuột, kéo-thả cửa sổ, cache transparency</div>
+        <span class="module-tag tag-core">CORE</span>
+      </div>
+
+      <div class="module-row reveal">
+        <div>
+          <div class="module-name">ChuDe</div>
+          <div class="module-file">ChuDe.lua</div>
+        </div>
+        <div class="module-desc">12 bộ theme màu sắc: Dark, Matrix, Ocean, Violet, Crimson, Gold, Sakura, Emerald, Cyberpunk, Ice, Sunset, Neon</div>
+        <span class="module-tag tag-util">UTIL</span>
+      </div>
+
+      <div class="module-row reveal">
+        <div>
+          <div class="module-name">ThongBao</div>
+          <div class="module-file">ThongBao.lua</div>
+        </div>
+        <div class="module-desc">Hệ thống thông báo nổi — thông báo thường và thông báo lỗi với animation xuất hiện/biến mất mượt mà</div>
+        <span class="module-tag tag-util">UTIL</span>
+      </div>
+
+      <div class="module-row reveal">
+        <div>
+          <div class="module-name">TimKiem</div>
+          <div class="module-file">TimKiem.lua</div>
+        </div>
+        <div class="module-desc">Tìm kiếm realtime trong UI, highlight nền + viền neon vàng, auto-scroll tới kết quả đầu tiên, cache descendants</div>
+        <span class="module-tag tag-util">UTIL</span>
+      </div>
+
+      <div class="module-row reveal">
+        <div>
+          <div class="module-name">MenuConfigManager</div>
+          <div class="module-file">MenuConfigManager.lua</div>
+        </div>
+        <div class="module-desc">Quản lý config global + per-game, Potato Mode, FullBright, No Shadows, Remove Fog, Anti-AFK tự động</div>
+        <span class="module-tag tag-config">CONFIG</span>
+      </div>
+
+      <div class="module-row reveal">
+        <div>
+          <div class="module-name">ETC_Logic</div>
+          <div class="module-file">ETC_Logic.lua</div>
+        </div>
+        <div class="module-desc">Fly, Noclip, Teleport (tới player / chuột / click), Target Lock, ESP outline player, Click Teleport với phím tắt</div>
+        <span class="module-tag tag-logic">LOGIC</span>
+      </div>
+
+      <div class="module-row reveal">
+        <div>
+          <div class="module-name">AutoClick_Logic</div>
+          <div class="module-file">AutoClick_Logic.lua</div>
+        </div>
+        <div class="module-desc">Multi-point auto clicker kéo-thả, tối đa 20 điểm, tốc độ tuỳ chỉnh ms, hiệu ứng chớp sáng, hỗ trợ touch</div>
+        <span class="module-tag tag-logic">LOGIC</span>
+      </div>
+
+      <div class="module-row reveal">
+        <div>
+          <div class="module-name">Transform_Logic</div>
+          <div class="module-file">Transform_Logic.lua</div>
+        </div>
+        <div class="module-desc">Biến hình nhân vật hoặc mô hình: chọn part, undo, outline vùng chọn, set mode, lưu/xoá phần đã transform</div>
+        <span class="module-tag tag-logic">LOGIC</span>
+      </div>
+
+      <div class="module-row reveal">
+        <div>
+          <div class="module-name">Khoi_Logic</div>
+          <div class="module-file">Khoi_Logic.lua</div>
+        </div>
+        <div class="module-desc">Tạo, chọn, di chuyển, neo, hàn/tháo khối trong workspace. Hỗ trợ nhóm khối và event khi thay đổi</div>
+        <span class="module-tag tag-logic">LOGIC</span>
+      </div>
+
+      <div class="module-row reveal">
+        <div>
+          <div class="module-name">NhanVat_Logic</div>
+          <div class="module-file">NhanVat_Logic.lua</div>
+        </div>
+        <div class="module-desc">Tạo/xoá dummy, chọn model từ workspace, mở menu tuỳ chỉnh nhân vật, toggle chế độ chọn mẫu</div>
+        <span class="module-tag tag-logic">LOGIC</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── THEMES ─── -->
+<section id="themes">
+  <div class="container">
+    <div class="sec-header reveal">
+      <span class="sec-tag">// themes</span>
+      <h2 class="sec-title">12 Bộ <em>Giao Diện</em></h2>
+      <p class="sec-sub">Chuyển đổi ngay trong UI — theme được lưu và áp dụng tự động lần sau.</p>
+    </div>
+    <div class="themes-grid">
+
+      <div class="theme-card reveal">
+        <div class="theme-preview" style="background:rgb(15,15,15)">
+          <div class="theme-dot" style="background:#505050"></div>
+          <div class="theme-bar" style="background:#505050"></div>
+          <div class="theme-dot" style="background:#fff;box-shadow:0 0 8px #fff"></div>
+        </div>
+        <div class="theme-info">
+          <div class="theme-name">DARK</div>
+          <div class="theme-neon" style="color:#fff">#ffffff neon</div>
+        </div>
+      </div>
+
+      <div class="theme-card reveal">
+        <div class="theme-preview" style="background:rgb(8,18,10)">
+          <div class="theme-dot" style="background:#143318"></div>
+          <div class="theme-bar" style="background:#143318"></div>
+          <div class="theme-dot" style="background:#00ff46;box-shadow:0 0 8px #00ff46"></div>
+        </div>
+        <div class="theme-info">
+          <div class="theme-name">MATRIX</div>
+          <div class="theme-neon" style="color:#00ff46">#00ff46 neon</div>
+        </div>
+      </div>
+
+      <div class="theme-card reveal">
+        <div class="theme-preview" style="background:rgb(8,15,22)">
+          <div class="theme-dot" style="background:#143350"></div>
+          <div class="theme-bar" style="background:#143350"></div>
+          <div class="theme-dot" style="background:#00c8ff;box-shadow:0 0 8px #00c8ff"></div>
+        </div>
+        <div class="theme-info">
+          <div class="theme-name">OCEAN</div>
+          <div class="theme-neon" style="color:#00c8ff">#00c8ff neon</div>
+        </div>
+      </div>
+
+      <div class="theme-card reveal">
+        <div class="theme-preview" style="background:rgb(15,8,22)">
+          <div class="theme-dot" style="background:#2a1040"></div>
+          <div class="theme-bar" style="background:#2a1040"></div>
+          <div class="theme-dot" style="background:#c864ff;box-shadow:0 0 8px #c864ff"></div>
+        </div>
+        <div class="theme-info">
+          <div class="theme-name">VIOLET</div>
+          <div class="theme-neon" style="color:#c864ff">#c864ff neon</div>
+        </div>
+      </div>
+
+      <div class="theme-card reveal">
+        <div class="theme-preview" style="background:rgb(20,8,8)">
+          <div class="theme-dot" style="background:#501414"></div>
+          <div class="theme-bar" style="background:#501414"></div>
+          <div class="theme-dot" style="background:#ff3c3c;box-shadow:0 0 8px #ff3c3c"></div>
+        </div>
+        <div class="theme-info">
+          <div class="theme-name">CRIMSON</div>
+          <div class="theme-neon" style="color:#ff3c3c">#ff3c3c neon</div>
+        </div>
+      </div>
+
+      <div class="theme-card reveal">
+        <div class="theme-preview" style="background:rgb(20,16,6)">
+          <div class="theme-dot" style="background:#503212"></div>
+          <div class="theme-bar" style="background:#503212"></div>
+          <div class="theme-dot" style="background:#ffc832;box-shadow:0 0 8px #ffc832"></div>
+        </div>
+        <div class="theme-info">
+          <div class="theme-name">GOLD</div>
+          <div class="theme-neon" style="color:#ffc832">#ffc832 neon</div>
+        </div>
+      </div>
+
+      <div class="theme-card reveal">
+        <div class="theme-preview" style="background:rgb(22,10,15)">
+          <div class="theme-dot" style="background:#501826"></div>
+          <div class="theme-bar" style="background:#501826"></div>
+          <div class="theme-dot" style="background:#ff8cb9;box-shadow:0 0 8px #ff8cb9"></div>
+        </div>
+        <div class="theme-info">
+          <div class="theme-name">SAKURA</div>
+          <div class="theme-neon" style="color:#ff8cb9">#ff8cb9 neon</div>
+        </div>
+      </div>
+
+      <div class="theme-card reveal">
+        <div class="theme-preview" style="background:rgb(6,18,10)">
+          <div class="theme-dot" style="background:#0e3216"></div>
+          <div class="theme-bar" style="background:#0e3216"></div>
+          <div class="theme-dot" style="background:#32ff78;box-shadow:0 0 8px #32ff78"></div>
+        </div>
+        <div class="theme-info">
+          <div class="theme-name">EMERALD</div>
+          <div class="theme-neon" style="color:#32ff78">#32ff78 neon</div>
+        </div>
+      </div>
+
+      <div class="theme-card reveal">
+        <div class="theme-preview" style="background:rgb(18,16,4)">
+          <div class="theme-dot" style="background:#46400c"></div>
+          <div class="theme-bar" style="background:#46400c"></div>
+          <div class="theme-dot" style="background:#ffe600;box-shadow:0 0 8px #ffe600"></div>
+        </div>
+        <div class="theme-info">
+          <div class="theme-name">CYBERPUNK</div>
+          <div class="theme-neon" style="color:#ffe600">#ffe600 neon</div>
+        </div>
+      </div>
+
+      <div class="theme-card reveal">
+        <div class="theme-preview" style="background:rgb(10,16,22)">
+          <div class="theme-dot" style="background:#1a3050"></div>
+          <div class="theme-bar" style="background:#1a3050"></div>
+          <div class="theme-dot" style="background:#91e4ff;box-shadow:0 0 8px #91e4ff"></div>
+        </div>
+        <div class="theme-info">
+          <div class="theme-name">ICE</div>
+          <div class="theme-neon" style="color:#91e4ff">#91e4ff neon</div>
+        </div>
+      </div>
+
+      <div class="theme-card reveal">
+        <div class="theme-preview" style="background:rgb(22,12,8)">
+          <div class="theme-dot" style="background:#502014"></div>
+          <div class="theme-bar" style="background:#502014"></div>
+          <div class="theme-dot" style="background:#ff7337;box-shadow:0 0 8px #ff7337"></div>
+        </div>
+        <div class="theme-info">
+          <div class="theme-name">SUNSET</div>
+          <div class="theme-neon" style="color:#ff7337">#ff7337 neon</div>
+        </div>
+      </div>
+
+      <div class="theme-card reveal">
+        <div class="theme-preview" style="background:rgb(6,18,15)">
+          <div class="theme-dot" style="background:#0c3228"></div>
+          <div class="theme-bar" style="background:#0c3228"></div>
+          <div class="theme-dot" style="background:#00ffc3;box-shadow:0 0 8px #00ffc3"></div>
+        </div>
+        <div class="theme-info">
+          <div class="theme-name">NEON</div>
+          <div class="theme-neon" style="color:#00ffc3">#00ffc3 neon</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── SCRIPTS ─── -->
+<section id="scripts">
+  <div class="container">
+    <div class="sec-header reveal">
+      <span class="sec-tag">// main scripts</span>
+      <h2 class="sec-title">Scripts <em>Có Sẵn</em></h2>
+      <p class="sec-sub">Được chọn qua Hx Loader — chỉ cần click, script sẽ tự tải và chạy.</p>
+    </div>
+    <div class="scripts-grid">
+
+      <div class="script-card reveal">
+        <div class="script-version">main_v1.lua</div>
+        <div class="script-name">Transform</div>
+        <p class="script-desc">Giao diện biến hình nhân vật cổ điển với danh sách bộ phận, toggle từng phần, undo, và lưu trạng thái tức thì.</p>
+        <div class="script-tags">
+          <span class="script-tag">Transform</span>
+          <span class="script-tag">Undo</span>
+          <span class="script-tag">Part Select</span>
+          <span class="script-tag">Save State</span>
+        </div>
+      </div>
+
+      <div class="script-card reveal">
+        <div class="script-version">main_v2.lua</div>
+        <div class="script-name">Transform v2</div>
+        <p class="script-desc">Phiên bản nâng cấp dùng ThuVienUI đầy đủ — tab Nhân Vật, Khối, Settings. Hỗ trợ dummy, model chọn từ workspace, Hx Build.</p>
+        <div class="script-tags">
+          <span class="script-tag">ThuVienUI</span>
+          <span class="script-tag">Tabs</span>
+          <span class="script-tag">Hx Build</span>
+          <span class="script-tag">Dummy</span>
+          <span class="script-tag">Config Save</span>
+        </div>
+      </div>
+
+      <div class="script-card reveal">
+        <div class="script-version">main_v3.lua</div>
+        <div class="script-name">Something</div>
+        <p class="script-desc">Script thử nghiệm tích hợp ETC module — Fly, Noclip, Teleport, Target Lock, ESP, Auto Clicker với giao diện ThuVienUI.</p>
+        <div class="script-tags">
+          <span class="script-tag">Testing</span>
+          <span class="script-tag">ETC</span>
+          <span class="script-tag">Auto Clicker</span>
+          <span class="script-tag">ESP</span>
+          <span class="script-tag">Fly</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── USAGE ─── -->
+<section id="usage">
+  <div class="container">
+    <div class="sec-header reveal">
+      <span class="sec-tag">// how to use</span>
+      <h2 class="sec-title">Cách <em>Chạy</em></h2>
+      <p class="sec-sub">Chạy lệnh sau trong executor Roblox của bạn để mở giao diện Hx Script.</p>
+    </div>
+
+    <div class="code-block reveal">
+      <div class="code-header">
+        <div class="code-dots">
+          <div class="code-dot d1"></div>
+          <div class="code-dot d2"></div>
+          <div class="code-dot d3"></div>
+        </div>
+        <span class="code-lang">lua — executor</span>
+        <button class="code-copy" onclick="copyCode(this)">COPY</button>
+      </div>
+      <div class="code-body">
+        <pre><code><span class="c-cm">-- Chạy Hx Loader để mở giao diện chọn script</span>
+<span class="c-fn">loadstring</span>(<span class="c-fn">game</span>:<span class="c-fn">HttpGet</span>(<span class="c-str">"https://raw.githubusercontent.com/9311-nex4/Hx/main/Hx_Loader.lua"</span>))()</code></pre>
+      </div>
+    </div>
+
+    <div style="margin-top:24px" class="reveal">
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots">
+            <div class="code-dot d1"></div>
+            <div class="code-dot d2"></div>
+            <div class="code-dot d3"></div>
+          </div>
+          <span class="code-lang">lua — load module trực tiếp</span>
+          <button class="code-copy" onclick="copyCode(this)">COPY</button>
+        </div>
+        <div class="code-body">
+          <pre><code><span class="c-cm">-- Load riêng ThuVienUI trong script của bạn</span>
+<span class="c-kw">local</span> UI <span class="c-op">=</span> <span class="c-fn">loadstring</span>(<span class="c-fn">game</span>:<span class="c-fn">HttpGet</span>(
+    <span class="c-str">"https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ThuVienUI.lua"</span>
+))()
+
+<span class="c-cm">-- Tạo cửa sổ với tab</span>
+<span class="c-kw">local</span> Window <span class="c-op">=</span> UI:<span class="c-fn">TaoWindow</span>({ TieuDe <span class="c-op">=</span> <span class="c-str">"My Script"</span> })
+<span class="c-kw">local</span> Tab <span class="c-op">=</span> Window:<span class="c-fn">TaoTab</span>(<span class="c-str">"Main"</span>)
+Tab:<span class="c-fn">TaoToggle</span>({ Ten <span class="c-op">=</span> <span class="c-str">"Fly"</span>, SuKien <span class="c-op">=</span> <span class="c-kw">function</span>(state) <span class="c-fn">print</span>(state) <span class="c-kw">end</span> })</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── DISCLAIMER ─── -->
+<section id="disclaimer">
+  <div class="container">
+    <div class="disclaimer-box reveal">
+      <div class="disclaimer-title">Disclaimer — Chỉ Dành Cho Mục Đích Giáo Dục</div>
+      <p class="disclaimer-text">
+        Repository này và toàn bộ nội dung được cung cấp <strong>chỉ cho mục đích học tập và nghiên cứu bảo mật</strong>.
+        Các script minh hoạ lập trình Lua, kỹ thuật UI và cơ chế game trong Roblox engine.
+        <br><br>
+        <strong>Tác giả không chịu trách nhiệm</strong> về cách người khác sử dụng code này. Mọi thiệt hại, ban tài khoản
+        hoặc đình chỉ phát sinh từ việc sử dụng các script này là hoàn toàn trách nhiệm của người dùng.
+        Sử dụng executor của bên thứ ba hoặc inject script vào game vi phạm Điều khoản Dịch vụ của Roblox.
+        <br><br>
+        Project này <strong>không chứa bất kỳ payload độc hại, stealer hay logger nào</strong>.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<div class="neon-divider"></div>
 <footer>
-  <div class="footer-logo">WC<span>a</span>O</div>
-  <ul class="footer-links">
-    <li><a href="https://github.com/SpaceheroVN/Windows_Cleanup_And_Optimizer" target="_blank">GitHub</a></li>
-    <li><a href="https://github.com/SpaceheroVN/Windows_Cleanup_And_Optimizer/releases" target="_blank">Releases</a></li>
-    <li><a href="https://github.com/SpaceheroVN/Windows_Cleanup_And_Optimizer/issues" target="_blank">Report Bug</a></li>
-  </ul>
-  <div class="footer-copy">© 2025 SpaceheroVN — MIT LICENSE</div>
+  <div class="footer-inner">
+    <div class="footer-logo">HX_SCRIPT</div>
+    <div class="footer-copy">© 2025 · MIT License · Made with Lua &amp; Love</div>
+    <div class="footer-links">
+      <a href="https://github.com/9311-nex4/Hx" target="_blank">GitHub</a>
+      <a href="https://github.com/9311-nex4/Hx/blob/main/LICENSE" target="_blank">License</a>
+      <a href="https://github.com/9311-nex4/Hx/blob/main/README.md" target="_blank">README</a>
+    </div>
+  </div>
 </footer>
 
+<script>
+/* ─── PARTICLE CANVAS ─── */
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, particles = [];
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+for (let i = 0; i < 60; i++) {
+  particles.push({
+    x: Math.random() * 2000,
+    y: Math.random() * 1200,
+    r: Math.random() * 1.2 + 0.2,
+    vx: (Math.random() - 0.5) * 0.15,
+    vy: (Math.random() - 0.5) * 0.15,
+    a: Math.random() * 0.5 + 0.1
+  });
+}
+
+function drawParticles() {
+  ctx.clearRect(0, 0, W, H);
+  particles.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p.x % W, p.y % H, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(0,229,255,${p.a})`;
+    ctx.fill();
+    p.x += p.vx; p.y += p.vy;
+  });
+
+  // draw lines between nearby particles
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = (particles[i].x % W) - (particles[j].x % W);
+      const dy = (particles[i].y % H) - (particles[j].y % H);
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 140) {
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x % W, particles[i].y % H);
+        ctx.lineTo(particles[j].x % W, particles[j].y % H);
+        ctx.strokeStyle = `rgba(0,229,255,${0.06 * (1 - dist/140)})`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(drawParticles);
+}
+drawParticles();
+
+/* ─── SCROLL REVEAL ─── */
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), i * 60);
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.08 });
+reveals.forEach(el => observer.observe(el));
+
+/* ─── COPY CODE ─── */
+function copyCode(btn) {
+  const code = btn.closest('.code-block').querySelector('code').textContent;
+  navigator.clipboard.writeText(code.trim()).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'COPIED ✓';
+    btn.style.color = 'var(--neon2)';
+    setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 1800);
+  });
+}
+
+/* ─── NAV ACTIVE ─── */
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-links a');
+window.addEventListener('scroll', () => {
+  let cur = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 120) cur = s.id;
+  });
+  navLinks.forEach(a => {
+    a.style.color = a.getAttribute('href') === `#${cur}` ? 'var(--neon)' : '';
+  });
+});
+</script>
 </body>
 </html>
