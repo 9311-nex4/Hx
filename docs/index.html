@@ -445,10 +445,30 @@
     color: var(--neon); border: 1px solid rgba(0,229,255,0.13);
   }
 
+  .usage-container { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 40px; }
+  .tabs-nav { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 32px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+  .tab-btn {
+    background: transparent; border: 1px solid transparent; color: var(--muted);
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; letter-spacing: 1px;
+    padding: 12px 24px; border-radius: 4px; cursor: pointer; transition: all 0.3s;
+  }
+  .tab-btn:hover { color: var(--text); background: rgba(0,229,255,0.05); }
+  .tab-btn.active { color: var(--neon); background: rgba(0,229,255,0.1); border-color: var(--border); box-shadow: var(--glow); }
+
+  .tab-pane { display: none; animation: fadeIn 0.4s ease; }
+  .tab-pane.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .api-heading { font-family: 'Orbitron', monospace; font-size: 18px; font-weight: 700; color: var(--text); margin: 32px 0 16px 0; display: flex; align-items: center; gap: 12px; }
+  .api-heading::before { content: ''; display: inline-block; width: 8px; height: 8px; background: var(--neon); border-radius: 50%; box-shadow: var(--glow); }
+  .api-heading:first-child { margin-top: 0; }
+  .api-desc { font-size: 16px; color: var(--muted); margin-bottom: 20px; line-height: 1.7; }
+
   .code-block {
     background: #040810;
     border: 1px solid var(--border);
     border-radius: 4px; overflow: hidden;
+    margin-bottom: 24px;
   }
   .code-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -463,7 +483,7 @@
   .d3 { background: #28c840; }
   .code-lang {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; color: var(--muted); letter-spacing: 1px;
+    font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase;
   }
   .code-copy {
     font-family: 'JetBrains Mono', monospace;
@@ -584,6 +604,8 @@
     .hero-stats { gap: 28px; }
     .footer-inner { flex-direction: column; text-align: center; }
     .footer-links { justify-content: center; }
+    .tabs-nav { flex-direction: column; }
+    .tab-btn { text-align: center; }
   }
 </style>
 </head>
@@ -1043,49 +1065,149 @@
   <div class="container">
     <div class="sec-header reveal">
       <span class="sec-tag" data-i18n="use-tag">// how to use</span>
-      <h2 class="sec-title" data-i18n-html="use-title">Cách <em>Chạy</em></h2>
-      <p class="sec-sub" data-i18n="use-sub">Chạy lệnh sau trong executor Roblox của bạn để mở giao diện Hx Script.</p>
+      <h2 class="sec-title" data-i18n-html="use-title">Tài Liệu <em>Sử Dụng</em></h2>
+      <p class="sec-sub" data-i18n="use-sub">Toàn bộ API được chia theo từng Module để dễ dàng tra cứu và tích hợp vào dự án của bạn.</p>
     </div>
 
-    <div class="code-block reveal">
-      <div class="code-header">
-        <div class="code-dots">
-          <div class="code-dot d1"></div>
-          <div class="code-dot d2"></div>
-          <div class="code-dot d3"></div>
-        </div>
-        <span class="code-lang">lua — executor</span>
-        <button class="code-copy" onclick="copyCode(this)">COPY</button>
+    <div class="usage-container reveal">
+      <div class="tabs-nav">
+        <button class="tab-btn active" onclick="openTab('tab-loader', this)" data-i18n="tab-loader-btn">1. Hx Loader</button>
+        <button class="tab-btn" onclick="openTab('tab-ui', this)" data-i18n="tab-ui-btn">2. ThuVienUI</button>
+        <button class="tab-btn" onclick="openTab('tab-notify', this)" data-i18n="tab-notify-btn">3. ThongBao</button>
+        <button class="tab-btn" onclick="openTab('tab-logic', this)" data-i18n="tab-logic-btn">4. Config &amp; Logic</button>
       </div>
-      <div class="code-body">
-        <pre><code><span class="c-cm">-- <span data-i18n="code1-cmt">Chạy Hx Loader để mở giao diện chọn script</span></span>
-<span class="c-fn">loadstring</span>(<span class="c-fn">game</span>:<span class="c-fn">HttpGet</span>(<span class="c-str">"https://raw.githubusercontent.com/9311-nex4/Hx/main/Hx_Loader.lua"</span>))()</code></pre>
-      </div>
-    </div>
 
-    <div style="margin-top:20px" class="reveal">
-      <div class="code-block">
-        <div class="code-header">
-          <div class="code-dots">
-            <div class="code-dot d1"></div>
-            <div class="code-dot d2"></div>
-            <div class="code-dot d3"></div>
+      <div id="tab-loader" class="tab-pane active">
+        <h4 class="api-heading" data-i18n="loader-h1">Khởi chạy qua Hub trung tâm</h4>
+        <p class="api-desc" data-i18n="loader-desc">Chỉ cần dùng Executor (Delta, Fluxus, Evon,...) thực thi đoạn mã dưới đây. Một Menu UI sẽ hiện ra cho phép chọn các Script đã được viết sẵn trong thư viện ChaosSystem.</p>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-dots"><div class="code-dot d1"></div><div class="code-dot d2"></div><div class="code-dot d3"></div></div>
+            <span class="code-lang">LUA</span>
+            <button class="code-copy" onclick="copyCode(this)">COPY CODE</button>
           </div>
-          <span class="code-lang" data-i18n="code2-lang">lua — load module trực tiếp</span>
-          <button class="code-copy" onclick="copyCode(this)">COPY</button>
-        </div>
-        <div class="code-body">
-          <pre><code><span class="c-cm">-- <span data-i18n="code2-cmt">Load riêng ThuVienUI trong script của bạn</span></span>
-<span class="c-kw">local</span> UI <span class="c-op">=</span> <span class="c-fn">loadstring</span>(<span class="c-fn">game</span>:<span class="c-fn">HttpGet</span>(
-    <span class="c-str">"https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ThuVienUI.lua"</span>
-))()
-
-<span class="c-cm">-- <span data-i18n="code3-cmt">Tạo cửa sổ với tab</span></span>
-<span class="c-kw">local</span> Window <span class="c-op">=</span> UI:<span class="c-fn">TaoWindow</span>({ TieuDe <span class="c-op">=</span> <span class="c-str">"My Script"</span> })
-<span class="c-kw">local</span> Tab <span class="c-op">=</span> Window:<span class="c-fn">TaoTab</span>(<span class="c-str">"Main"</span>)
-Tab:<span class="c-fn">TaoToggle</span>({ Ten <span class="c-op">=</span> <span class="c-str">"Fly"</span>, SuKien <span class="c-op">=</span> <span class="c-kw">function</span>(state) <span class="c-fn">print</span>(state) <span class="c-kw">end</span> })</code></pre>
+          <div class="code-body">
+            <pre><code><span class="c-fn">loadstring</span>(<span class="c-fn">game</span>:<span class="c-fn">HttpGet</span>(<span class="c-str">"https://raw.githubusercontent.com/9311-nex4/Hx/main/Hx_Loader.lua"</span>))()</code></pre>
+          </div>
         </div>
       </div>
+
+      <div id="tab-ui" class="tab-pane">
+        <h4 class="api-heading" data-i18n="ui-h1">Khởi tạo Cửa sổ &amp; Tab</h4>
+        <p class="api-desc" data-i18n="ui-desc1">Load trực tiếp module `ThuVienUI.lua`. Sử dụng `TaoWindow` để dựng khung UI, sau đó gọi `TaoTab` để thêm các trang nội dung độc lập.</p>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-dots"><div class="code-dot d1"></div><div class="code-dot d2"></div><div class="code-dot d3"></div></div>
+            <span class="code-lang">LUA</span>
+            <button class="code-copy" onclick="copyCode(this)">COPY CODE</button>
+          </div>
+          <div class="code-body">
+            <pre><code><span class="c-kw">local</span> UI <span class="c-op">=</span> <span class="c-fn">loadstring</span>(<span class="c-fn">game</span>:<span class="c-fn">HttpGet</span>(<span class="c-str">"https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ThuVienUI.lua"</span>))()
+
+<span class="c-kw">local</span> Window <span class="c-op">=</span> UI:<span class="c-fn">TaoWindow</span>({ TieuDe <span class="c-op">=</span> <span class="c-str">"My Custom Script"</span> })
+<span class="c-kw">local</span> Tab1 <span class="c-op">=</span> Window:<span class="c-fn">TaoTab</span>(<span class="c-str">"Người Chơi"</span>)
+<span class="c-kw">local</span> Tab2 <span class="c-op">=</span> Window:<span class="c-fn">TaoTab</span>(<span class="c-str">"Cài Đặt"</span>)</code></pre>
+          </div>
+        </div>
+
+        <h4 class="api-heading" data-i18n="ui-h2">Thêm các Elements điều khiển</h4>
+        <p class="api-desc" data-i18n="ui-desc2">Gọi các hàm từ đối tượng Tab để sinh ra Button, Toggle, Slider, hoặc Dropdown. Các hàm đều có callback Event trả về giá trị realtime.</p>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-dots"><div class="code-dot d1"></div><div class="code-dot d2"></div><div class="code-dot d3"></div></div>
+            <span class="code-lang">LUA</span>
+            <button class="code-copy" onclick="copyCode(this)">COPY CODE</button>
+          </div>
+          <div class="code-body">
+            <pre><code>Tab1:<span class="c-fn">TaoButton</span>({
+    Ten <span class="c-op">=</span> <span class="c-str">"Nhấn Để Dịch Chuyển"</span>,
+    SuKien <span class="c-op">=</span> <span class="c-kw">function</span>() <span class="c-fn">print</span>(<span class="c-str">"Đã click!"</span>) <span class="c-kw">end</span>
+})
+
+Tab1:<span class="c-fn">TaoToggle</span>({ 
+    Ten <span class="c-op">=</span> <span class="c-str">"Kích hoạt God Mode"</span>, 
+    SuKien <span class="c-op">=</span> <span class="c-kw">function</span>(TrangThai) <span class="c-fn">print</span>(<span class="c-str">"God Mode:"</span>, TrangThai) <span class="c-kw">end</span> 
+})
+
+Tab2:<span class="c-fn">TaoSlider</span>({
+    Ten <span class="c-op">=</span> <span class="c-str">"Tốc Độ Chạy (WalkSpeed)"</span>,
+    Min <span class="c-op">=</span> <span class="c-num">16</span>,
+    Max <span class="c-op">=</span> <span class="c-num">100</span>,
+    MacDinh <span class="c-op">=</span> <span class="c-num">16</span>,
+    SuKien <span class="c-op">=</span> <span class="c-kw">function</span>(GiaTri) <span class="c-fn">game.Players.LocalPlayer.Character.Humanoid.WalkSpeed</span> <span class="c-op">=</span> GiaTri <span class="c-kw">end</span>
+})
+
+Tab2:<span class="c-fn">TaoDropdown</span>({
+    Ten <span class="c-op">=</span> <span class="c-str">"Chọn Mục Tiêu"</span>,
+    DanhSach <span class="c-op">=</span> {<span class="c-str">"Mục Tiêu A"</span>, <span class="c-str">"Mục Tiêu B"</span>, <span class="c-str">"Mục Tiêu C"</span>},
+    MacDinh <span class="c-op">=</span> <span class="c-str">"Mục Tiêu A"</span>,
+    SuKien <span class="c-op">=</span> <span class="c-kw">function</span>(LuaChon) <span class="c-fn">print</span>(<span class="c-str">"Đang chọn:"</span>, LuaChon) <span class="c-kw">end</span>
+})</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-notify" class="tab-pane">
+        <h4 class="api-heading" data-i18n="not-h1">Gọi hộp thoại Thông báo</h4>
+        <p class="api-desc" data-i18n="not-desc">Module `ThongBao.lua` xử lý các Notify nổi mượt mà trên màn hình người dùng. Rất hữu ích để báo cáo trạng thái chức năng.</p>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-dots"><div class="code-dot d1"></div><div class="code-dot d2"></div><div class="code-dot d3"></div></div>
+            <span class="code-lang">LUA</span>
+            <button class="code-copy" onclick="copyCode(this)">COPY CODE</button>
+          </div>
+          <div class="code-body">
+            <pre><code><span class="c-kw">local</span> TB <span class="c-op">=</span> <span class="c-fn">loadstring</span>(<span class="c-fn">game</span>:<span class="c-fn">HttpGet</span>(<span class="c-str">"https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ThongBao.lua"</span>))()
+
+TB.<span class="c-fn">thongbao</span>(<span class="c-str">"Hx Script"</span>, <span class="c-str">"Tính năng đã bật thành công!"</span>, <span class="c-num">3</span>)
+
+TB.<span class="c-fn">thongbaoloi</span>(<span class="c-str">"Cảnh Báo Lỗi"</span>, <span class="c-str">"Mất kết nối máy chủ hoặc API tạch!"</span>)
+
+TB.<span class="c-fn">thongbaoxacnhan</span>(<span class="c-str">"Xác nhận hành động"</span>, <span class="c-str">"Bạn có chắc chắn muốn rời Server?"</span>, 
+    <span class="c-kw">function</span>() <span class="c-fn">game</span>:<span class="c-fn">Shutdown</span>() <span class="c-kw">end</span>, 
+    <span class="c-kw">function</span>() <span class="c-fn">print</span>(<span class="c-str">"Đã hủy!"</span>) <span class="c-kw">end</span>
+)</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-logic" class="tab-pane">
+        <h4 class="api-heading" data-i18n="log-h1">Tối ưu Client với ConfigManager</h4>
+        <p class="api-desc" data-i18n="log-desc1">Loại bỏ bóng đổ, sương mù và kích hoạt FullBright để tăng FPS cho máy yếu.</p>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-dots"><div class="code-dot d1"></div><div class="code-dot d2"></div><div class="code-dot d3"></div></div>
+            <span class="code-lang">LUA</span>
+            <button class="code-copy" onclick="copyCode(this)">COPY CODE</button>
+          </div>
+          <div class="code-body">
+            <pre><code><span class="c-kw">local</span> Config <span class="c-op">=</span> <span class="c-fn">loadstring</span>(<span class="c-fn">game</span>:<span class="c-fn">HttpGet</span>(<span class="c-str">"https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/MenuConfigManager.lua"</span>))()
+
+Config.<span class="c-fn">ReduceLags</span>(<span class="c-kw">true</span>)
+Config.<span class="c-fn">NoShadows</span>(<span class="c-kw">true</span>)
+Config.<span class="c-fn">RemoveFog</span>(<span class="c-kw">true</span>)
+Config.<span class="c-fn">FullBright</span>(<span class="c-kw">true</span>)</code></pre>
+          </div>
+        </div>
+
+        <h4 class="api-heading" data-i18n="log-h2">Gọi Utils Logic phổ biến</h4>
+        <p class="api-desc" data-i18n="log-desc2">Module `ETC_Logic.lua` chứa sẵn các Script thông dụng cho dân Exploit như Fly, Noclip hay Click TP.</p>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-dots"><div class="code-dot d1"></div><div class="code-dot d2"></div><div class="code-dot d3"></div></div>
+            <span class="code-lang">LUA</span>
+            <button class="code-copy" onclick="copyCode(this)">COPY CODE</button>
+          </div>
+          <div class="code-body">
+            <pre><code><span class="c-kw">local</span> Logic <span class="c-op">=</span> <span class="c-fn">loadstring</span>(<span class="c-fn">game</span>:<span class="c-fn">HttpGet</span>(<span class="c-str">"https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ETC_Logic.lua"</span>))()
+
+Logic.<span class="c-fn">ToggleFly</span>(<span class="c-kw">true</span>)
+Logic.<span class="c-fn">ToggleNoclip</span>(<span class="c-kw">true</span>)
+Logic.<span class="c-fn">SetClickTP</span>(<span class="c-kw">true</span>) </code></pre>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
@@ -1192,6 +1314,13 @@ function copyCode(btn) {
   });
 }
 
+function openTab(tabId, btn) {
+  document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  btn.classList.add('active');
+}
+
 const sections = document.querySelectorAll('section[id]');
 const navLinks = document.querySelectorAll('.nav-links a');
 window.addEventListener('scroll', () => {
@@ -1261,12 +1390,26 @@ const translations = {
     's2-desc': 'Phiên bản nâng cấp dùng ThuVienUI đầy đủ — tab Nhân Vật, Khối, Settings. Hỗ trợ dummy, model chọn từ workspace, Hx Build.',
     's3-desc': 'Script thử nghiệm tích hợp ETC module — Fly, Noclip, Teleport, Target Lock, ESP, Auto Clicker với giao diện ThuVienUI.',
     'use-tag': '// how to use',
-    'use-title': 'Cách <em>Chạy</em>',
-    'use-sub': 'Chạy lệnh sau trong executor Roblox của bạn để mở giao diện Hx Script.',
-    'code1-cmt': 'Chạy Hx Loader để mở giao diện chọn script',
-    'code2-lang': 'lua — load module trực tiếp',
-    'code2-cmt': 'Load riêng ThuVienUI trong script của bạn',
-    'code3-cmt': 'Tạo cửa sổ với tab',
+    'use-title': 'Tài Liệu <em>Sử Dụng</em>',
+    'use-sub': 'Toàn bộ API được chia theo từng Module để dễ dàng tra cứu và tích hợp vào dự án của bạn.',
+    
+    'tab-loader-btn': '1. Hx Loader',
+    'tab-ui-btn': '2. ThuVienUI',
+    'tab-notify-btn': '3. ThongBao',
+    'tab-logic-btn': '4. Config & Logic',
+    'loader-h1': 'Khởi chạy qua Hub trung tâm',
+    'loader-desc': 'Chỉ cần dùng Executor (Delta, Fluxus, Evon,...) thực thi đoạn mã dưới đây. Một Menu UI sẽ hiện ra cho phép chọn các Script đã được viết sẵn trong thư viện ChaosSystem.',
+    'ui-h1': 'Khởi tạo Cửa sổ & Tab',
+    'ui-desc1': 'Load trực tiếp module `ThuVienUI.lua`. Sử dụng `TaoWindow` để dựng khung UI, sau đó gọi `TaoTab` để thêm các trang nội dung độc lập.',
+    'ui-h2': 'Thêm các Elements điều khiển',
+    'ui-desc2': 'Gọi các hàm từ đối tượng Tab để sinh ra Button, Toggle, Slider, hoặc Dropdown. Các hàm đều có callback Event trả về giá trị realtime.',
+    'not-h1': 'Gọi hộp thoại Thông báo',
+    'not-desc': 'Module `ThongBao.lua` xử lý các Notify nổi mượt mà trên màn hình người dùng. Rất hữu ích để báo cáo trạng thái chức năng.',
+    'log-h1': 'Tối ưu Client với ConfigManager',
+    'log-desc1': 'Loại bỏ bóng đổ, sương mù và kích hoạt FullBright để tăng FPS cho máy yếu.',
+    'log-h2': 'Gọi Utils Logic phổ biến',
+    'log-desc2': 'Module `ETC_Logic.lua` chứa sẵn các Script thông dụng cho dân Exploit như Fly, Noclip hay Click TP.',
+
     'disc-title': 'Disclaimer — Chỉ Dành Cho Mục Đích Giáo Dục',
     'disc-text': 'Repository này và toàn bộ nội dung được cung cấp <strong>chỉ cho mục đích học tập và nghiên cứu bảo mật</strong>. Các script minh hoạ lập trình Lua, kỹ thuật UI và cơ chế game trong Roblox engine.<br><br><strong>Tác giả không chịu trách nhiệm</strong> về cách người khác sử dụng code này. Mọi thiệt hại, ban tài khoản hoặc đình chỉ phát sinh từ việc sử dụng các script này là hoàn toàn trách nhiệm của người dùng. Sử dụng executor của bên thứ ba hoặc inject script vào game vi phạm Điều khoản Dịch vụ của Roblox.<br><br>Project này <strong>không chứa bất kỳ payload độc hại, stealer hay logger nào</strong>.',
     'footer-copy': '© 2025 · MIT License · Made with Lua & Love'
@@ -1328,12 +1471,26 @@ const translations = {
     's2-desc': 'Upgraded version using full ThuVienUI — Character, Blocks, Settings tabs. Supports dummy, workspace model selection, Hx Build.',
     's3-desc': 'Experimental script integrating the ETC module — Fly, Noclip, Teleport, Target Lock, ESP, Auto Clicker with ThuVienUI.',
     'use-tag': '// how to use',
-    'use-title': 'How To <em>Run</em>',
-    'use-sub': 'Run the following command in your Roblox executor to open the Hx Script interface.',
-    'code1-cmt': 'Run Hx Loader to open the script selector UI',
-    'code2-lang': 'lua — load module directly',
-    'code2-cmt': 'Load ThuVienUI separately in your script',
-    'code3-cmt': 'Create a window with tabs',
+    'use-title': 'Documentation <em>Guide</em>',
+    'use-sub': 'The entire API is divided into individual Modules for easy reference and integration into your projects.',
+    
+    'tab-loader-btn': '1. Main Loader',
+    'tab-ui-btn': '2. ThuVienUI',
+    'tab-notify-btn': '3. ThongBao',
+    'tab-logic-btn': '4. Config & Logic',
+    'loader-h1': 'Launch via Master Hub',
+    'loader-desc': 'Simply execute the code below in any Executor (Delta, Fluxus, Evon,...). A UI Menu will appear allowing you to select pre-written scripts from the ChaosSystem library.',
+    'ui-h1': 'Initialize Window & Tabs',
+    'ui-desc1': 'Require the `ThuVienUI.lua` module directly. Use `TaoWindow` to build the UI frame, then call `TaoTab` to add independent content pages.',
+    'ui-h2': 'Add UI Elements',
+    'ui-desc2': 'Call functions from the Tab object to generate Buttons, Toggles, Sliders, or Dropdowns. Each function has an Event callback returning real-time values.',
+    'not-h1': 'Trigger Notifications',
+    'not-desc': 'The `ThongBao.lua` module handles smooth floating Notifications on the user\'s screen. Extremely useful for reporting feature states.',
+    'log-h1': 'Optimize Client with ConfigManager',
+    'log-desc1': 'Remove shadows, fog, and enable FullBright to drastically boost FPS for low-end devices.',
+    'log-h2': 'Call Common Logic Utils',
+    'log-desc2': 'The `ETC_Logic.lua` module contains standard Scripts used by Exploit developers like Fly, Noclip, and Click TP.',
+
     'disc-title': 'Disclaimer — For Educational Purposes Only',
     'disc-text': 'This repository and all its content is provided <strong>for educational and security research purposes only</strong>. The scripts demonstrate Lua programming, UI techniques, and game mechanics within the Roblox engine.<br><br><strong>The author bears no responsibility</strong> for how others use this code. Any damage, account bans or suspensions resulting from the use of these scripts are entirely the user\'s responsibility. Using third-party executors or injecting scripts into games violates Roblox\'s Terms of Service.<br><br>This project <strong>contains no malicious payloads, stealers or loggers of any kind</strong>.',
     'footer-copy': '© 2025 · MIT License · Made with Lua & Love'
