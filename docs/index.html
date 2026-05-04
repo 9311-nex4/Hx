@@ -1608,6 +1608,8 @@ window.addEventListener('scroll', () => {
     if (heroEyebrow) heroEyebrow.style.transform = `translateY(${sy * 0.05}px)`;
   }
 }, { passive: true });
+
+const reveals = document.querySelectorAll('.reveal');
 const observer = new IntersectionObserver((entries) => {
   entries.forEach((e, i) => {
     if (e.isIntersecting) {
@@ -1916,6 +1918,13 @@ function setLang(lang) {
 }
 function toggleLang() { setLang(currentLang === 'vi' ? 'en' : 'vi'); }
 setLang('vi');
+
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', e => {
+  if (e.key === 'F12') { e.preventDefault(); return false; }
+  if (e.ctrlKey && e.shiftKey && ['I','J','C','U'].includes(e.key.toUpperCase())) { e.preventDefault(); return false; }
+  if (e.ctrlKey && e.key.toUpperCase() === 'U') { e.preventDefault(); return false; }
+});
 </script>
 </body>
 </html>
