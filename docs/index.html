@@ -1018,10 +1018,12 @@ footer{
   background:rgba(6,10,13,0.85);border:1px solid var(--border);
   padding:4px 10px;border-radius:2px;backdrop-filter:blur(20px);
   opacity:0;transform:translateX(8px);
-  transition:opacity .3s,transform .3s;
+  transition:opacity .3s,transform .3s,color .2s,border-color .2s;
   pointer-events:none;white-space:nowrap;
+  text-decoration:none;display:block;cursor:none;
 }
-#music-player:hover #music-label{opacity:1;transform:translateX(0);}
+#music-player:hover #music-label{opacity:1;transform:translateX(0);pointer-events:auto;}
+#music-label:hover{color:var(--neon);border-color:var(--border2);}
 </style>
 </head>
 <body>
@@ -1031,10 +1033,10 @@ footer{
 <div id="progress-bar"></div>
 
 <audio id="bg-music" loop preload="none">
-  <source src="https://cdn.pixabay.com/audio/2022/10/30/audio_a9498b78d1.mp3" type="audio/mpeg">
+  <source src="https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cipher.mp3" type="audio/mpeg">
 </audio>
 <div id="music-player">
-  <div id="music-label">LOFI · CHILL · NO COPYRIGHT</div>
+  <a id="music-label" href="https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100787" target="_blank" rel="noopener" title="Cipher — Kevin MacLeod · CC BY 4.0">CIPHER · KEVIN MACLEOD · CC BY 4.0</a>
   <button id="music-btn" onclick="toggleMusic()" title="Nhạc nền">
     <span id="music-icon">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
