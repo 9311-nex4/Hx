@@ -467,7 +467,6 @@ nav.scrolled{
 .feat-card:hover::before,.feat-card:hover::after{opacity:1;}
 .feat-card:hover::after{box-shadow:6px -6px 16px rgba(0,229,255,0.35);width:36px;height:36px;}
 
-/* Mouse-follow glow overlay */
 .feat-card .card-glow{
   position:absolute;inset:0;pointer-events:none;
   background:radial-gradient(circle 180px at 50% 50%,rgba(0,229,255,0.07),transparent 70%);
@@ -716,9 +715,9 @@ nav.scrolled{
   animation:sweep 4s ease-in-out infinite;
 }
 @keyframes sweep{
-  0%{transform:scaleX(0);opacity:0;}
-  50%{transform:scaleX(1);opacity:1;}
-  100%{transform:scaleX(0);opacity:0;transform-origin:right;}
+  0%{transform:scaleX(0);opacity:0;transform-origin:left center;}
+  50%{transform:scaleX(1);opacity:1;transform-origin:left center;}
+  100%{transform:scaleX(0);opacity:0;transform-origin:right center;}
 }
 .tabs-nav{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:32px;border-bottom:1px solid var(--border);padding-bottom:16px;}
 .tab-btn{
@@ -961,7 +960,68 @@ footer{
   .tabs-nav{flex-direction:column;}
   .tab-btn{text-align:center;}
   #cursor,#cursor-ring{display:none;}
+  #music-player{bottom:16px;right:16px;}
 }
+
+#music-player{
+  position:fixed;bottom:28px;right:28px;z-index:200;
+  display:flex;flex-direction:column;align-items:flex-end;gap:8px;
+}
+#music-btn{
+  width:48px;height:48px;border-radius:50%;
+  background:rgba(6,10,13,0.9);
+  border:1px solid var(--border2);
+  cursor:none;display:flex;align-items:center;justify-content:center;
+  transition:border-color .3s,box-shadow .3s;
+  backdrop-filter:blur(20px);
+  position:relative;overflow:hidden;flex-shrink:0;
+}
+#music-btn::before{
+  content:'';position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,229,255,0.12),transparent 70%);
+  opacity:0;transition:opacity .3s;
+}
+#music-btn:hover{border-color:var(--neon);box-shadow:var(--glow);}
+#music-btn:hover::before{opacity:1;}
+#music-btn.playing{
+  border-color:var(--neon2);
+  box-shadow:0 0 20px rgba(0,255,136,0.4),0 0 40px rgba(0,255,136,0.15);
+  animation:music-pulse 2.4s ease-in-out infinite;
+}
+@keyframes music-pulse{
+  0%,100%{box-shadow:0 0 20px rgba(0,255,136,0.4),0 0 40px rgba(0,255,136,0.15);}
+  50%{box-shadow:0 0 32px rgba(0,255,136,0.6),0 0 60px rgba(0,255,136,0.25);}
+}
+#music-icon{
+  display:flex;align-items:center;justify-content:center;
+  color:var(--muted);transition:color .3s;
+}
+#music-btn.playing #music-icon{display:none;}
+#music-btn:hover #music-icon{color:var(--neon);}
+#eq-bars{
+  display:none;align-items:flex-end;gap:2.5px;height:18px;
+}
+#music-btn.playing #eq-bars{display:flex;}
+#eq-bars span{
+  width:3px;border-radius:2px;
+  background:linear-gradient(180deg,var(--neon2),var(--neon));
+  animation:eq-bounce 0.8s ease-in-out infinite;
+}
+#eq-bars span:nth-child(1){animation-duration:.6s;animation-delay:0s;}
+#eq-bars span:nth-child(2){animation-duration:.8s;animation-delay:.15s;}
+#eq-bars span:nth-child(3){animation-duration:.5s;animation-delay:.08s;}
+#eq-bars span:nth-child(4){animation-duration:.7s;animation-delay:.22s;}
+@keyframes eq-bounce{0%,100%{height:4px;}50%{height:16px;}}
+#music-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;letter-spacing:2px;color:var(--muted);
+  background:rgba(6,10,13,0.85);border:1px solid var(--border);
+  padding:4px 10px;border-radius:2px;backdrop-filter:blur(20px);
+  opacity:0;transform:translateX(8px);
+  transition:opacity .3s,transform .3s;
+  pointer-events:none;white-space:nowrap;
+}
+#music-player:hover #music-label{opacity:1;transform:translateX(0);}
 </style>
 </head>
 <body>
@@ -969,6 +1029,23 @@ footer{
 <div id="cursor"></div>
 <div id="cursor-ring"></div>
 <div id="progress-bar"></div>
+
+<audio id="bg-music" loop preload="none">
+  <source src="https://cdn.pixabay.com/audio/2022/10/30/audio_a9498b78d1.mp3" type="audio/mpeg">
+</audio>
+<div id="music-player">
+  <div id="music-label">LOFI · CHILL · NO COPYRIGHT</div>
+  <button id="music-btn" onclick="toggleMusic()" title="Nhạc nền">
+    <span id="music-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+      </svg>
+    </span>
+    <span id="eq-bars">
+      <span></span><span></span><span></span><span></span>
+    </span>
+  </button>
+</div>
 <div class="scanline"></div>
 <div class="scanline2"></div>
 <div class="aurora"></div>
@@ -1511,13 +1588,26 @@ drawParticles();
 
 const progressBar = document.getElementById('progress-bar');
 const nav = document.getElementById('main-nav');
-window.addEventListener('scroll', () => {
-  const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
-  progressBar.style.width = pct + '%';
-  nav.classList.toggle('scrolled', window.scrollY > 50);
-}, { passive: true });
+const heroTitle = document.querySelector('.hero-title');
+const heroDesc = document.querySelector('.hero-desc');
+const heroEyebrow = document.querySelector('.hero-eyebrow');
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-links a');
 
-const reveals = document.querySelectorAll('.reveal');
+window.addEventListener('scroll', () => {
+  const sy = window.scrollY;
+  const maxScroll = document.body.scrollHeight - window.innerHeight;
+  progressBar.style.width = (sy / maxScroll * 100) + '%';
+  nav.classList.toggle('scrolled', sy > 50);
+  let cur = '';
+  sections.forEach(s => { if (sy >= s.offsetTop - 120) cur = s.id; });
+  navLinks.forEach(a => a.classList.toggle('active-link', a.getAttribute('href') === `#${cur}`));
+  if (sy < window.innerHeight && heroTitle) {
+    heroTitle.style.transform = `translateY(${sy * 0.15}px)`;
+    if (heroDesc) heroDesc.style.transform = `translateY(${sy * 0.08}px)`;
+    if (heroEyebrow) heroEyebrow.style.transform = `translateY(${sy * 0.05}px)`;
+  }
+}, { passive: true });
 const observer = new IntersectionObserver((entries) => {
   entries.forEach((e, i) => {
     if (e.isIntersecting) {
@@ -1531,14 +1621,6 @@ reveals.forEach((el, i) => {
   el.dataset.delay = (i % 8) * 40;
   observer.observe(el);
 });
-
-const sections = document.querySelectorAll('section[id]');
-const navLinks = document.querySelectorAll('.nav-links a');
-window.addEventListener('scroll', () => {
-  let cur = '';
-  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 120) cur = s.id; });
-  navLinks.forEach(a => a.classList.toggle('active-link', a.getAttribute('href') === `#${cur}`));
-}, { passive: true });
 
 function easeOutQuart(t) { return 1 - Math.pow(1 - t, 4); }
 const statNums = document.querySelectorAll('.stat-num[data-target]');
@@ -1567,14 +1649,31 @@ const heroStats = document.querySelector('.hero-stats');
 if (heroStats) statsObserver.observe(heroStats);
 
 function copyCode(btn) {
-  const code = btn.closest('.code-block').querySelector('code').textContent;
-  navigator.clipboard.writeText(code.trim()).then(() => {
+  const code = btn.closest('.code-block').querySelector('code').textContent.trim();
+  const done = () => {
     const orig = btn.textContent;
     btn.textContent = 'COPIED ✓';
     btn.style.color = '#00ff88';
     btn.style.borderColor = '#00ff88';
     setTimeout(() => { btn.textContent = orig; btn.style.color = ''; btn.style.borderColor = ''; }, 1800);
-  });
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(done).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = code; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      done();
+    });
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = code; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    done();
+  }
 }
 
 function openTab(tabId, btn) {
@@ -1584,7 +1683,6 @@ function openTab(tabId, btn) {
   btn.classList.add('active');
 }
 
-/* ── 3D CARD TILT + GLOW ── */
 function setupCardTilt(selector, rotMax, yLift) {
   document.querySelectorAll(selector).forEach(card => {
     const glow = card.querySelector('.card-glow');
@@ -1650,27 +1748,7 @@ document.querySelectorAll('.btn, .nav-badge').forEach(el => {
   });
 });
 
-const heroTitle = document.querySelector('.hero-title');
-const heroDesc = document.querySelector('.hero-desc');
-const heroEyebrow = document.querySelector('.hero-eyebrow');
-window.addEventListener('scroll', () => {
-  const sy = window.scrollY;
-  if (sy < window.innerHeight && heroTitle) {
-    heroTitle.style.transform = `translateY(${sy * 0.15}px)`;
-    if (heroDesc) heroDesc.style.transform = `translateY(${sy * 0.08}px)`;
-    if (heroEyebrow) heroEyebrow.style.transform = `translateY(${sy * 0.05}px)`;
-  }
-}, { passive: true });
 
-(function() {
-  const eyebrow = document.querySelector('.hero-eyebrow');
-  if (!eyebrow) return;
-  setTimeout(() => {
-    const text = eyebrow.dataset.i18n
-      ? (window._currentLangTranslations && window._currentLangTranslations['hero-eyebrow'])
-      : eyebrow.textContent;
-  }, 800);
-})();
 
 document.querySelectorAll('.module-row').forEach(row => {
   const tag = row.querySelector('.module-tag');
@@ -1689,6 +1767,23 @@ document.querySelectorAll('.module-row').forEach(row => {
   });
 });
 
+
+const _bgMusic = document.getElementById('bg-music');
+const _musicBtn = document.getElementById('music-btn');
+let _musicPlaying = false;
+function toggleMusic() {
+  if (_musicPlaying) {
+    _bgMusic.pause();
+    _musicBtn.classList.remove('playing');
+    _musicPlaying = false;
+  } else {
+    _bgMusic.volume = 0.35;
+    _bgMusic.play().then(() => {
+      _musicBtn.classList.add('playing');
+      _musicPlaying = true;
+    }).catch(() => {});
+  }
+}
 
 const translations = {
   vi: {
