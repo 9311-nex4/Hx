@@ -1024,6 +1024,47 @@ footer{
 }
 #music-player:hover #music-label{opacity:1;transform:translateX(0);pointer-events:auto;}
 #music-label:hover{color:var(--neon);border-color:var(--border2);}
+
+#vol-panel{
+  display:flex;flex-direction:column;align-items:flex-end;gap:6px;
+  opacity:0;transform:translateX(8px);
+  transition:opacity .3s,transform .3s;
+  pointer-events:none;
+}
+#music-player:hover #vol-panel{opacity:1;transform:translateX(0);pointer-events:auto;}
+#vol-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;letter-spacing:2px;color:var(--neon2);
+  background:rgba(6,10,13,0.85);border:1px solid rgba(0,255,136,0.2);
+  padding:3px 8px;border-radius:2px;backdrop-filter:blur(20px);
+  white-space:nowrap;min-width:52px;text-align:center;
+}
+#vol-wrap{
+  display:flex;align-items:center;
+  background:rgba(6,10,13,0.85);border:1px solid var(--border);
+  padding:8px 10px;border-radius:2px;backdrop-filter:blur(20px);
+  gap:6px;
+}
+#vol-wrap svg{width:12px;height:12px;color:var(--muted);flex-shrink:0;}
+#vol-slider{
+  -webkit-appearance:none;appearance:none;
+  width:90px;height:3px;border-radius:2px;outline:none;cursor:none;
+  background:linear-gradient(90deg,var(--neon2) var(--pct,35%),rgba(0,229,255,0.15) var(--pct,35%));
+}
+#vol-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;width:12px;height:12px;
+  border-radius:50%;background:var(--neon2);cursor:none;
+  box-shadow:0 0 8px rgba(0,255,136,0.6);
+  transition:box-shadow .2s,transform .2s;
+}
+#vol-slider::-webkit-slider-thumb:hover{
+  box-shadow:0 0 14px rgba(0,255,136,0.9);transform:scale(1.25);
+}
+#vol-slider::-moz-range-thumb{
+  width:12px;height:12px;border:none;border-radius:50%;
+  background:var(--neon2);cursor:none;
+  box-shadow:0 0 8px rgba(0,255,136,0.6);
+}
 </style>
 </head>
 <body>
@@ -1037,6 +1078,13 @@ footer{
 </audio>
 <div id="music-player">
   <a id="music-label" href="https://incompetech.com/" target="_blank" rel="noopener" title="Cipher2 — Kevin MacLeod · CC BY 3.0">CIPHER2 · KEVIN MACLEOD · CC BY 3.0</a>
+  <div id="vol-panel">
+    <div id="vol-label">VOL 70%</div>
+    <div id="vol-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+      <input type="range" id="vol-slider" min="0" max="200" value="70" oninput="setVolume(this.value)">
+    </div>
+  </div>
   <button id="music-btn" onclick="toggleMusic()" title="Nhạc nền">
     <span id="music-icon">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1774,20 +1822,70 @@ document.querySelectorAll('.module-row').forEach(row => {
 
 const _bgMusic = document.getElementById('bg-music');
 const _musicBtn = document.getElementById('music-btn');
+const _volSlider = document.getElementById('vol-slider');
+const _volLabel  = document.getElementById('vol-label');
 let _musicPlaying = false;
+let _autoplayDone = false;
+
+// Web Audio API — cho phép volume vượt 100%
+let _audioCtx = null, _gainNode = null, _sourceNode = null;
+function _initAudio() {
+  if (_audioCtx) return;
+  _audioCtx  = new (window.AudioContext || window.webkitAudioContext)();
+  _sourceNode = _audioCtx.createMediaElementSource(_bgMusic);
+  _gainNode   = _audioCtx.createGain();
+  _sourceNode.connect(_gainNode);
+  _gainNode.connect(_audioCtx.destination);
+  _applyVolume(parseInt(_volSlider.value));
+}
+
+function _applyVolume(pct) {
+  // HTML audio volume (0–1) + gain bổ sung khi > 100%
+  const ratio = pct / 100;
+  _bgMusic.volume = Math.min(ratio, 1);
+  if (_gainNode) _gainNode.gain.value = ratio > 1 ? ratio : 1;
+  // Update slider track fill
+  _volSlider.style.setProperty('--pct', pct / 2 + '%'); // max=200 → 50% fill = 100%
+  _volLabel.textContent = 'VOL ' + pct + '%';
+}
+
+function setVolume(val) {
+  _applyVolume(parseInt(val));
+}
+
+function startMusic() {
+  if (_musicPlaying) return;
+  _initAudio();
+  if (_audioCtx.state === 'suspended') _audioCtx.resume();
+  _bgMusic.play().then(() => {
+    _musicBtn.classList.add('playing');
+    _musicPlaying = true;
+  }).catch(() => {});
+}
+
+// Autoplay khi người dùng tương tác lần đầu — mọi thao tác đều tính
+function _onFirstInteraction() {
+  if (_autoplayDone) return;
+  _autoplayDone = true;
+  startMusic();
+}
+['click','touchstart','keydown','mousemove','scroll','wheel','pointerdown']
+  .forEach(e => document.addEventListener(e, _onFirstInteraction, { once: true, passive: true }));
+
 function toggleMusic() {
   if (_musicPlaying) {
     _bgMusic.pause();
     _musicBtn.classList.remove('playing');
     _musicPlaying = false;
+    _autoplayDone = false;
   } else {
-    _bgMusic.volume = 0.35;
-    _bgMusic.play().then(() => {
-      _musicBtn.classList.add('playing');
-      _musicPlaying = true;
-    }).catch(() => {});
+    _autoplayDone = true;
+    startMusic();
   }
 }
+
+// Init slider display
+_applyVolume(70);
 
 const translations = {
   vi: {
