@@ -8,1074 +8,952 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@300;400;600&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:     #060a0d;
-  --bg2:    #0b1117;
-  --bg3:    #0f1820;
-  --neon:   #00e5ff;
-  --neon2:  #00ff88;
-  --neon3:  #ff6b35;
-  --neon4:  #c87bff;
-  --text:   #ddeaf2;
-  --muted:  #728a9a;
+  --bg: #060a0d;
+  --bg2: #0b1117;
+  --bg3: #0f1820;
+  --neon: #00e5ff;
+  --neon2: #00ff88;
+  --neon3: #ff6b35;
+  --neon4: #c87bff;
+  --text: #ddeaf2;
+  --muted: #728a9a;
   --border: rgba(0,229,255,0.1);
-  --border2:rgba(0,229,255,0.22);
-  --card:   rgba(11,17,23,0.85);
-  --glow:   0 0 24px rgba(0,229,255,0.35);
-  --glow2:  0 0 48px rgba(0,229,255,0.18);
-}
-
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html{scroll-behavior:smooth;}
-
-body{
-  background:var(--bg);
-  color:var(--text);
-  font-family:'Rajdhani',sans-serif;
-  font-size:16px;
-  line-height:1.6;
-  overflow-x:hidden;
-  cursor:none;
-}
-
-#progress-bar{
-  position:fixed;top:0;left:0;height:2px;
-  background:linear-gradient(90deg,var(--neon2),var(--neon),var(--neon4),var(--neon));
-  background-size:200%;
-  z-index:999;width:0%;
-  transition:width .08s linear;
-  box-shadow:0 0 10px var(--neon),0 0 24px var(--neon);
-  animation:progress-shimmer 2s linear infinite;
-}
-@keyframes progress-shimmer{
-  0%{background-position:0%;}
-  100%{background-position:200%;}
-}
-
-#cursor{
-  position:fixed;width:10px;height:10px;
-  border-radius:50%;background:var(--neon);
-  pointer-events:none;z-index:9999;
-  transform:translate(-50%,-50%);
-  transition:width .18s cubic-bezier(0.16,1,0.3,1),height .18s cubic-bezier(0.16,1,0.3,1),background .2s,opacity .2s;
-  box-shadow:0 0 8px var(--neon),0 0 18px var(--neon),0 0 36px rgba(0,229,255,0.4);
-  mix-blend-mode:screen;
-  will-change:transform;
-}
-#cursor-ring{
-  position:fixed;width:38px;height:38px;
-  border-radius:50%;border:1.5px solid rgba(0,229,255,0.5);
-  pointer-events:none;z-index:9998;
-  transform:translate(-50%,-50%);
-  transition:width .3s cubic-bezier(0.16,1,0.3,1),height .3s cubic-bezier(0.16,1,0.3,1),border-color .2s,opacity .2s;
-  will-change:transform;
-}
-.cursor-trail{
-  position:fixed;border-radius:50%;pointer-events:none;
-  z-index:9997;transform:translate(-50%,-50%);
-  mix-blend-mode:screen;transition:opacity .4s;
-  background:var(--neon);
-}
-body:has(a:hover,button:hover,.module-row:hover,.feat-card:hover,.theme-card:hover) #cursor{
-  width:16px;height:16px;background:var(--neon4);
-  box-shadow:0 0 12px var(--neon4),0 0 28px var(--neon4),0 0 50px rgba(200,123,255,0.4);
-}
-body:has(a:hover,button:hover,.module-row:hover,.feat-card:hover,.theme-card:hover) #cursor-ring{
-  width:58px;height:58px;border-color:rgba(200,123,255,0.55);
-}
-
-#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
-
-#grain{
-  position:fixed;inset:0;z-index:1;pointer-events:none;
-  opacity:.022;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  background-size:200px 200px;
-  animation:grain-shift 0.3s steps(1) infinite;
-}
-@keyframes grain-shift{
-  0%{transform:translate(0,0);}10%{transform:translate(-2%,-3%);}
-  20%{transform:translate(3%,1%);}30%{transform:translate(-1%,4%);}
-  40%{transform:translate(4%,-2%);}50%{transform:translate(-3%,3%);}
-  60%{transform:translate(1%,-4%);}70%{transform:translate(-4%,2%);}
-  80%{transform:translate(2%,4%);}90%{transform:translate(-2%,-1%);}
-  100%{transform:translate(3%,2%);}
-}
-
-body::before{
-  content:'';position:fixed;inset:0;z-index:0;
-  background-image:
-    linear-gradient(rgba(0,229,255,0.02) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(0,229,255,0.02) 1px,transparent 1px);
-  background-size:56px 56px;
-  pointer-events:none;
-  animation:grid-pulse 8s ease-in-out infinite;
-}
-@keyframes grid-pulse{
-  0%,100%{opacity:1;}
-  50%{opacity:0.4;}
-}
-
-.aurora{
-  position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;
-}
-.aurora::before,.aurora::after{
-  content:'';position:absolute;
-  border-radius:50%;filter:blur(100px);
-  animation:aurora-float 22s ease-in-out infinite;
-  will-change:transform;
-}
-.aurora::before{
-  width:70vw;height:50vh;top:-15vh;left:-15vw;
-  background:radial-gradient(ellipse,rgba(0,229,255,0.07) 0%,rgba(0,255,136,0.03) 40%,transparent 70%);
-  animation-delay:0s;
-}
-.aurora::after{
-  width:60vw;height:60vh;bottom:-15vh;right:-15vw;
-  background:radial-gradient(ellipse,rgba(200,123,255,0.07) 0%,rgba(0,229,255,0.03) 40%,transparent 70%);
-  animation-delay:-11s;
-}
-.aurora-mid{
-  position:fixed;width:40vw;height:40vh;
-  top:30vh;left:30vw;
-  border-radius:50%;filter:blur(120px);
-  background:radial-gradient(ellipse,rgba(255,107,53,0.03) 0%,transparent 70%);
-  animation:aurora-float 28s ease-in-out infinite reverse;
-  animation-delay:-7s;
-  z-index:0;pointer-events:none;
-  will-change:transform;
-}
-@keyframes aurora-float{
-  0%,100%{transform:translate(0,0) scale(1);}
-  25%{transform:translate(4vw,2vh) scale(1.08);}
-  50%{transform:translate(-2vw,5vh) scale(0.94);}
-  75%{transform:translate(6vw,-3vh) scale(1.05);}
-}
-
-::-webkit-scrollbar{width:3px;}
-::-webkit-scrollbar-track{background:var(--bg);}
-::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--neon2),var(--neon),var(--neon4));border-radius:2px;}
-
-.container{max-width:1100px;margin:0 auto;padding:0 32px;position:relative;z-index:2;}
-section{padding:80px 0;}
-
-nav{
-  position:fixed;top:0;left:0;right:0;z-index:100;
-  padding:14px 40px;
-  display:flex;align-items:center;justify-content:space-between;
-  background:rgba(6,10,13,0.75);
-  backdrop-filter:blur(30px) saturate(180%);
-  border-bottom:1px solid var(--border);
-  gap:16px;
-  transition:background .3s,box-shadow .3s;
-}
-nav.scrolled{
-  background:rgba(6,10,13,0.95);
-  box-shadow:0 4px 40px rgba(0,0,0,0.6),0 1px 0 rgba(0,229,255,0.1);
-}
-.nav-logo{
-  font-family:'Orbitron',monospace;
-  font-weight:900;font-size:17px;
-  color:var(--neon);letter-spacing:3px;
-  text-shadow:0 0 20px rgba(0,229,255,0.6),0 0 40px rgba(0,229,255,0.3);
-  flex-shrink:0;position:relative;
-}
-.nav-logo::after{
-  content:'';position:absolute;bottom:-2px;left:0;right:0;
-  height:1px;background:linear-gradient(90deg,var(--neon),transparent);
-  animation:logo-line 3s ease-in-out infinite;
-}
-@keyframes logo-line{
-  0%,100%{opacity:0.4;transform:scaleX(0.5);}
-  50%{opacity:1;transform:scaleX(1);}
-}
-.nav-logo span{color:var(--text);animation:blink 2s step-end infinite;}
-.nav-links{display:flex;gap:24px;}
-.nav-links a{
-  font-family:'JetBrains Mono',monospace;
-  font-size:11px;color:var(--muted);
-  text-decoration:none;letter-spacing:1.5px;
-  transition:color .2s;position:relative;
-}
-.nav-links a::after{
-  content:'';position:absolute;bottom:-4px;left:0;right:0;
-  height:1px;background:linear-gradient(90deg,var(--neon2),var(--neon));
-  transform:scaleX(0);transform-origin:left;
-  transition:transform .3s cubic-bezier(0.4,0,0.2,1);
-  box-shadow:0 0 8px var(--neon);
-}
-.nav-links a:hover{color:var(--neon);}
-.nav-links a:hover::after{transform:scaleX(1);}
-.nav-links a.active-link{color:var(--neon);}
-.nav-links a.active-link::after{transform:scaleX(1);}
-
-.nav-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
-
-.lang-toggle{
-  font-family:'JetBrains Mono',monospace;
-  font-size:10px;letter-spacing:2px;
-  background:transparent;
-  border:1px solid var(--border2);
-  color:var(--muted);padding:5px 10px;border-radius:2px;
-  cursor:none;transition:all .2s;
-  display:flex;gap:4px;align-items:center;
-}
-.lang-toggle:hover{border-color:var(--neon);color:var(--neon);box-shadow:0 0 15px rgba(0,229,255,0.2);}
-.lang-toggle.is-en .lt-en{color:var(--neon);}
-.lang-toggle.is-vi .lt-vi{color:var(--neon);}
-.lang-toggle .lt-sep{color:var(--border2);}
-
-.nav-badge{
-  font-family:'JetBrains Mono',monospace;
-  font-size:11px;color:var(--bg);
-  background:var(--neon);padding:5px 14px;
-  border-radius:2px;font-weight:600;
-  text-decoration:none;letter-spacing:1px;
-  transition:box-shadow .2s,transform .2s;
-  position:relative;overflow:hidden;
-}
-.nav-badge::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent);
-  transform:translateX(-100%);
-  animation:nav-shine 4s ease-in-out infinite;
-}
-@keyframes nav-shine{
-  0%,60%{transform:translateX(-100%);}
-  80%{transform:translateX(100%);}
-  100%{transform:translateX(100%);}
-}
-.nav-badge:hover{box-shadow:0 0 30px rgba(0,229,255,0.6),0 0 60px rgba(0,229,255,0.3);transform:translateY(-2px);}
-
-#hero{
-  min-height:100vh;
-  display:flex;align-items:center;
-  padding-top:80px;position:relative;overflow:hidden;
-}
-.hero-inner{max-width:1100px;margin:0 auto;padding:0 32px;z-index:2;}
-
-.hero-eyebrow{
-  font-family:'JetBrains Mono',monospace;
-  font-size:11px;color:var(--neon);
-  letter-spacing:4px;text-transform:uppercase;
-  margin-bottom:24px;
-  opacity:0;animation:fadeUp .6s .2s forwards;
-  position:relative;display:inline-block;
-}
-.hero-eyebrow::before{content:'// ';color:var(--muted);}
-.hero-eyebrow::after{
-  content:'';position:absolute;right:-16px;top:50%;
-  width:6px;height:10px;background:var(--neon);
-  transform:translateY(-50%);
-  animation:blink .8s step-end infinite;
-  box-shadow:0 0 8px var(--neon);
-}
-
-.hero-title{
-  font-family:'Orbitron',monospace;
-  font-size:clamp(44px,7.5vw,96px);
-  font-weight:900;line-height:0.95;
-  letter-spacing:-2px;
-  opacity:0;animation:fadeUp .6s .4s forwards;
-}
-.hero-title .line1{color:var(--text);display:block;position:relative;}
-.hero-title .line2{
-  color:transparent;
-  -webkit-text-stroke:1.5px var(--neon);
-  display:block;
-  position:relative;
-  animation:hue-shift 6s linear infinite;
-}
-@keyframes hue-shift{
-  0%{filter:drop-shadow(0 0 10px rgba(0,229,255,0.4)) hue-rotate(0deg);}
-  33%{filter:drop-shadow(0 0 28px rgba(0,229,255,0.9)) hue-rotate(15deg);}
-  66%{filter:drop-shadow(0 0 16px rgba(200,123,255,0.6)) hue-rotate(-10deg);}
-  100%{filter:drop-shadow(0 0 10px rgba(0,229,255,0.4)) hue-rotate(0deg);}
-}
-.hero-title:hover .line1{animation:glitch-line1 .4s steps(2) 1;}
-.hero-title:hover .line2{animation:glitch-line2 .4s steps(2) 1;}
-@keyframes glitch-line1{
-  0%{transform:translate(0);}
-  20%{transform:translate(-3px,1px);clip-path:inset(10% 0 60% 0);}
-  40%{transform:translate(3px,-1px);clip-path:inset(50% 0 20% 0);}
-  60%{transform:translate(-2px,2px);clip-path:inset(30% 0 40% 0);}
-  80%{transform:translate(2px,-2px);clip-path:inset(70% 0 5% 0);}
-  100%{transform:translate(0);clip-path:none;}
-}
-@keyframes glitch-line2{
-  0%{transform:translate(0);text-shadow:none;}
-  25%{transform:translate(4px,0);text-shadow:-4px 0 #ff0080,4px 0 #00e5ff;}
-  50%{transform:translate(-4px,0);text-shadow:4px 0 #ff0080,-4px 0 #00e5ff;clip-path:inset(20% 0 50% 0);}
-  75%{transform:translate(2px,-1px);text-shadow:-2px 0 #00e5ff,2px 0 #ff0080;}
-  100%{transform:translate(0);text-shadow:none;clip-path:none;}
-}
-.hero-title .cursor{
-  display:inline-block;
-  width:4px;height:.82em;
-  background:var(--neon);margin-left:6px;
-  vertical-align:middle;
-  animation:blink 1s step-end infinite;
-  box-shadow:0 0 12px var(--neon),0 0 24px rgba(0,229,255,0.5);
-}
-
-.hero-desc{
-  margin-top:28px;max-width:560px;
-  font-size:18px;font-weight:400;
-  color:#9ab4c4;line-height:1.75;
-  opacity:0;animation:fadeUp .6s .6s forwards;
-}
-
-.hero-actions{
-  margin-top:44px;display:flex;gap:14px;flex-wrap:wrap;
-  opacity:0;animation:fadeUp .6s .8s forwards;
-}
-.btn{
-  display:inline-flex;align-items:center;gap:10px;
-  padding:13px 28px;
-  font-family:'JetBrains Mono',monospace;
-  font-size:12px;font-weight:600;
-  letter-spacing:1.5px;text-decoration:none;
-  border-radius:2px;transition:all .3s cubic-bezier(0.16,1,0.3,1);
-  cursor:none;border:none;
-  position:relative;overflow:hidden;
-  will-change:transform;
-}
-.btn-primary{background:var(--neon);color:var(--bg);}
-.btn-primary::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent);
-  transform:translateX(-100%);
-  transition:transform .5s;
-}
-.btn-primary:hover::before{transform:translateX(100%);}
-.btn-primary::after{
-  content:'';position:absolute;inset:-1px;
-  background:linear-gradient(90deg,var(--neon2),var(--neon),var(--neon4),var(--neon));
-  background-size:300%;
-  z-index:-1;border-radius:2px;
-  animation:border-anim 4s linear infinite;
-  opacity:0;transition:opacity .3s;
-}
-.btn-primary:hover::after{opacity:1;}
-@keyframes border-anim{0%{background-position:0%;}100%{background-position:300%;}}
-.btn-primary:hover{
-  box-shadow:0 0 40px rgba(0,229,255,0.6),0 0 80px rgba(0,229,255,0.3);
-  transform:translateY(-3px) scale(1.02);
-}
-.btn svg{width:15px;height:15px;flex-shrink:0;}
-.btn-outline{
-  background:transparent;
-  border:1px solid var(--border2);
-  color:var(--neon);
-}
-.btn-outline::after{
-  content:'';position:absolute;inset:0;
-  background:var(--neon);transform:scaleX(0);transform-origin:left;
-  transition:transform .3s cubic-bezier(0.4,0,0.2,1);z-index:-1;
-}
-.btn-outline:hover::after{transform:scaleX(1);}
-.btn-outline:hover{color:var(--bg);border-color:var(--neon);box-shadow:0 0 25px rgba(0,229,255,0.3);}
-
-.hero-stats{
-  margin-top:64px;display:flex;gap:48px;flex-wrap:wrap;
-  opacity:0;animation:fadeUp .6s 1s forwards;
-  border-top:1px solid var(--border);padding-top:40px;
-  position:relative;
-}
-.hero-stats::before{
-  content:'';position:absolute;top:0;left:0;width:60px;height:1px;
-  background:linear-gradient(90deg,var(--neon2),var(--neon));
-  box-shadow:0 0 10px var(--neon);
-}
-.stat-num{
-  font-family:'Orbitron',monospace;
-  font-size:32px;font-weight:900;
-  color:var(--neon);
-  text-shadow:0 0 20px rgba(0,229,255,0.4),0 0 40px rgba(0,229,255,0.2);
-  position:relative;display:inline-block;
-}
-.stat-num::after{
-  content:'';position:absolute;bottom:-4px;left:0;right:0;
-  height:1px;background:linear-gradient(90deg,var(--neon),transparent);
-  opacity:0.5;
-}
-.stat-label{
-  font-family:'JetBrains Mono',monospace;
-  font-size:10px;color:var(--muted);
-  letter-spacing:2.5px;text-transform:uppercase;margin-top:5px;
-}
-
-.sec-header{margin-bottom:56px;}
-.sec-tag{
-  font-family:'JetBrains Mono',monospace;
-  font-size:10px;color:var(--neon);
-  letter-spacing:3px;text-transform:uppercase;
-  margin-bottom:14px;display:block;opacity:0.8;
-  animation:tag-glow 3s ease-in-out infinite;
-}
-@keyframes tag-glow{
-  0%,100%{text-shadow:none;}
-  50%{text-shadow:0 0 10px rgba(0,229,255,0.5);}
-}
-.sec-title{
-  font-family:'Orbitron',monospace;
-  font-size:clamp(26px,4vw,40px);
-  font-weight:700;line-height:1.15;letter-spacing:-0.5px;
-}
-.sec-title em{
-  font-style:normal;color:transparent;
-  -webkit-text-stroke:1px var(--neon);
-  animation:hue-shift 6s linear infinite;
-}
-.sec-sub{
-  margin-top:14px;font-size:17px;color:#8aa4b4;
-  font-weight:400;max-width:520px;line-height:1.7;
-}
-
-.features-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(270px,1fr));
-  gap:2px;border:1px solid var(--border);
-  border-radius:4px;overflow:hidden;
-  position:relative;
-  perspective:1200px;
-}
-.features-grid::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(0,229,255,0.03) 0%,transparent 50%,rgba(200,123,255,0.02) 100%);
-  pointer-events:none;z-index:0;
-}
-.feat-card{
-  background:var(--bg2);padding:32px 28px;
-  position:relative;transition:background .35s cubic-bezier(0.16,1,0.3,1),transform .35s cubic-bezier(0.16,1,0.3,1),box-shadow .35s;
-  overflow:hidden;z-index:1;
-  transform-style:preserve-3d;
-  will-change:transform;
-}
-.feat-card::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(0,229,255,0.07),transparent 60%);
-  opacity:0;transition:opacity .35s;
-}
-.feat-card::after{
-  content:'';position:absolute;top:0;right:0;
-  width:28px;height:28px;
-  border-top:1px solid var(--neon);
-  border-right:1px solid var(--neon);
-  opacity:0;transition:opacity .3s,box-shadow .3s,width .3s,height .3s;
-}
-.feat-card:hover{background:var(--bg3);transform:translateY(-3px);}
-.feat-card:hover::before,.feat-card:hover::after{opacity:1;}
-.feat-card:hover::after{box-shadow:6px -6px 16px rgba(0,229,255,0.35);width:36px;height:36px;}
-
-.feat-card .card-glow{
-  position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(circle 180px at 50% 50%,rgba(0,229,255,0.07),transparent 70%);
-  opacity:0;transition:opacity .3s;
-  will-change:background;
-}
-.feat-card:hover .card-glow{opacity:1;}
-
-.feat-card .scan-line{
-  position:absolute;inset:0;overflow:hidden;pointer-events:none;
-}
-.feat-card .scan-line::after{
-  content:'';position:absolute;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,transparent,rgba(0,229,255,0.15),transparent);
-  transform:translateY(-100%);
-  transition:none;
-}
-.feat-card:hover .scan-line::after{
-  animation:card-scan .6s ease forwards;
-}
-@keyframes card-scan{
-  0%{transform:translateY(-100%);}
-  100%{transform:translateY(1000%);}
-}
-
-.feat-icon{
-  width:48px;height:48px;display:flex;
-  align-items:center;justify-content:center;
-  border-radius:6px;margin-bottom:20px;
-  transition:box-shadow .3s,transform .3s;
-  flex-shrink:0;position:relative;
-}
-.feat-icon::before{
-  content:'';position:absolute;inset:-4px;
-  border-radius:8px;
-  opacity:0;transition:opacity .3s;
-  animation:icon-pulse 2s ease-in-out infinite;
-}
-.feat-card:hover .feat-icon::before{opacity:1;}
-.feat-card:hover .feat-icon{transform:scale(1.1) rotateY(10deg);}
-@keyframes icon-pulse{
-  0%,100%{transform:scale(1);}50%{transform:scale(1.08);}
-}
-.feat-icon svg{width:22px;height:22px;}
-
-.feat-card.c-cyan .feat-icon{color:var(--neon);background:rgba(0,229,255,0.07);border:1px solid rgba(0,229,255,0.2);}
-.feat-card.c-green .feat-icon{color:var(--neon2);background:rgba(0,255,136,0.07);border:1px solid rgba(0,255,136,0.2);}
-.feat-card.c-orange .feat-icon{color:var(--neon3);background:rgba(255,107,53,0.07);border:1px solid rgba(255,107,53,0.2);}
-.feat-card.c-purple .feat-icon{color:var(--neon4);background:rgba(200,123,255,0.07);border:1px solid rgba(200,123,255,0.2);}
-
-.feat-card.c-cyan:hover .feat-icon{box-shadow:0 0 30px rgba(0,229,255,0.5),0 0 60px rgba(0,229,255,0.2);}
-.feat-card.c-green:hover .feat-icon{box-shadow:0 0 30px rgba(0,255,136,0.5),0 0 60px rgba(0,255,136,0.2);}
-.feat-card.c-orange:hover .feat-icon{box-shadow:0 0 30px rgba(255,107,53,0.5),0 0 60px rgba(255,107,53,0.2);}
-.feat-card.c-purple:hover .feat-icon{box-shadow:0 0 30px rgba(200,123,255,0.5),0 0 60px rgba(200,123,255,0.2);}
-
-.feat-card.c-cyan .feat-icon::before{background:radial-gradient(circle,rgba(0,229,255,0.1),transparent);}
-.feat-card.c-green .feat-icon::before{background:radial-gradient(circle,rgba(0,255,136,0.1),transparent);}
-.feat-card.c-orange .feat-icon::before{background:radial-gradient(circle,rgba(255,107,53,0.1),transparent);}
-.feat-card.c-purple .feat-icon::before{background:radial-gradient(circle,rgba(200,123,255,0.1),transparent);}
-
-.feat-title{
-  font-family:'Orbitron',monospace;
-  font-size:12px;font-weight:700;
-  letter-spacing:1px;margin-bottom:10px;text-transform:uppercase;
-}
-.feat-card.c-cyan .feat-title{color:var(--neon);}
-.feat-card.c-green .feat-title{color:var(--neon2);}
-.feat-card.c-orange .feat-title{color:var(--neon3);}
-.feat-card.c-purple .feat-title{color:var(--neon4);}
-.feat-desc{font-size:15px;color:#7a9aaa;font-weight:400;line-height:1.65;}
-
-.modules-list{display:flex;flex-direction:column;gap:3px;}
-.module-row{
-  display:grid;
-  grid-template-columns:210px 1fr auto;
-  align-items:center;gap:24px;
-  padding:20px 24px;
-  background:var(--bg2);border-radius:2px;
-  border-left:2px solid transparent;
-  transition:all .4s cubic-bezier(0.16,1,0.3,1);
-  cursor:none;position:relative;overflow:hidden;
-  will-change:transform;
-}
-.module-row::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(90deg,rgba(0,229,255,0.04),transparent);
-  transform:translateX(-100%);
-  transition:transform .4s cubic-bezier(0.4,0,0.2,1);
-}
-.module-row:hover::before{transform:translateX(0);}
-.module-row:hover{
-  background:var(--bg3);
-  border-left-color:var(--neon);
-  padding-left:30px;
-  box-shadow:inset 0 0 40px rgba(0,229,255,0.04),0 0 20px rgba(0,229,255,0.04);
-}
-.module-name{
-  font-family:'JetBrains Mono',monospace;
-  font-size:13px;font-weight:600;color:var(--neon);
-  transition:text-shadow .3s;
-}
-.module-row:hover .module-name{
-  text-shadow:0 0 12px rgba(0,229,255,0.6);
-}
-.module-file{
-  font-family:'JetBrains Mono',monospace;
-  font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:0.5px;
-}
-.module-desc{font-size:15px;color:var(--text);font-weight:400;line-height:1.6;}
-.module-tag{
-  font-family:'JetBrains Mono',monospace;
-  font-size:10px;letter-spacing:1px;
-  padding:4px 10px;border-radius:2px;
-  white-space:nowrap;font-weight:600;
-  transition:box-shadow .3s;
-}
-.module-row:hover .tag-core{box-shadow:0 0 10px rgba(0,229,255,0.3);}
-.module-row:hover .tag-util{box-shadow:0 0 10px rgba(0,255,136,0.3);}
-.module-row:hover .tag-logic{box-shadow:0 0 10px rgba(255,107,53,0.3);}
-.module-row:hover .tag-config{box-shadow:0 0 10px rgba(200,123,255,0.3);}
-.tag-core{background:rgba(0,229,255,0.1);color:var(--neon);border:1px solid rgba(0,229,255,0.2);}
-.tag-util{background:rgba(0,255,136,0.1);color:var(--neon2);border:1px solid rgba(0,255,136,0.2);}
-.tag-logic{background:rgba(255,107,53,0.1);color:var(--neon3);border:1px solid rgba(255,107,53,0.2);}
-.tag-config{background:rgba(200,123,255,0.1);color:var(--neon4);border:1px solid rgba(200,123,255,0.2);}
-
-.themes-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
-  gap:10px;
-}
-.theme-card{
-  border-radius:4px;overflow:hidden;
-  border:1px solid var(--border);
-  transition:transform .35s cubic-bezier(0.16,1,0.3,1),box-shadow .35s,border-color .3s;
-  cursor:none;position:relative;
-  will-change:transform;
-}
-.theme-card::after{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,0.06) 50%,transparent 70%);
-  pointer-events:none;opacity:0;transition:opacity .3s;
-  transform:translateX(-100%);
-}
-.theme-card:hover::after{
-  opacity:1;
-  animation:card-shimmer .65s ease forwards;
-}
-@keyframes card-shimmer{
-  from{transform:translateX(-100%);}
-  to{transform:translateX(100%);}
-}
-.theme-card:hover{
-  transform:translateY(-8px) scale(1.03);
-  box-shadow:0 20px 60px rgba(0,0,0,0.7),0 0 40px rgba(0,229,255,0.1);
-  border-color:var(--border2);
-}
-.theme-preview{
-  height:80px;display:flex;align-items:center;
-  justify-content:center;gap:6px;padding:12px;
-  position:relative;overflow:hidden;
-}
-.theme-preview::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);
-}
-.theme-dot{width:10px;height:10px;border-radius:50%;transition:transform .3s;}
-.theme-bar{height:4px;border-radius:2px;flex:1;opacity:0.6;transition:opacity .3s;}
-.theme-card:hover .theme-dot:last-child{transform:scale(1.4);}
-.theme-card:hover .theme-bar{opacity:0.9;}
-.theme-info{padding:10px 14px;background:var(--bg2);}
-.theme-name{
-  font-family:'Orbitron',monospace;
-  font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text);
-}
-.theme-neon{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:3px;}
-
-.scripts-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
-  gap:14px;
-}
-.script-card{
-  background:var(--bg2);
-  border:1px solid var(--border);
-  border-radius:4px;padding:28px;
-  position:relative;overflow:hidden;
-  transition:border-color .3s,box-shadow .3s,transform .3s;
-}
-.script-card::before{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse at top right,rgba(0,229,255,0.06),transparent 70%);
-  opacity:0;transition:opacity .3s;
-}
-.script-card::after{
-  content:'';position:absolute;top:0;left:0;right:0;
-  height:1px;
-  background:linear-gradient(90deg,transparent,var(--neon),transparent);
-  transform:scaleX(0);
-  transition:transform .4s cubic-bezier(0.4,0,0.2,1);
-  box-shadow:0 0 8px var(--neon);
-}
-.script-card:hover::before{opacity:1;}
-.script-card:hover::after{transform:scaleX(1);}
-.script-card:hover{
-  border-color:rgba(0,229,255,0.35);
-  box-shadow:0 0 50px rgba(0,229,255,0.1),0 10px 40px rgba(0,0,0,0.4);
-  transform:translateY(-3px);
-}
-.script-version{
-  font-family:'JetBrains Mono',monospace;
-  font-size:10px;color:var(--muted);
-  letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;
-}
-.script-name{
-  font-family:'Orbitron',monospace;
-  font-size:19px;font-weight:700;
-  color:var(--neon);margin-bottom:14px;
-  transition:text-shadow .3s;
-}
-.script-card:hover .script-name{
-  text-shadow:0 0 20px rgba(0,229,255,0.5);
-}
-.script-desc{font-size:15px;color:#7a9aaa;font-weight:400;line-height:1.65;margin-bottom:20px;}
-.script-tags{display:flex;flex-wrap:wrap;gap:6px;}
-.script-tag{
-  font-family:'JetBrains Mono',monospace;
-  font-size:10px;padding:3px 10px;
-  border-radius:2px;background:rgba(0,229,255,0.05);
-  color:var(--neon);border:1px solid rgba(0,229,255,0.13);
-  transition:background .2s,box-shadow .2s;
-}
-.script-card:hover .script-tag{
-  background:rgba(0,229,255,0.08);
-}
-
-.usage-container{
-  background:var(--bg2);
-  border:1px solid var(--border);
-  border-radius:4px;padding:40px;
-  position:relative;overflow:hidden;
-}
-.usage-container::before{
-  content:'';position:absolute;top:0;left:0;right:0;
-  height:1px;
-  background:linear-gradient(90deg,transparent,var(--neon),transparent);
-  animation:sweep 4s ease-in-out infinite;
-}
-@keyframes sweep{
-  0%{transform:scaleX(0);opacity:0;transform-origin:left center;}
-  50%{transform:scaleX(1);opacity:1;transform-origin:left center;}
-  100%{transform:scaleX(0);opacity:0;transform-origin:right center;}
-}
-.tabs-nav{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:32px;border-bottom:1px solid var(--border);padding-bottom:16px;}
-.tab-btn{
-  background:transparent;border:1px solid transparent;color:var(--muted);
-  font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;letter-spacing:1px;
-  padding:12px 24px;border-radius:4px;cursor:none;transition:all .3s;
-  position:relative;overflow:hidden;
-}
-.tab-btn::before{
-  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,var(--neon),transparent);
-  transform:scaleX(0);transition:transform .3s;
-}
-.tab-btn:hover{color:var(--text);background:rgba(0,229,255,0.05);}
-.tab-btn:hover::before{transform:scaleX(1);}
-.tab-btn.active{
-  color:var(--neon);background:rgba(0,229,255,0.1);
-  border-color:var(--border);
-  box-shadow:0 0 20px rgba(0,229,255,0.15),inset 0 0 20px rgba(0,229,255,0.05);
-}
-.tab-btn.active::before{transform:scaleX(1);}
-
-.tab-pane{display:none;animation:tab-in .35s cubic-bezier(0.4,0,0.2,1);}
-.tab-pane.active{display:block;}
-@keyframes tab-in{
-  from{opacity:0;transform:translateY(12px);}
-  to{opacity:1;transform:translateY(0);}
-}
-
-.api-heading{
-  font-family:'Orbitron',monospace;font-size:18px;font-weight:700;
-  color:var(--text);margin:32px 0 16px 0;
-  display:flex;align-items:center;gap:12px;
-}
-.api-heading::before{
-  content:'';display:inline-block;width:8px;height:8px;
-  background:var(--neon);border-radius:50%;
-  box-shadow:0 0 10px var(--neon),0 0 20px rgba(0,229,255,0.5);
-  animation:dot-pulse 2s ease-in-out infinite;
-}
-@keyframes dot-pulse{
-  0%,100%{box-shadow:0 0 10px var(--neon),0 0 20px rgba(0,229,255,0.5);}
-  50%{box-shadow:0 0 20px var(--neon),0 0 40px rgba(0,229,255,0.7),0 0 60px rgba(0,229,255,0.3);}
-}
-.api-heading:first-child{margin-top:0;}
-.api-desc{font-size:16px;color:var(--muted);margin-bottom:20px;line-height:1.7;}
-
-.code-block{
-  background:#040810;border:1px solid var(--border);
-  border-radius:4px;overflow:hidden;margin-bottom:24px;
-  transition:border-color .3s,box-shadow .3s;
-}
-.code-block:hover{border-color:rgba(0,229,255,0.25);box-shadow:0 0 30px rgba(0,229,255,0.06);}
-.code-header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:11px 20px;background:var(--bg2);
-  border-bottom:1px solid var(--border);
-}
-.code-dots{display:flex;gap:6px;}
-.code-dot{
-  width:10px;height:10px;border-radius:50%;
-  transition:box-shadow .2s;
-}
-.code-block:hover .code-dot.d1{box-shadow:0 0 8px #ff5f57;}
-.code-block:hover .code-dot.d2{box-shadow:0 0 8px #febc2e;}
-.code-block:hover .code-dot.d3{box-shadow:0 0 8px #28c840;}
-.d1{background:#ff5f57;}.d2{background:#febc2e;}.d3{background:#28c840;}
-.code-lang{
-  font-family:'JetBrains Mono',monospace;
-  font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;
-}
-.code-copy{
-  font-family:'JetBrains Mono',monospace;
-  font-size:10px;color:var(--neon);
-  background:transparent;border:1px solid var(--border2);
-  padding:4px 12px;border-radius:2px;cursor:none;
-  transition:all .2s;letter-spacing:1px;
-  position:relative;overflow:hidden;
-}
-.code-copy::before{
-  content:'';position:absolute;inset:0;background:var(--neon);
-  transform:scaleX(0);transform-origin:left;transition:transform .2s;z-index:-1;
-}
-.code-copy:hover::before{transform:scaleX(1);}
-.code-copy:hover{color:var(--bg);border-color:var(--neon);}
-.code-body{padding:24px;overflow-x:auto;}
-pre{margin:0;}
-code{font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.85;}
-.c-kw{color:#c87bff;}.c-fn{color:#00e5ff;}.c-str{color:#00ff88;}
-.c-cm{color:#3a5060;font-style:italic;}.c-op{color:#ff6b35;}.c-num{color:#ffd700;}
-
-.disclaimer-box{
-  background:rgba(255,107,53,0.04);
-  border:1px solid rgba(255,107,53,0.18);
-  border-radius:4px;padding:36px;
-  position:relative;overflow:hidden;
-  transition:border-color .3s,box-shadow .3s;
-}
-.disclaimer-box:hover{
-  border-color:rgba(255,107,53,0.3);
-  box-shadow:0 0 40px rgba(255,107,53,0.06);
-}
-.disclaimer-box::before{
-  content:'!';position:absolute;right:-8px;top:-20px;
-  font-family:'Orbitron',monospace;
-  font-size:130px;font-weight:900;
-  color:rgba(255,107,53,0.04);line-height:1;
-  pointer-events:none;
-}
-.disclaimer-box::after{
-  content:'';position:absolute;top:0;left:0;right:0;
-  height:1px;background:linear-gradient(90deg,transparent,var(--neon3),transparent);
-  opacity:0.5;
-}
-.disclaimer-title{
-  font-family:'Orbitron',monospace;
-  font-size:13px;font-weight:700;
-  color:var(--neon3);letter-spacing:2px;
-  margin-bottom:16px;text-transform:uppercase;
-  display:flex;align-items:center;gap:10px;
-}
-.disclaimer-title svg{width:16px;height:16px;flex-shrink:0;}
-.disclaimer-text{font-size:15px;color:#7a9aaa;font-weight:400;line-height:1.85;}
-.disclaimer-text strong{color:var(--text);font-weight:600;}
-
-footer{
-  border-top:1px solid var(--border);
-  padding:48px 0;position:relative;z-index:2;
-  background:linear-gradient(180deg,transparent,rgba(0,229,255,0.01));
-}
-.footer-inner{
-  max-width:1100px;margin:0 auto;padding:0 32px;
-  display:flex;align-items:center;justify-content:space-between;
-  flex-wrap:wrap;gap:24px;
-}
-.footer-logo{
-  font-family:'Orbitron',monospace;
-  font-weight:900;font-size:15px;
-  color:var(--neon);letter-spacing:3px;
-  text-shadow:0 0 20px rgba(0,229,255,0.4);
-  animation:logo-breathe 4s ease-in-out infinite;
-}
-@keyframes logo-breathe{
-  0%,100%{text-shadow:0 0 20px rgba(0,229,255,0.4);}
-  50%{text-shadow:0 0 30px rgba(0,229,255,0.7),0 0 60px rgba(0,229,255,0.3);}
-}
-.footer-copy{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;}
-.footer-links{display:flex;gap:20px;}
-.footer-links a{
-  font-family:'JetBrains Mono',monospace;
-  font-size:11px;color:var(--muted);
-  text-decoration:none;letter-spacing:1px;transition:color .2s;
-}
-.footer-links a:hover{color:var(--neon);}
-
-.neon-divider{
-  height:1px;
-  background:linear-gradient(90deg,transparent,var(--neon2),var(--neon),var(--neon4),transparent);
-  opacity:0.2;animation:divider-pulse 4s ease-in-out infinite;
-}
-@keyframes divider-pulse{
-  0%,100%{opacity:0.2;}50%{opacity:0.4;}
-}
-
-@keyframes fadeUp{
-  from{opacity:0;transform:translateY(28px);}
-  to{opacity:1;transform:translateY(0);}
-}
-@keyframes blink{50%{opacity:0;}}
-@keyframes ripple-out{
-  to{transform:scale(1);opacity:0;}
-}
-
-.scanline{
-  position:fixed;left:0;right:0;height:1px;
-  background:linear-gradient(transparent,rgba(0,229,255,0.06),transparent);
-  z-index:1;pointer-events:none;
-  animation:scanline 10s linear infinite;
-}
-.scanline2{
-  position:fixed;left:0;right:0;height:1px;
-  background:linear-gradient(transparent,rgba(200,123,255,0.04),transparent);
-  z-index:1;pointer-events:none;
-  animation:scanline 17s linear infinite;
-  animation-delay:-6s;
-}
-@keyframes scanline{
-  0%{transform:translateY(-2px);}
-  100%{transform:translateY(100vh);}
-}
-
-.reveal{
-  opacity:0;transform:translateY(40px) scale(0.97);
-  transition:opacity .75s cubic-bezier(0.16,1,0.3,1),transform .75s cubic-bezier(0.16,1,0.3,1);
-  will-change:opacity,transform;
-}
-.reveal.visible{opacity:1;transform:translateY(0) scale(1);}
-
-.glitch-box{
-  position:relative;
-  display:inline-block;
-}
-.glitch-box::before,.glitch-box::after{
-  content:attr(data-text);
-  position:absolute;top:0;left:0;
-  font-family:inherit;font-size:inherit;font-weight:inherit;
-  color:transparent;-webkit-text-stroke:inherit;
-  pointer-events:none;
-}
-.glitch-box::before{
-  animation:glitch-shift-a 8s infinite;
-  clip-path:polygon(0 20%,100% 20%,100% 40%,0 40%);
-}
-.glitch-box::after{
-  animation:glitch-shift-b 8s infinite;
-  clip-path:polygon(0 60%,100% 60%,100% 80%,0 80%);
-}
-@keyframes glitch-shift-a{
-  0%,95%,100%{transform:translate(0);opacity:0;}
-  96%{transform:translate(-2px,1px);opacity:0.6;color:#ff0080;}
-  97%{transform:translate(2px,-1px);opacity:0.6;color:#00e5ff;}
-  98%{transform:translate(-1px,2px);opacity:0;}
-}
-@keyframes glitch-shift-b{
-  0%,92%,100%{transform:translate(0);opacity:0;}
-  93%{transform:translate(3px,0);opacity:0.5;color:#00e5ff;}
-  94%{transform:translate(-3px,1px);opacity:0.5;color:#ff0080;}
-  95%{transform:translate(0);opacity:0;}
-}
-
-@media(max-width:700px){
-  nav{padding:12px 16px;}
-  .nav-links{display:none;}
-  .container{padding:0 18px;}
-  .hero-inner{padding:0 18px;}
-  .module-row{grid-template-columns:1fr;gap:8px;}
-  .hero-stats{gap:28px;}
-  .footer-inner{flex-direction:column;text-align:center;}
-  .footer-links{justify-content:center;}
-  .tabs-nav{flex-direction:column;}
-  .tab-btn{text-align:center;}
-  #cursor,#cursor-ring{display:none;}
-  #music-player{bottom:16px;right:16px;}
-}
-
-#music-player{
-  position:fixed;bottom:28px;right:28px;z-index:200;
-  display:flex;flex-direction:column;align-items:flex-end;gap:8px;
-}
-#music-btn{
-  width:48px;height:48px;border-radius:50%;
-  background:rgba(6,10,13,0.9);
-  border:1px solid var(--border2);
-  cursor:none;display:flex;align-items:center;justify-content:center;
-  transition:border-color .3s,box-shadow .3s;
-  backdrop-filter:blur(20px);
-  position:relative;overflow:hidden;flex-shrink:0;
-}
-#music-btn::before{
-  content:'';position:absolute;inset:0;border-radius:50%;
-  background:radial-gradient(circle,rgba(0,229,255,0.12),transparent 70%);
-  opacity:0;transition:opacity .3s;
-}
-#music-btn:hover{border-color:var(--neon);box-shadow:var(--glow);}
-#music-btn:hover::before{opacity:1;}
-#music-btn.playing{
-  border-color:var(--neon2);
-  box-shadow:0 0 20px rgba(0,255,136,0.4),0 0 40px rgba(0,255,136,0.15);
-  animation:music-pulse 2.4s ease-in-out infinite;
-}
-@keyframes music-pulse{
-  0%,100%{box-shadow:0 0 20px rgba(0,255,136,0.4),0 0 40px rgba(0,255,136,0.15);}
-  50%{box-shadow:0 0 32px rgba(0,255,136,0.6),0 0 60px rgba(0,255,136,0.25);}
-}
-#music-icon{
-  display:flex;align-items:center;justify-content:center;
-  color:var(--muted);transition:color .3s;
-}
-#music-btn.playing #music-icon{display:none;}
-#music-btn:hover #music-icon{color:var(--neon);}
-#eq-bars{
-  display:none;align-items:flex-end;gap:2.5px;height:18px;
-}
-#music-btn.playing #eq-bars{display:flex;}
-#eq-bars span{
-  width:3px;border-radius:2px;
-  background:linear-gradient(180deg,var(--neon2),var(--neon));
-  animation:eq-bounce 0.8s ease-in-out infinite;
-}
-#eq-bars span:nth-child(1){animation-duration:.6s;animation-delay:0s;}
-#eq-bars span:nth-child(2){animation-duration:.8s;animation-delay:.15s;}
-#eq-bars span:nth-child(3){animation-duration:.5s;animation-delay:.08s;}
-#eq-bars span:nth-child(4){animation-duration:.7s;animation-delay:.22s;}
-@keyframes eq-bounce{0%,100%{height:4px;}50%{height:16px;}}
-#music-label{
-  font-family:'JetBrains Mono',monospace;
-  font-size:9px;letter-spacing:2px;color:var(--muted);
-  background:rgba(6,10,13,0.85);border:1px solid var(--border);
-  padding:4px 10px;border-radius:2px;backdrop-filter:blur(20px);
-  opacity:0;transform:translateX(8px);
-  transition:opacity .3s,transform .3s,color .2s,border-color .2s;
-  pointer-events:none;white-space:nowrap;
-  text-decoration:none;display:block;cursor:none;
-}
-#music-player:hover #music-label{opacity:1;transform:translateX(0);pointer-events:auto;}
-#music-label:hover{color:var(--neon);border-color:var(--border2);}
-
-#vol-panel{
-  display:flex;flex-direction:column;align-items:flex-end;gap:6px;
-  opacity:0;transform:translateX(8px);
-  transition:opacity .3s,transform .3s;
-  pointer-events:none;
-}
-#music-player:hover #vol-panel{opacity:1;transform:translateX(0);pointer-events:auto;}
-#vol-label{
-  font-family:'JetBrains Mono',monospace;
-  font-size:9px;letter-spacing:2px;color:var(--neon2);
-  background:rgba(6,10,13,0.85);border:1px solid rgba(0,255,136,0.2);
-  padding:3px 8px;border-radius:2px;backdrop-filter:blur(20px);
-  white-space:nowrap;min-width:52px;text-align:center;
-}
-#vol-wrap{
-  display:flex;align-items:center;
-  background:rgba(6,10,13,0.85);border:1px solid var(--border);
-  padding:8px 10px;border-radius:2px;backdrop-filter:blur(20px);
-  gap:6px;
-}
-#vol-wrap svg{width:12px;height:12px;color:var(--muted);flex-shrink:0;}
-#vol-slider{
-  -webkit-appearance:none;appearance:none;
-  width:90px;height:3px;border-radius:2px;outline:none;cursor:none;
-  background:linear-gradient(90deg,var(--neon2) var(--pct,35%),rgba(0,229,255,0.15) var(--pct,35%));
-}
-#vol-slider::-webkit-slider-thumb{
-  -webkit-appearance:none;width:12px;height:12px;
-  border-radius:50%;background:var(--neon2);cursor:none;
-  box-shadow:0 0 8px rgba(0,255,136,0.6);
-  transition:box-shadow .2s,transform .2s;
-}
-#vol-slider::-webkit-slider-thumb:hover{
-  box-shadow:0 0 14px rgba(0,255,136,0.9);transform:scale(1.25);
-}
-#vol-slider::-moz-range-thumb{
-  width:12px;height:12px;border:none;border-radius:50%;
-  background:var(--neon2);cursor:none;
-  box-shadow:0 0 8px rgba(0,255,136,0.6);
-}
+  --border2: rgba(0,229,255,0.22);
+  --card: rgba(11,17,23,0.85);
+  --glow: 0 0 24px rgba(0,229,255,0.35);
+  --glow2: 0 0 48px rgba(0,229,255,0.18);
+}
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: hidden;
+  cursor: none;
+}
+#cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--neon);
+  pointer-events: none;
+  z-index: 9999;
+  transition: width .18s cubic-bezier(0.16,1,0.3,1), height .18s cubic-bezier(0.16,1,0.3,1), background .2s, opacity .2s;
+  box-shadow: 0 0 8px var(--neon), 0 0 18px var(--neon), 0 0 36px rgba(0,229,255,0.4);
+  mix-blend-mode: screen;
+  will-change: transform;
+}
+#cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0,229,255,0.5);
+  pointer-events: none;
+  z-index: 9998;
+  transition: width .3s cubic-bezier(0.16,1,0.3,1), height .3s cubic-bezier(0.16,1,0.3,1), border-color .2s, opacity .2s;
+  will-change: transform;
+}
+.cursor-trail {
+  position: fixed;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9997;
+  mix-blend-mode: screen;
+  transition: opacity .4s;
+  background: var(--neon);
+  will-change: transform;
+}
+body:has(a:hover,button:hover,.module-row:hover,.feat-card:hover,.theme-card:hover) #cursor {
+  width: 16px;
+  height: 16px;
+  background: var(--neon4);
+  box-shadow: 0 0 12px var(--neon4), 0 0 28px var(--neon4), 0 0 50px rgba(200,123,255,0.4);
+}
+body:has(a:hover,button:hover,.module-row:hover,.feat-card:hover,.theme-card:hover) #cursor-ring {
+  width: 58px;
+  height: 58px;
+  border-color: rgba(200,123,255,0.55);
+}
+body:has(a:hover,button:hover,.module-row:hover,.feat-card:hover,.theme-card:hover) .cursor-trail {
+  background: var(--neon4);
+  box-shadow: 0 0 10px var(--neon4);
+}
+#bg-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+  transform: translateZ(0);
+  contain: paint layout;
+}
+#grain {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: .022;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  animation: grain-shift 0.3s steps(1) infinite;
+  transform: translateZ(0);
+  contain: strict;
+}
+@keyframes grain-shift {
+  0% { transform: translate(0,0) }
+  10% { transform: translate(-2%,-3%) }
+  20% { transform: translate(3%,1%) }
+  30% { transform: translate(-1%,4%) }
+  40% { transform: translate(4%,-2%) }
+  50% { transform: translate(-3%,3%) }
+  60% { transform: translate(1%,-4%) }
+  70% { transform: translate(-4%,2%) }
+  80% { transform: translate(2%,4%) }
+  90% { transform: translate(-2%,-1%) }
+  100% { transform: translate(3%,2%) }
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-image: linear-gradient(rgba(0,229,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,255,0.02) 1px, transparent 1px);
+  background-size: 56px 56px;
+  pointer-events: none;
+  animation: grid-pulse 8s ease-in-out infinite;
+}
+@keyframes grid-pulse {
+  0%, 100% { opacity: 1 }
+  50% { opacity: .4 }
+}
+.aurora {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  contain: paint;
+}
+.aurora::before,
+.aurora::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  animation: aurora-float 22s ease-in-out infinite;
+  will-change: transform;
+}
+.aurora::before {
+  width: 70vw;
+  height: 50vh;
+  top: -15vh;
+  left: -15vw;
+  background: radial-gradient(ellipse, rgba(0,229,255,0.07) 0%, rgba(0,255,136,0.03) 40%, transparent 70%);
+}
+.aurora::after {
+  width: 60vw;
+  height: 60vh;
+  bottom: -15vh;
+  right: -15vw;
+  background: radial-gradient(ellipse, rgba(200,123,255,0.07) 0%, rgba(0,229,255,0.03) 40%, transparent 70%);
+  animation-delay: -11s;
+}
+.aurora-mid {
+  position: fixed;
+  width: 40vw;
+  height: 40vh;
+  top: 30vh;
+  left: 30vw;
+  border-radius: 50%;
+  filter: blur(120px);
+  background: radial-gradient(ellipse, rgba(255,107,53,0.03) 0%, transparent 70%);
+  animation: aurora-float 28s ease-in-out infinite reverse;
+  animation-delay: -7s;
+  z-index: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+@keyframes aurora-float {
+  0%, 100% { transform: translate(0,0) scale(1) }
+  25% { transform: translate(4vw,2vh) scale(1.08) }
+  50% { transform: translate(-2vw,5vh) scale(0.94) }
+  75% { transform: translate(6vw,-3vh) scale(1.05) }
+}
+::-webkit-scrollbar { width: 4px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg) }
+::-webkit-scrollbar-thumb { background: rgba(0, 229, 255, 0.5); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--neon); box-shadow: 0 0 4px rgba(0, 229, 255, 0.5); }
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 32px;
+  position: relative;
+  z-index: 2;
+}
+section { padding: 80px 0 }
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 14px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(6,10,13,0.75);
+  backdrop-filter: blur(30px) saturate(180%);
+  border-bottom: 1px solid var(--border);
+  gap: 16px;
+  transition: background .3s, box-shadow .3s;
+}
+nav.scrolled {
+  background: rgba(6,10,13,0.95);
+  box-shadow: 0 4px 40px rgba(0,0,0,0.6), 0 1px 0 rgba(0,229,255,0.1);
+}
+.nav-logo {
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  font-size: 17px;
+  color: var(--neon);
+  letter-spacing: 3px;
+  text-shadow: 0 0 20px rgba(0,229,255,0.6), 0 0 40px rgba(0,229,255,0.3);
+  flex-shrink: 0;
+  position: relative;
+}
+.nav-logo::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--neon), transparent);
+  animation: logo-line 3s ease-in-out infinite;
+}
+@keyframes logo-line {
+  0%, 100% { opacity: .4; transform: scaleX(0.5) }
+  50% { opacity: 1; transform: scaleX(1) }
+}
+.nav-logo span { color: var(--text); animation: blink 2s step-end infinite; }
+.nav-links { display: flex; gap: 24px; }
+.nav-links a {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  text-decoration: none;
+  letter-spacing: 1.5px;
+  transition: color .2s;
+  position: relative;
+}
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--neon2), var(--neon));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .3s cubic-bezier(0.4,0,0.2,1);
+  box-shadow: 0 0 8px var(--neon);
+}
+.nav-links a:hover { color: var(--neon) }
+.nav-links a:hover::after { transform: scaleX(1) }
+.nav-links a.active-link { color: var(--neon) }
+.nav-links a.active-link::after { transform: scaleX(1) }
+.nav-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.lang-toggle {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  padding: 5px 10px;
+  border-radius: 2px;
+  cursor: none;
+  transition: all .2s;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.lang-toggle:hover { border-color: var(--neon); box-shadow: 0 0 15px rgba(0,229,255,0.2); }
+.lang-toggle.is-en .lt-en { color: var(--neon) }
+.lang-toggle.is-vi .lt-vi { color: var(--neon) }
+@media (hover: hover) {
+  .lang-toggle.is-vi:hover .lt-en { color: #ffe600; text-shadow: 0 0 8px rgba(255,230,0,0.5); transition: all .2s; }
+  .lang-toggle.is-en:hover .lt-vi { color: #ffe600; text-shadow: 0 0 8px rgba(255,230,0,0.5); transition: all .2s; }
+}
+.lang-toggle .lt-sep { color: var(--border2) }
+.nav-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--bg);
+  background: var(--neon);
+  padding: 5px 14px;
+  border-radius: 2px;
+  font-weight: 600;
+  text-decoration: none;
+  letter-spacing: 1px;
+  transition: box-shadow .2s, transform .2s;
+  position: relative;
+  overflow: hidden;
+}
+.nav-badge::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transform: translateX(-100%);
+  animation: nav-shine 4s ease-in-out infinite;
+}
+@keyframes nav-shine {
+  0%, 60% { transform: translateX(-100%) }
+  80% { transform: translateX(100%) }
+  100% { transform: translateX(100%) }
+}
+.nav-badge:hover { box-shadow: 0 0 30px rgba(0,229,255,0.6), 0 0 60px rgba(0,229,255,0.3); transform: translateY(-2px); }
+#hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding-top: 80px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 32px;
+  z-index: 2;
+}
+.hero-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--neon);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  opacity: 0;
+  animation: fadeUp .6s .2s forwards;
+  position: relative;
+  display: inline-block;
+}
+.hero-eyebrow::before { content: '// '; color: var(--muted); }
+.hero-eyebrow::after {
+  content: '';
+  position: absolute;
+  right: -16px;
+  top: 50%;
+  width: 6px;
+  height: 10px;
+  background: var(--neon);
+  transform: translateY(-50%);
+  animation: blink .8s step-end infinite;
+  box-shadow: 0 0 8px var(--neon);
+}
+.hero-title {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(34px,8vw,96px);
+  font-weight: 900;
+  line-height: .95;
+  letter-spacing: -2px;
+  opacity: 0;
+  animation: fadeUp .6s .4s forwards;
+}
+.hero-title .line1 { color: var(--text); display: block; position: relative; }
+.hero-title .line2 {
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--neon);
+  display: block;
+  position: relative;
+}
+@keyframes hue-shift {
+  0% { filter: drop-shadow(0 0 10px rgba(0,229,255,0.4)) hue-rotate(0deg) }
+  33% { filter: drop-shadow(0 0 28px rgba(0,229,255,0.9)) hue-rotate(15deg) }
+  66% { filter: drop-shadow(0 0 16px rgba(200,123,255,0.6)) hue-rotate(-10deg) }
+  100% { filter: drop-shadow(0 0 10px rgba(0,229,255,0.4)) hue-rotate(0deg) }
+}
+.hero-title .line1 { animation: glitch-line1-auto 7s ease-in-out infinite; }
+.hero-title .line2 { animation: hue-shift 6s linear infinite, glitch-line2-auto 7s ease-in-out infinite; }
+@keyframes glitch-line1-auto {
+  0%, 88%, 100% { transform: translate(0); clip-path: none }
+  89% { transform: translate(-3px,1px); clip-path: inset(10% 0 60% 0) }
+  90% { transform: translate(3px,-1px); clip-path: inset(50% 0 20% 0) }
+  91% { transform: translate(-2px,2px); clip-path: inset(30% 0 40% 0) }
+  92% { transform: translate(2px,-2px); clip-path: inset(70% 0 5% 0) }
+  93% { transform: translate(0); clip-path: none }
+}
+@keyframes glitch-line2-auto {
+  0%, 88%, 100% { transform: translate(0); text-shadow: none; clip-path: none }
+  89% { transform: translate(4px,0); text-shadow: -4px 0 #ff0080, 4px 0 #00e5ff }
+  90% { transform: translate(-4px,0); text-shadow: 4px 0 #ff0080, -4px 0 #00e5ff; clip-path: inset(20% 0 50% 0) }
+  91% { transform: translate(2px,-1px); text-shadow: -2px 0 #00e5ff, 2px 0 #ff0080 }
+  92% { transform: translate(0); text-shadow: none; clip-path: none }
+}
+.hero-title .cursor {
+  display: inline-block;
+  width: 4px;
+  height: .82em;
+  background: var(--neon);
+  margin-left: 6px;
+  vertical-align: middle;
+  animation: blink 1s step-end infinite;
+  box-shadow: 0 0 12px var(--neon), 0 0 24px rgba(0,229,255,0.5);
+}
+.hero-desc {
+  margin-top: 28px;
+  max-width: 560px;
+  font-size: 18px;
+  font-weight: 400;
+  color: #9ab4c4;
+  line-height: 1.75;
+  opacity: 0;
+  animation: fadeUp .6s .6s forwards;
+}
+.hero-actions {
+  margin-top: 44px;
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  opacity: 0;
+  animation: fadeUp .6s .8s forwards;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 28px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-decoration: none;
+  border-radius: 2px;
+  transition: all .3s cubic-bezier(0.16,1,0.3,1);
+  cursor: none;
+  border: none;
+  position: relative;
+  overflow: hidden;
+  will-change: transform;
+}
+.btn-primary { background: var(--neon); color: var(--bg); }
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  transform: translateX(-100%);
+  transition: transform .5s;
+}
+.btn-primary:hover::before { transform: translateX(100%); }
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(90deg, var(--neon2), var(--neon), var(--neon4), var(--neon));
+  background-size: 300%;
+  z-index: -1;
+  border-radius: 2px;
+  animation: border-anim 4s linear infinite;
+  opacity: 0;
+  transition: opacity .3s;
+}
+.btn-primary:hover::after { opacity: 1; }
+@keyframes border-anim { 0% { background-position: 0% } 100% { background-position: 300% } }
+.btn-primary:hover { box-shadow: 0 0 40px rgba(0,229,255,0.6), 0 0 80px rgba(0,229,255,0.3); transform: translateY(-3px) scale(1.02); }
+.btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+.btn-outline { background: transparent; border: 1px solid var(--border2); color: var(--neon); }
+.btn-outline::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--neon);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .3s cubic-bezier(0.4,0,0.2,1);
+  z-index: -1;
+}
+.btn-outline:hover::after { transform: scaleX(1); }
+.btn-outline:hover { color: var(--bg); border-color: var(--neon); box-shadow: 0 0 25px rgba(0,229,255,0.3); }
+.hero-stats {
+  margin-top: 64px;
+  display: flex;
+  gap: 48px;
+  flex-wrap: wrap;
+  opacity: 0;
+  animation: fadeUp .6s 1s forwards;
+  border-top: 1px solid var(--border);
+  padding-top: 40px;
+  position: relative;
+}
+.hero-stats::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--neon2), var(--neon));
+  box-shadow: 0 0 10px var(--neon);
+}
+.stat-num {
+  font-family: 'Orbitron', monospace;
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--neon);
+  text-shadow: 0 0 20px rgba(0,229,255,0.4), 0 0 40px rgba(0,229,255,0.2);
+  position: relative;
+  display: inline-block;
+}
+.stat-num::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--neon), transparent);
+  opacity: .5;
+}
+.stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  margin-top: 5px;
+}
+.sec-header { margin-bottom: 56px }
+.sec-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--neon);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  display: block;
+  opacity: .8;
+  animation: tag-glow 3s ease-in-out infinite;
+}
+@keyframes tag-glow { 0%, 100% { text-shadow: none } 50% { text-shadow: 0 0 10px rgba(0,229,255,0.5) } }
+.sec-title {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(26px,4vw,40px);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+}
+.sec-title em { font-style: normal; color: transparent; -webkit-text-stroke: 1px var(--neon); animation: hue-shift 6s linear infinite; }
+.sec-sub {
+  margin-top: 14px;
+  font-size: 17px;
+  color: #8aa4b4;
+  font-weight: 400;
+  max-width: 520px;
+  line-height: 1.7;
+}
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: visible;
+  position: relative;
+  perspective: 1200px;
+  padding: 5px;
+}
+.features-grid::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0,229,255,0.03) 0%, transparent 50%, rgba(200,123,255,0.02) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+.feat-card {
+  min-width: 100% !important;
+  flex-shrink: 0;
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 22px 20px !important;
+  height: auto !important;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.feat-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(0,229,255,0.07), transparent 60%); opacity: 0; transition: opacity .35s; }
+.feat-card::after { content: ''; position: absolute; top: 0; right: 0; width: 28px; height: 28px; border-top: 1px solid var(--neon); border-right: 1px solid var(--neon); opacity: 0; transition: opacity .3s, box-shadow .3s, width .3s, height .3s; }
+.feat-card:hover { background: var(--bg3); transform: translateY(-3px); }
+.feat-card:hover::before, .feat-card:hover::after { opacity: 1; }
+.feat-card:hover::after { box-shadow: 6px -6px 16px rgba(0,229,255,0.35); width: 36px; height: 36px; }
+.feat-card .card-glow { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle 180px at 50% 50%, rgba(0,229,255,0.07), transparent 70%); opacity: 0; transition: opacity .3s; will-change: background; }
+.feat-card:hover .card-glow { opacity: 1; }
+.feat-card .scan-line { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.feat-card .scan-line::after { content: ''; position: absolute; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, rgba(0,229,255,0.15), transparent); transform: translateY(-100%); }
+.feat-card:hover .scan-line::after { animation: card-scan .6s ease forwards; }
+@keyframes card-scan { 0% { transform: translateY(-100%) } 100% { transform: translateY(1000%) } }
+.feat-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.feat-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  margin-bottom: 0;
+  transition: box-shadow .3s, transform .3s;
+  flex-shrink: 0;
+  position: relative;
+}
+.feat-icon::before { content: ''; position: absolute; inset: -4px; border-radius: 8px; opacity: 0; transition: opacity .3s; animation: icon-pulse 2s ease-in-out infinite; }
+.feat-card:hover .feat-icon::before { opacity: 1; }
+.feat-card:hover .feat-icon { transform: scale(1.1) rotateY(10deg); }
+@keyframes icon-pulse { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.08) } }
+.feat-icon svg { width: 22px; height: 22px; }
+.feat-card.c-cyan .feat-icon { color: var(--neon); background: rgba(0,229,255,0.07); border: 1px solid rgba(0,229,255,0.2); }
+.feat-card.c-green .feat-icon { color: var(--neon2); background: rgba(0,255,136,0.07); border: 1px solid rgba(0,255,136,0.2); }
+.feat-card.c-orange .feat-icon { color: var(--neon3); background: rgba(255,107,53,0.07); border: 1px solid rgba(255,107,53,0.2); }
+.feat-card.c-purple .feat-icon { color: var(--neon4); background: rgba(200,123,255,0.07); border: 1px solid rgba(200,123,255,0.2); }
+.feat-card.c-cyan:hover .feat-icon { box-shadow: 0 0 30px rgba(0,229,255,0.5), 0 0 60px rgba(0,229,255,0.2); }
+.feat-card.c-green:hover .feat-icon { box-shadow: 0 0 30px rgba(0,255,136,0.5), 0 0 60px rgba(0,255,136,0.2); }
+.feat-card.c-orange:hover .feat-icon { box-shadow: 0 0 30px rgba(255,107,53,0.5), 0 0 60px rgba(255,107,53,0.2); }
+.feat-card.c-purple:hover .feat-icon { box-shadow: 0 0 30px rgba(200,123,255,0.5), 0 0 60px rgba(200,123,255,0.2); }
+.feat-card.c-cyan .feat-icon::before { background: radial-gradient(circle, rgba(0,229,255,0.1), transparent); }
+.feat-card.c-green .feat-icon::before { background: radial-gradient(circle, rgba(0,255,136,0.1), transparent); }
+.feat-card.c-orange .feat-icon::before { background: radial-gradient(circle, rgba(255,107,53,0.1), transparent); }
+.feat-card.c-purple .feat-icon::before { background: radial-gradient(circle, rgba(200,123,255,0.1), transparent); }
+.feat-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 0;
+  text-transform: uppercase;
+}
+.feat-card.c-cyan .feat-title { color: var(--neon) }
+.feat-card.c-green .feat-title { color: var(--neon2) }
+.feat-card.c-orange .feat-title { color: var(--neon3) }
+.feat-card.c-purple .feat-title { color: var(--neon4) }
+.feat-desc { font-size: 15px; color: #7a9aaa; font-weight: 400; line-height: 1.65; white-space: normal; word-wrap: break-word; overflow-wrap: break-word; }
+.modules-list { display: flex; flex-direction: column; gap: 3px; }
+.module-row {
+  display: grid;
+  grid-template-columns: 210px 1fr auto;
+  align-items: center;
+  gap: 24px;
+  padding: 20px 24px;
+  background: var(--bg2);
+  border-radius: 2px;
+  border-left: 2px solid transparent;
+  transition: all .4s cubic-bezier(0.16,1,0.3,1);
+  cursor: none;
+  position: relative;
+  overflow: hidden;
+  will-change: transform;
+}
+.module-row::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,229,255,0.04), transparent); transform: translateX(-100%); transition: transform .4s cubic-bezier(0.4,0,0.2,1); }
+.module-row:hover::before { transform: translateX(0); }
+.module-row:hover { background: var(--bg3); border-left-color: var(--neon); padding-left: 30px; box-shadow: inset 0 0 40px rgba(0,229,255,0.04), 0 0 20px rgba(0,229,255,0.04); }
+.module-name { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: var(--neon); transition: text-shadow .3s; }
+.module-row:hover .module-name { text-shadow: 0 0 12px rgba(0,229,255,0.6); }
+.module-file { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 3px; letter-spacing: 0.5px; }
+.module-desc { font-size: 15px; color: var(--text); font-weight: 400; line-height: 1.6; }
+.module-tag { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1px; padding: 4px 10px; border-radius: 2px; white-space: nowrap; font-weight: 600; transition: box-shadow .3s; }
+.module-row:hover .tag-core { box-shadow: 0 0 10px rgba(0,229,255,0.3) }
+.module-row:hover .tag-util { box-shadow: 0 0 10px rgba(0,255,136,0.3) }
+.module-row:hover .tag-logic { box-shadow: 0 0 10px rgba(255,107,53,0.3) }
+.module-row:hover .tag-config { box-shadow: 0 0 10px rgba(200,123,255,0.3) }
+.tag-core { background: rgba(0,229,255,0.1); color: var(--neon); border: 1px solid rgba(0,229,255,0.2); }
+.tag-util { background: rgba(0,255,136,0.1); color: var(--neon2); border: 1px solid rgba(0,255,136,0.2); }
+.tag-logic { background: rgba(255,107,53,0.1); color: var(--neon3); border: 1px solid rgba(255,107,53,0.2); }
+.tag-config { background: rgba(200,123,255,0.1); color: var(--neon4); border: 1px solid rgba(200,123,255,0.2); }
+.themes-grid { display: grid !important; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.themes-grid::-webkit-scrollbar { display: none; }
+.theme-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: border-color .3s, box-shadow .3s, transform .3s; }
+.theme-preview { height: 60px; display: flex; align-items: center; padding: 0 16px; gap: 8px; position: relative; }
+.theme-preview::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent); }
+.theme-dot { width: 10px; height: 10px; border-radius: 50%; transition: transform .3s; }
+.theme-bar { height: 4px; border-radius: 2px; flex: 1; opacity: .6; transition: opacity .3s; }
+.theme-card:hover .theme-dot:last-child { transform: scale(1.4); }
+.theme-card:hover .theme-bar { opacity: .9; }
+.theme-info { padding: 10px 14px; background: var(--bg2); }
+.theme-name { font-family: 'Orbitron', monospace; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: var(--text); }
+.theme-neon { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--muted); margin-top: 3px; }
+.script-showcase { display: flex; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; min-height: 440px; }
+.showcase-nav { width: 220px; background: var(--bg3); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+.sc-btn { background: transparent; border: none; border-left: 3px solid transparent; padding: 20px; text-align: left; cursor: none; transition: all 0.3s; border-bottom: 1px solid var(--border); }
+.sc-btn:hover { background: rgba(0, 229, 255, 0.05); }
+.sc-btn.active { background: rgba(0, 229, 255, 0.08); border-left-color: var(--neon); box-shadow: inset 10px 0 20px rgba(0, 229, 255, 0.05); }
+.sc-ver { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 4px; }
+.sc-name { font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 700; color: var(--text); transition: color 0.3s; }
+.sc-btn.active .sc-name { color: var(--neon); text-shadow: 0 0 10px rgba(0, 229, 255, 0.5); }
+.showcase-display { flex: 1; padding: 32px; position: relative; background: radial-gradient(circle at top right, rgba(0, 229, 255, 0.03), transparent 60%); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.sc-pane { display: none; animation: tab-in 0.4s cubic-bezier(0.4, 0, 0.2, 1); width: 100%; max-width: 360px; }
+.sc-pane.active { display: block; }
+.mockup-window { margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); pointer-events: none; }
+.v1-mode { width: 300px; background: #282828; border-radius: 8px; overflow: hidden; border: none; font-family: 'Source Sans Pro', 'Segoe UI', Arial, sans-serif; }
+.mk1-header { background: #3C3C3C; height: 40px; padding: 0 5px 0 10px; display: flex; align-items: center; gap: 8px; color: #fff; font-size: 20px; }
+.mk1-header img { width: 22px; height: 22px; object-fit: contain; }
+.mk1-close { margin-left: auto; background: #AF0000; color: #fff; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; border-radius: 4px; font-size: 16px; font-weight: bold; margin-right: 2px; }
+.mk1-body { padding: 10px; }
+.mk1-row { display: flex; justify-content: space-between; align-items: center; height: 30px; margin-bottom: 5px; }
+.mk1-row-part { display: flex; align-items: center; height: 25px; margin-bottom: 5px; }
+.mk1-label { color: #ffffff; font-size: 16px; flex: 1; }
+.mk1-label.large { font-size: 19px; width: 45%; }
+.mk1-btn { display: flex; justify-content: center; align-items: center; font-weight: bold; color: #fff; border: none; }
+.mk1-btn.toggle-btn { width: 25%; height: 80%; border-radius: 4px; font-size: 16px; }
+.mk1-btn.mode-btn { width: 45%; height: 80%; border-radius: 4px; font-size: 18px; color: #E6E6E6; }
+.mk1-btn.sm-btn-1 { width: 20%; height: 90%; border-radius: 3px; font-size: 14px; margin-right: 5px; }
+.mk1-btn.sm-btn-2 { width: 35%; height: 90%; border-radius: 3px; font-size: 14px; font-weight: normal; }
+.btn-green { background: #00AF00; }
+.btn-red { background: #AF0000; }
+.btn-gray { background: #505050; }
+.btn-blue { background: #3C96FF; }
+.mk1-part-list { display: flex; flex-direction: column; }
+.thuvien-ui { background: #0d131a; border-radius: 12px; border: 1px solid rgba(0, 229, 255, 0.15); overflow: hidden; font-family: 'Gotham', 'Rajdhani', sans-serif; }
+.tv-toolbar { display: flex; justify-content: flex-end; align-items: center; padding: 10px 10px 0 10px; gap: 6px; }
+.tv-search { margin-right: auto; background: rgba(11, 17, 23, 0.5); border: 1px solid rgba(0, 229, 255, 0.2); border-radius: 6px; display: flex; align-items: center; padding: 4px 8px; width: 120px; }
+.tv-search input { background: transparent; border: none; outline: none; color: #728a9a; font-size: 11px; width: 100%; }
+.tv-search-icon { font-size: 10px; opacity: 0.5; }
+.tv-tool-btn { background: rgba(11, 17, 23, 0.5); border: 1px solid rgba(0, 229, 255, 0.2); width: 24px; height: 24px; border-radius: 6px; display: flex; justify-content: center; align-items: center; color: #ddeaf2; font-size: 12px; font-weight: bold; }
+.tv-close { color: #ff5f57 }
+.tv-tabs { display: flex; gap: 4px; padding: 10px 10px 0 10px; border-bottom: 1px solid rgba(255,255,255,0.05); overflow: hidden; }
+.tv-tab { padding: 6px 12px; font-size: 11px; color: #728a9a; background: rgba(11, 17, 23, 0.5); border-radius: 6px 6px 0 0; position: relative; white-space: nowrap; }
+.tv-tab.active { color: #00e5ff; background: rgba(0, 229, 255, 0.1); font-weight: bold; }
+.tv-line { position: absolute; bottom: 0; left: 10%; width: 80%; height: 2px; background: #00e5ff; border-radius: 2px; }
+.tv-body { padding: 12px }
+.tv-block { background: #111820; border-radius: 8px; border: 1px solid rgba(0, 229, 255, 0.1); overflow: hidden; }
+.tv-block-header { padding: 10px 12px; font-size: 12px; font-weight: bold; color: #ddeaf2; display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.tv-block-header span { font-size: 8px; color: #728a9a; }
+.tv-block-content { padding: 8px }
+.tv-row { display: flex; align-items: center; background: #151d26; padding: 6px 10px; border-radius: 6px; margin-bottom: 4px; gap: 8px; }
+.tv-label { flex: 1; font-size: 11px; color: #ddeaf2; }
+.tv-sub-btn { background: #1a2430; padding: 4px 10px; border-radius: 4px; font-size: 10px; color: #ddeaf2; border: 1px solid rgba(0,229,255,0.1); }
+.tv-toggle { width: 30px; height: 16px; background: #1a2430; border-radius: 8px; position: relative; border: 1px solid rgba(255,255,255,0.1); }
+.tv-switch { position: absolute; width: 12px; height: 12px; background: #728a9a; border-radius: 50%; top: 1px; left: 2px; }
+.tv-toggle.on { background: rgba(0, 229, 255, 0.1); border-color: #00e5ff; }
+.tv-toggle.on .tv-switch { background: #00e5ff; left: 14px; box-shadow: 0 0 6px #00e5ff; }
+.tv-btn { background: #151d26; padding: 8px; text-align: center; border-radius: 6px; font-size: 11px; font-weight: bold; color: #ddeaf2; margin-top: 4px; border: 1px solid rgba(0,229,255,0.1); }
+.tv-sub-menu { padding-left: 12px; margin-top: 4px; border-left: 1px solid rgba(0,229,255,0.2); }
+.tv-input { background: #0d131a; border: 1px solid rgba(0,229,255,0.2); padding: 4px 8px; border-radius: 4px; font-size: 10px; color: #ddeaf2; }
+.mockup-libs { border-top: 1px dashed var(--border2); padding-top: 20px; width: 100%; max-width: 360px; margin-top: 16px; }
+.libs-title { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 2px; margin-bottom: 12px; }
+.libs-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.script-version { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+.script-name { font-family: 'Orbitron', monospace; font-size: 19px; font-weight: 700; color: var(--neon); margin-bottom: 14px; transition: text-shadow .3s; }
+.script-card:hover .script-name { text-shadow: 0 0 20px rgba(0,229,255,0.5); }
+.script-desc { font-size: 15px; color: #7a9aaa; font-weight: 400; line-height: 1.65; margin-bottom: 20px; }
+.script-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.script-tag { font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 3px 10px; border-radius: 2px; background: rgba(0,229,255,0.05); color: var(--neon); border: 1px solid rgba(0,229,255,0.13); transition: background .2s, box-shadow .2s; }
+.script-card:hover .script-tag { background: rgba(0,229,255,0.08); }
+.usage-container { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 40px; position: relative; overflow: hidden; }
+.usage-container::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--neon), transparent); animation: sweep 4s ease-in-out infinite; }
+@keyframes sweep { 0% { transform: scaleX(0); opacity: 0; transform-origin: left center } 50% { transform: scaleX(1); opacity: 1; transform-origin: left center } 100% { transform: scaleX(0); opacity: 0; transform-origin: right center } }
+.tabs-nav { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 32px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+.tab-btn { background: transparent; border: 1px solid transparent; color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; letter-spacing: 1px; padding: 12px 24px; border-radius: 4px; cursor: none; transition: all .3s; position: relative; overflow: hidden; }
+.tab-btn::before { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--neon), transparent); transform: scaleX(0); transition: transform .3s; }
+.tab-btn:hover { color: var(--text); background: rgba(0,229,255,0.05); }
+.tab-btn:hover::before { transform: scaleX(1); }
+.tab-btn.active { color: var(--neon); background: rgba(0,229,255,0.1); border-color: var(--border); box-shadow: 0 0 20px rgba(0,229,255,0.15), inset 0 0 20px rgba(0,229,255,0.05); }
+.tab-btn.active::before { transform: scaleX(1); }
+.tab-pane { display: none; animation: tab-in .35s cubic-bezier(0.4,0,0.2,1); }
+.tab-pane.active { display: block; }
+@keyframes tab-in { from { opacity: 0; transform: translateY(12px) } to { opacity: 1; transform: translateY(0) } }
+.api-heading { font-family: 'Orbitron', monospace; font-size: 18px; font-weight: 700; color: var(--text); margin: 32px 0 16px 0; display: flex; align-items: center; gap: 12px; }
+.api-heading::before { content: ''; display: inline-block; width: 8px; height: 8px; background: var(--neon); border-radius: 50%; box-shadow: 0 0 10px var(--neon), 0 0 20px rgba(0,229,255,0.5); animation: dot-pulse 2s ease-in-out infinite; }
+@keyframes dot-pulse { 0%, 100% { box-shadow: 0 0 10px var(--neon), 0 0 20px rgba(0,229,255,0.5) } 50% { box-shadow: 0 0 20px var(--neon), 0 0 40px rgba(0,229,255,0.7), 0 0 60px rgba(0,229,255,0.3) } }
+.api-heading:first-child { margin-top: 0 }
+.api-desc { font-size: 16px; color: var(--muted); margin-bottom: 20px; line-height: 1.7; }
+.code-block { background: #040810; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 24px; transition: border-color .3s, box-shadow .3s; }
+.code-block:hover { border-color: rgba(0,229,255,0.25); box-shadow: 0 0 30px rgba(0,229,255,0.06); }
+.code-header { display: flex; align-items: center; justify-content: space-between; padding: 11px 20px; background: var(--bg2); border-bottom: 1px solid var(--border); }
+.code-dots { display: flex; gap: 6px; }
+.code-dot { width: 10px; height: 10px; border-radius: 50%; transition: box-shadow .2s; }
+.code-block:hover .code-dot.d1 { box-shadow: 0 0 8px #ff5f57 }
+.code-block:hover .code-dot.d2 { box-shadow: 0 0 8px #febc2e }
+.code-block:hover .code-dot.d3 { box-shadow: 0 0 8px #28c840 }
+.d1 { background: #ff5f57 }
+.d2 { background: #febc2e }
+.d3 { background: #28c840 }
+.code-lang { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+.code-copy { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--neon); background: rgba(0,229,255,0.05); border: 1px solid var(--border2); padding: 4px 12px; border-radius: 2px; cursor: none; transition: all 0.3s cubic-bezier(0.16,1,0.3,1); letter-spacing: 1px; }
+.code-copy:hover { color: #fff; background: rgba(0,229,255,0.2); border-color: var(--neon); box-shadow: 0 0 15px rgba(0,229,255,0.3), inset 0 0 10px rgba(0,229,255,0.1); transform: translateY(-1px); }
+.code-body { padding: 24px; overflow-x: auto; }
+pre { margin: 0 }
+code { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.85; }
+.c-kw { color: #c87bff }
+.c-fn { color: #00e5ff }
+.c-str { color: #00ff88 }
+.c-cm { color: #3a5060; font-style: italic }
+.c-op { color: #ff6b35 }
+.c-num { color: #ffd700 }
+.disclaimer-box { background: rgba(255,107,53,0.04); border: 1px solid rgba(255,107,53,0.18); border-radius: 4px; padding: 36px; position: relative; overflow: hidden; transition: border-color .3s, box-shadow .3s; }
+.disclaimer-box:hover { border-color: rgba(255,107,53,0.3); box-shadow: 0 0 40px rgba(255,107,53,0.06); }
+.disclaimer-box::before { content: '!'; position: absolute; right: -8px; top: -20px; font-family: 'Orbitron', monospace; font-size: 130px; font-weight: 900; color: rgba(255,107,53,0.04); line-height: 1; pointer-events: none; }
+.disclaimer-box::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--neon3), transparent); opacity: .5; }
+.disclaimer-title { font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 700; color: var(--neon3); letter-spacing: 2px; margin-bottom: 16px; text-transform: uppercase; display: flex; align-items: center; gap: 10px; }
+.disclaimer-title svg { width: 16px; height: 16px; flex-shrink: 0; }
+.disclaimer-text { font-size: 15px; color: #7a9aaa; font-weight: 400; line-height: 1.85; }
+.disclaimer-text strong { color: var(--text); font-weight: 600; }
+footer { border-top: 1px solid var(--border); padding: 48px 0; position: relative; z-index: 2; background: linear-gradient(180deg, transparent, rgba(0,229,255,0.01)); }
+.footer-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 24px; }
+.footer-logo { font-family: 'Orbitron', monospace; font-weight: 900; font-size: 15px; color: var(--neon); letter-spacing: 3px; text-shadow: 0 0 20px rgba(0,229,255,0.4); animation: logo-breathe 4s ease-in-out infinite; }
+@keyframes logo-breathe { 0%, 100% { text-shadow: 0 0 20px rgba(0,229,255,0.4) } 50% { text-shadow: 0 0 30px rgba(0,229,255,0.7), 0 0 60px rgba(0,229,255,0.3) } }
+.footer-copy { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 1px; }
+.footer-links { display: flex; gap: 20px; }
+.footer-links a { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); text-decoration: none; letter-spacing: 1px; transition: color .2s; }
+.footer-links a:hover { color: var(--neon); }
+.neon-divider { height: 1px; background: linear-gradient(90deg, transparent, var(--neon2), var(--neon), var(--neon4), transparent); opacity: .2; animation: divider-pulse 4s ease-in-out infinite; }
+@keyframes divider-pulse { 0%, 100% { opacity: .2 } 50% { opacity: .4 } }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(28px) } to { opacity: 1; transform: translateY(0) } }
+@keyframes blink { 50% { opacity: 0 } }
+@keyframes ripple-out { to { transform: scale(1); opacity: 0 } }
+.scanline { position: fixed; left: 0; right: 0; height: 1px; background: linear-gradient(transparent, rgba(0,229,255,0.06), transparent); z-index: 1; pointer-events: none; animation: scanline 10s linear infinite; }
+.scanline2 { position: fixed; left: 0; right: 0; height: 1px; background: linear-gradient(transparent, rgba(200,123,255,0.04), transparent); z-index: 1; pointer-events: none; animation: scanline 17s linear infinite; animation-delay: -6s; }
+@keyframes scanline { 0% { transform: translateY(-2px) } 100% { transform: translateY(100vh) } }
+.reveal { opacity: 0; transform: translateY(60px) scale(0.92) rotateX(-8deg); filter: blur(8px); transition: opacity .7s cubic-bezier(0.16,1,0.3,1), transform .7s cubic-bezier(0.16,1,0.3,1), filter .7s cubic-bezier(0.16,1,0.3,1); will-change: opacity, transform, filter; }
+.reveal.visible { opacity: 1; transform: translateY(0) scale(1) rotateX(0deg); filter: blur(0); }
+.reveal.hide-up { opacity: 0; transform: translateY(-40px) scale(0.96) rotateX(6deg); filter: blur(6px); }
+.glitch-box { position: relative; display: inline-block; }
+.glitch-box::before, .glitch-box::after { content: attr(data-text); position: absolute; top: 0; left: 0; font-family: inherit; font-size: inherit; font-weight: inherit; color: transparent; -webkit-text-stroke: inherit; pointer-events: none; }
+.glitch-box::before { animation: glitch-shift-a 8s infinite; clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%); }
+.glitch-box::after { animation: glitch-shift-b 8s infinite; clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%); }
+@keyframes glitch-shift-a { 0%, 95%, 100% { transform: translate(0); opacity: 0 } 96% { transform: translate(-2px, 1px); opacity: .6; color: #ff0080 } 97% { transform: translate(2px, -1px); opacity: .6; color: #00e5ff } 98% { transform: translate(-1px, 2px); opacity: 0 } }
+@keyframes glitch-shift-b { 0%, 92%, 100% { transform: translate(0); opacity: 0 } 93% { transform: translate(3px, 0); opacity: .5; color: #00e5ff } 94% { transform: translate(-3px, 1px); opacity: .5; color: #ff0080 } 95% { transform: translate(0); opacity: 0 } }
+#music-player { position: fixed; bottom: 28px; right: 28px; z-index: 200; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+#music-btn { width: 48px; height: 48px; border-radius: 50%; background: rgba(6,10,13,0.9); border: 1px solid var(--border2); cursor: none; display: flex; align-items: center; justify-content: center; transition: border-color .3s, box-shadow .3s; backdrop-filter: blur(20px); position: relative; overflow: hidden; flex-shrink: 0; }
+#music-btn::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle, rgba(0,229,255,0.12), transparent 70%); opacity: 0; transition: opacity .3s; }
+#music-btn:hover { border-color: var(--neon); box-shadow: var(--glow); }
+#music-btn:hover::before { opacity: 1; }
+#music-btn.playing { border-color: var(--neon2); box-shadow: 0 0 20px rgba(0,255,136,0.4), 0 0 40px rgba(0,255,136,0.15); animation: music-pulse 2.4s ease-in-out infinite; }
+@keyframes music-pulse { 0%, 100% { box-shadow: 0 0 20px rgba(0,255,136,0.4), 0 0 40px rgba(0,255,136,0.15) } 50% { box-shadow: 0 0 32px rgba(0,255,136,0.6), 0 0 60px rgba(0,255,136,0.25) } }
+#music-icon { display: flex; align-items: center; justify-content: center; color: var(--muted); transition: color .3s; }
+#music-btn.playing #music-icon { display: none }
+#music-btn:hover #music-icon { color: var(--neon) }
+#eq-bars { display: none; align-items: flex-end; gap: 2.5px; height: 18px; }
+#music-btn.playing #eq-bars { display: flex }
+#eq-bars span { width: 3px; border-radius: 2px; background: linear-gradient(180deg, var(--neon2), var(--neon)); animation: eq-bounce 0.8s ease-in-out infinite; }
+#eq-bars span:nth-child(1) { animation-duration: .6s; animation-delay: 0s }
+#eq-bars span:nth-child(2) { animation-duration: .8s; animation-delay: .15s }
+#eq-bars span:nth-child(3) { animation-duration: .5s; animation-delay: .08s }
+#eq-bars span:nth-child(4) { animation-duration: .7s; animation-delay: .22s }
+@keyframes eq-bounce { 0%, 100% { height: 4px } 50% { height: 16px } }
+#music-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 2px; color: var(--muted); background: rgba(6,10,13,0.85); border: 1px solid var(--border); padding: 4px 10px; border-radius: 2px; backdrop-filter: blur(20px); opacity: 0; transform: translateX(8px); transition: opacity .3s, transform .3s, color .2s, border-color .2s; pointer-events: none; white-space: nowrap; text-decoration: none; display: block; cursor: none; }
+#music-player:hover #music-label { opacity: 1; transform: translateX(0); pointer-events: auto; }
+#music-label:hover { color: var(--neon); border-color: var(--border2); }
+#vol-panel { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; opacity: 0; transform: translateX(8px); transition: opacity .3s, transform .3s; pointer-events: none; }
+#music-player:hover #vol-panel { opacity: 1; transform: translateX(0); pointer-events: auto; }
+#vol-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 2px; color: var(--neon2); background: rgba(6,10,13,0.85); border: 1px solid rgba(0,255,136,0.2); padding: 3px 8px; border-radius: 2px; backdrop-filter: blur(20px); white-space: nowrap; min-width: 52px; text-align: center; }
+#vol-wrap { display: flex; align-items: center; background: rgba(6,10,13,0.85); border: 1px solid var(--border); padding: 8px 10px; border-radius: 2px; backdrop-filter: blur(20px); gap: 6px; }
+#vol-wrap svg { width: 12px; height: 12px; color: var(--muted); flex-shrink: 0; }
+#vol-slider { -webkit-appearance: none; appearance: none; width: 90px; height: 3px; border-radius: 2px; outline: none; cursor: none; background: linear-gradient(90deg, var(--neon2) var(--pct,35%), rgba(0,229,255,0.15) var(--pct,35%)); }
+#vol-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--neon2); cursor: none; box-shadow: 0 0 8px rgba(0,255,136,0.6); transition: box-shadow .2s, transform .2s; }
+#vol-slider::-webkit-slider-thumb:hover { box-shadow: 0 0 14px rgba(0,255,136,0.9); transform: scale(1.25); }
+#vol-slider::-moz-range-thumb { width: 12px; height: 12px; border: none; border-radius: 50%; background: var(--neon2); cursor: none; box-shadow: 0 0 8px rgba(0,255,136,0.6); }
+a, button, .btn, .tab-btn { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.tab-btn, .nav-links a, .code-copy { min-height: 36px; display: inline-flex; align-items: center; }
+@media (max-width: 1024px) { .container, .hero-inner { padding: 0 24px; } .hero-title { font-size: clamp(48px, 10vw, 80px); } }
+@media (max-width: 768px) {
+  .features-grid .feat-card.reveal, .features-carousel .feat-card.reveal, .modules-list .module-row.reveal, .modules-carousel .module-row.reveal, .themes-grid .theme-card.reveal, .themes-carousel .theme-card.reveal { opacity: 1 !important; visibility: visible !important; transform: none !important; filter: blur(0) !important; animation: none !important; transition: none !important; }
+  body { cursor: default; }
+  #cursor, #cursor-ring, .cursor-trail { display: none !important; }
+  nav { padding: 10px 16px; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+  .nav-logo { order: 1; font-size: 15px; }
+  .nav-right { order: 2; }
+  .nav-links { order: 3; width: 100%; display: flex !important; justify-content: center; gap: 15px; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
+  .nav-links::-webkit-scrollbar { display: none; }
+  .nav-links a { font-size: 10px; white-space: nowrap; }
+  section { padding: 60px 0; }
+  .hero-title { font-size: 42px; text-align: center; }
+  .hero-desc { font-size: 15px; text-align: center; margin: 20px auto 0; }
+  .hero-actions { justify-content: center; width: 100%; }
+  .btn { width: 100%; justify-content: center; padding: 14px; }
+  .hero-stats { justify-content: center; gap: 20px; display: grid; grid-template-columns: repeat(2, 1fr); text-align: center; }
+  .features-grid { display: flex !important; transition: transform 0.45s cubic-bezier(0.16,1,0.3,1); will-change: transform; overflow: visible !important; gap: 0 !important; border: none !important; padding: 0 !important; }
+  .feat-card { min-width: 100% !important; flex-shrink: 0; width: 100% !important; max-width: 100% !important; padding: 24px 16px !important; height: auto !important; }
+  .features-carousel { position: relative; overflow: hidden; touch-action: pan-y; }
+  .carousel-dots { display: flex; justify-content: center; gap: 8px; margin-top: 16px; }
+  .carousel-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border2); transition: all 0.3s; }
+  .carousel-dot.active { background: var(--neon); box-shadow: 0 0 10px var(--neon); }
+  .modules-list::-webkit-scrollbar { display: none; }
+  .module-row > div:first-child { width: 100%; }
+  .modules-carousel { position: relative; overflow: hidden; touch-action: pan-y; }
+  .modules-list { display: flex !important; flex-direction: row !important; transition: transform 0.45s cubic-bezier(0.16,1,0.3,1); will-change: transform; gap: 0 !important; padding-bottom: 0; }
+  .module-row { display: flex !important; min-width: 100% !important; flex-shrink: 0; width: 100% !important; max-width: 100% !important; padding: 24px 16px !important; height: auto !important; border-radius: 8px; background: transparent !important; border: 1px solid var(--border) !important; flex-direction: column; align-items: flex-start; gap: 12px; text-align: left; }
+  .module-row .module-desc { margin-bottom: 4px; width: 100%; white-space: normal; word-wrap: break-word; }
+  .module-row .module-tag { width: 100%; box-sizing: border-box; padding: 10px 14px; text-align: left; border-radius: 4px; font-size: 11px; margin-top: auto; }
+  .themes-carousel { position: relative; overflow: hidden; touch-action: pan-y; }
+  .themes-grid { display: flex !important; flex-direction: row !important; transition: transform 0.45s cubic-bezier(0.16,1,0.3,1); will-change: transform; gap: 0 !important; }
+  .theme-card { min-width: 100% !important; flex-shrink: 0; width: 100% !important; max-width: 100% !important; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+  .scripts-grid { grid-template-columns: 1fr; gap: 16px; }
+  .usage-container { padding: 20px 16px; }
+  .tabs-nav { flex-wrap: nowrap; overflow-x: auto; gap: 8px; }
+  .tab-btn { flex-shrink: 0; padding: 10px 16px; font-size: 11px; }
+  #music-player { bottom: 15px; right: 15px; scale: 0.9; }
+  .reveal { transform: translateY(30px) scale(0.96); filter: blur(4px); }
+  .feat-card.m-hover, .script-card.m-hover { background: var(--bg3); transform: translateY(-3px); }
+  .feat-card.m-hover::before, .feat-card.m-hover::after { opacity: 1; }
+  .feat-card.m-hover::after { box-shadow: 6px -6px 16px rgba(0,229,255,0.35); width: 36px; height: 36px; }
+  .feat-card.m-hover .card-glow { opacity: 1; }
+  .feat-card.m-hover .scan-line::after { animation: card-scan .6s ease forwards; }
+  .feat-card.m-hover .feat-icon::before { opacity: 1; }
+  .feat-card.m-hover .feat-icon { transform: scale(1.1) rotateY(10deg); }
+  .feat-card.c-cyan.m-hover .feat-icon { box-shadow: 0 0 30px rgba(0,229,255,0.5), 0 0 60px rgba(0,229,255,0.2); }
+  .feat-card.c-green.m-hover .feat-icon { box-shadow: 0 0 30px rgba(0,255,136,0.5), 0 0 60px rgba(0,255,136,0.2); }
+  .feat-card.c-orange.m-hover .feat-icon { box-shadow: 0 0 30px rgba(255,107,53,0.5), 0 0 60px rgba(255,107,53,0.2); }
+  .feat-card.c-purple.m-hover .feat-icon { box-shadow: 0 0 30px rgba(200,123,255,0.5), 0 0 60px rgba(200,123,255,0.2); }
+  .module-row.m-hover::before { transform: translateX(0); }
+  .module-row.m-hover { background: var(--bg3) !important; transform: translateY(-3px) !important; box-shadow: inset 0 0 40px rgba(0,229,255,0.04), 0 0 20px rgba(0,229,255,0.04); border-color: rgba(0,229,255,0.35) !important; z-index: 10; position: relative; }
+  .module-row.m-hover .module-name { text-shadow: 0 0 12px rgba(0,229,255,0.6); }
+  .module-row.m-hover .tag-core { box-shadow: 0 0 10px rgba(0,229,255,0.3); }
+  .module-row.m-hover .tag-util { box-shadow: 0 0 10px rgba(0,255,136,0.3); }
+  .module-row.m-hover .tag-logic { box-shadow: 0 0 10px rgba(255,107,53,0.3); }
+  .module-row.m-hover .tag-config { box-shadow: 0 0 10px rgba(200,123,255,0.3); }
+  .theme-card.m-hover .theme-dot:last-child { transform: scale(1.4); }
+  .theme-card.m-hover .theme-bar { opacity: .9; }
+  .script-card.m-hover::before { opacity: 1; }
+  .script-card.m-hover::after { transform: scaleX(1); }
+  .script-card.m-hover { border-color: rgba(0,229,255,0.35); box-shadow: 0 0 50px rgba(0,229,255,0.1), 0 10px 40px rgba(0,0,0,0.4); }
+  .script-card.m-hover .script-name { text-shadow: 0 0 20px rgba(0,229,255,0.5); }
+  .script-card.m-hover .script-tag { background: rgba(0,229,255,0.08); }
+}
+@media (max-width: 480px) { .hero-title { font-size: 36px } .themes-grid { grid-template-columns: 1fr } .nav-links { gap: 10px } .nav-links a { letter-spacing: 0.5px } }
+@media (min-width: 769px) { .carousel-dots { display: none !important; } }
+.scripts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.script-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 28px; position: relative; overflow: hidden; transition: border-color .3s, box-shadow .3s, transform .3s; }
+.script-card::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at top right, rgba(0,229,255,0.06), transparent 70%); opacity: 0; transition: opacity .3s; }
+.script-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--neon), transparent); transform: scaleX(0); transition: transform .4s cubic-bezier(0.4,0,0.2,1); box-shadow: 0 0 8px var(--neon); }
+.script-card:hover::before { opacity: 1; }
+.script-card:hover::after { transform: scaleX(1); }
+.script-card:hover { border-color: rgba(0,229,255,0.35); box-shadow: 0 0 50px rgba(0,229,255,0.1), 0 10px 40px rgba(0,0,0,0.4); transform: translateY(-3px); }
+body { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 </style>
 </head>
 <body>
-
 <div id="cursor"></div>
 <div id="cursor-ring"></div>
-<div id="progress-bar"></div>
-
-<audio id="bg-music" loop preload="none">
-  <source src="audio/cipher2.mp3" type="audio/mpeg">
-</audio>
+<audio id="bg-music" loop preload="none"><source src="audio/cipher2.mp3" type="audio/mpeg"></audio>
 <div id="music-player">
   <a id="music-label" href="https://incompetech.com/" target="_blank" rel="noopener" title="Cipher2 — Kevin MacLeod · CC BY 3.0">CIPHER2 · KEVIN MACLEOD · CC BY 3.0</a>
   <div id="vol-panel">
@@ -1086,21 +964,10 @@ footer{
     </div>
   </div>
   <button id="music-btn" onclick="toggleMusic()" title="Nhạc nền">
-    <span id="music-icon">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
-      </svg>
-    </span>
-    <span id="eq-bars">
-      <span></span><span></span><span></span><span></span>
-    </span>
+    <span id="music-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span>
+    <span id="eq-bars"><span></span><span></span><span></span><span></span></span>
   </button>
 </div>
-<div class="scanline"></div>
-<div class="scanline2"></div>
-<div class="aurora"></div>
-<div class="aurora-mid"></div>
-<div id="grain"></div>
 <canvas id="bg-canvas"></canvas>
 
 <nav id="main-nav">
@@ -1113,11 +980,7 @@ footer{
     <a href="#usage" data-i18n="nav-usage">USAGE</a>
   </div>
   <div class="nav-right">
-    <button class="lang-toggle is-vi" onclick="toggleLang()" id="langBtn">
-      <span class="lt-vi">VI</span>
-      <span class="lt-sep">/</span>
-      <span class="lt-en">EN</span>
-    </button>
+    <button class="lang-toggle is-vi" onclick="toggleLang()" id="langBtn"><span class="lt-vi">VI</span><span class="lt-sep">/</span><span class="lt-en">EN</span></button>
     <a href="https://github.com/9311-nex4/Hx" class="nav-badge" target="_blank">GITHUB ↗</a>
   </div>
 </nav>
@@ -1129,10 +992,7 @@ footer{
       <span class="line1">CHAOS</span>
       <span class="line2 glitch-box" data-text="SYSTEM">SYSTEM<span class="cursor"></span></span>
     </h1>
-    <p class="hero-desc" data-i18n="hero-desc">
-      Thư viện UI &amp; tiện ích modular mã nguồn mở cho Roblox.
-      Animation mượt mà, 12 theme màu sắc, tối ưu hiệu năng, và hệ thống script đầy đủ.
-    </p>
+    <p class="hero-desc" data-i18n="hero-desc">Thư viện UI & tiện ích modular mã nguồn mở cho Roblox. Animation mượt mà, 12 theme màu sắc, tối ưu hiệu năng, và hệ thống script đầy đủ.</p>
     <div class="hero-actions">
       <a href="https://github.com/9311-nex4/Hx" class="btn btn-primary" target="_blank">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
@@ -1144,22 +1004,10 @@ footer{
       </a>
     </div>
     <div class="hero-stats">
-      <div class="stat-item">
-        <div class="stat-num" data-target="12">0</div>
-        <div class="stat-label" data-i18n="stat-themes">UI Themes</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num" data-target="3">0</div>
-        <div class="stat-label" data-i18n="stat-scripts">Main Scripts</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num" data-target="8" data-suffix="+">0</div>
-        <div class="stat-label" data-i18n="stat-modules">Logic Modules</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num" data-text="MIT">MIT</div>
-        <div class="stat-label" data-i18n="stat-license">License</div>
-      </div>
+      <div class="stat-item"><div class="stat-num" data-target="12">0</div><div class="stat-label" data-i18n="stat-themes">UI Themes</div></div>
+      <div class="stat-item"><div class="stat-num" data-target="3">0</div><div class="stat-label" data-i18n="stat-scripts">Main Scripts</div></div>
+      <div class="stat-item"><div class="stat-num" data-target="8" data-suffix="+">0</div><div class="stat-label" data-i18n="stat-modules">Logic Modules</div></div>
+      <div class="stat-item"><div class="stat-num" data-text="MIT">MIT</div><div class="stat-label" data-i18n="stat-license">License</div></div>
     </div>
   </div>
 </section>
@@ -1173,79 +1021,18 @@ footer{
       <h2 class="sec-title" data-i18n-html="feat-title">Tất Cả Trong <em>Một</em></h2>
       <p class="sec-sub" data-i18n="feat-sub">Từ UI library đến các module logic phức tạp — mọi thứ đã được module hoá và sẵn sàng dùng.</p>
     </div>
-    <div class="features-grid">
-      <div class="feat-card c-cyan reveal">
-        <div class="scan-line"></div>
-        <div class="card-glow"></div>
-        <div class="feat-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/></svg>
-        </div>
-        <div class="feat-title" data-i18n="f1-title">Custom UI Library</div>
-        <p class="feat-desc" data-i18n="f1-desc">Tab system, toggle, dropdown, slider, input, danh sách cuộn — tất cả với animation tween mượt mà và đầy đủ theme hỗ trợ.</p>
+    <div class="features-carousel">
+      <div class="features-grid">
+        <div class="feat-card c-cyan reveal"><div class="scan-line"></div><div class="card-glow"></div><div class="feat-card-header"><div class="feat-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/></svg></div><div class="feat-title" data-i18n="f1-title">Custom UI Library</div></div><p class="feat-desc" data-i18n="f1-desc">Tab system, toggle, dropdown, slider, input, danh sách cuộn — tất cả với animation tween mượt mà và đầy đủ theme hỗ trợ.</p></div>
+        <div class="feat-card c-green reveal"><div class="scan-line"></div><div class="card-glow"></div><div class="feat-card-header"><div class="feat-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg></div><div class="feat-title" data-i18n="f2-title">Potato Mode</div></div><p class="feat-desc" data-i18n="f2-desc">Tắt particle, shadow, texture, fog, PostEffect và hàng loạt hiệu ứng đồ hoạ theo batch — giảm lag đáng kể mà không cần restart.</p></div>
+        <div class="feat-card c-orange reveal"><div class="scan-line"></div><div class="card-glow"></div><div class="feat-card-header"><div class="feat-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12.296 3.464 3.02 3.956"/><path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3z"/><path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="m6.18 5.276 3.1 3.899"/></svg></div><div class="feat-title" data-i18n="f3-title">Animation Engine</div></div><p class="feat-desc" data-i18n="f3-desc">Hệ thống tween đa lớp: mở/đóng UI với icon shrink, hover, drag-to-move, click feedback — mọi trạng thái đều có hiệu ứng.</p></div>
+        <div class="feat-card c-purple reveal"><div class="scan-line"></div><div class="card-glow"></div><div class="feat-card-header"><div class="feat-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg></div><div class="feat-title" data-i18n="f4-title">Search &amp; Highlight</div></div><p class="feat-desc" data-i18n="f4-desc">Tìm kiếm realtime trong UI với auto-scroll tới kết quả, highlight nền và viền neon vàng, cache descendants cho hiệu suất cao.</p></div>
+        <div class="feat-card c-green reveal"><div class="scan-line"></div><div class="card-glow"></div><div class="feat-card-header"><div class="feat-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="7"/><path d="M12 6v4"/></svg></div><div class="feat-title" data-i18n="f5-title">Auto Clicker</div></div><p class="feat-desc" data-i18n="f5-desc">Tối đa 20 điểm click kéo-thả được, tốc độ tuỳ chỉnh theo mili giây, hiệu ứng chớp sáng khi click, hỗ trợ cả mouse lẫn touch.</p></div>
+        <div class="feat-card c-cyan reveal"><div class="scan-line"></div><div class="card-glow"></div><div class="feat-card-header"><div class="feat-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><path d="m9 20 3-6 3 6"/><path d="m6 8 6 2 6-2"/><path d="M12 10v4"/></svg></div><div class="feat-title" data-i18n="f6-title">Player Tools</div></div><p class="feat-desc" data-i18n="f6-desc">Fly, Noclip, Teleport tới player/chuột/click, Target Lock, ESP outline, Anti-AFK tự động — tất cả có thể toggle realtime.</p></div>
+        <div class="feat-card c-orange reveal"><div class="scan-line"></div><div class="card-glow"></div><div class="feat-card-header"><div class="feat-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 22V7a1 1 0 0 0-1-1H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5a1 1 0 0 0-1-1H2"/><rect x="14" y="2" width="8" height="8" rx="1"/></svg></div><div class="feat-title" data-i18n="f7-title">Hx Build</div></div><p class="feat-desc" data-i18n="f7-desc">Chọn, di chuyển, neo và hàn các khối trong workspace. Hỗ trợ nhóm khối, undo, outline vùng chọn trực quan.</p></div>
+        <div class="feat-card c-purple reveal"><div class="scan-line"></div><div class="card-glow"></div><div class="feat-card-header"><div class="feat-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg></div><div class="feat-title" data-i18n="f8-title">Config Manager</div></div><p class="feat-desc" data-i18n="f8-desc">Lưu/đọc cấu hình riêng theo từng game và global. Tự động áp dụng theme, phím tắt, kích thước UI khi mở lại.</p></div>
       </div>
-      <div class="feat-card c-green reveal">
-        <div class="scan-line"></div>
-        <div class="card-glow"></div>
-        <div class="feat-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
-        </div>
-        <div class="feat-title" data-i18n="f2-title">Potato Mode</div>
-        <p class="feat-desc" data-i18n="f2-desc">Tắt particle, shadow, texture, fog, PostEffect và hàng loạt hiệu ứng đồ hoạ theo batch — giảm lag đáng kể mà không cần restart.</p>
-      </div>
-      <div class="feat-card c-orange reveal">
-        <div class="scan-line"></div>
-        <div class="card-glow"></div>
-        <div class="feat-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12.296 3.464 3.02 3.956"/><path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3z"/><path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="m6.18 5.276 3.1 3.899"/></svg>
-        </div>
-        <div class="feat-title" data-i18n="f3-title">Animation Engine</div>
-        <p class="feat-desc" data-i18n="f3-desc">Hệ thống tween đa lớp: mở/đóng UI với icon shrink, hover, drag-to-move, click feedback — mọi trạng thái đều có hiệu ứng.</p>
-      </div>
-      <div class="feat-card c-purple reveal">
-        <div class="scan-line"></div>
-        <div class="card-glow"></div>
-        <div class="feat-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
-        </div>
-        <div class="feat-title" data-i18n="f4-title">Search &amp; Highlight</div>
-        <p class="feat-desc" data-i18n="f4-desc">Tìm kiếm realtime trong UI với auto-scroll tới kết quả, highlight nền và viền neon vàng, cache descendants cho hiệu suất cao.</p>
-      </div>
-      <div class="feat-card c-green reveal">
-        <div class="scan-line"></div>
-        <div class="card-glow"></div>
-        <div class="feat-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="7"/><path d="M12 6v4"/></svg>
-        </div>
-        <div class="feat-title" data-i18n="f5-title">Auto Clicker</div>
-        <p class="feat-desc" data-i18n="f5-desc">Tối đa 20 điểm click kéo-thả được, tốc độ tuỳ chỉnh theo mili giây, hiệu ứng chớp sáng khi click, hỗ trợ cả mouse lẫn touch.</p>
-      </div>
-      <div class="feat-card c-cyan reveal">
-        <div class="scan-line"></div>
-        <div class="card-glow"></div>
-        <div class="feat-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><path d="m9 20 3-6 3 6"/><path d="m6 8 6 2 6-2"/><path d="M12 10v4"/></svg>
-        </div>
-        <div class="feat-title" data-i18n="f6-title">Player Tools</div>
-        <p class="feat-desc" data-i18n="f6-desc">Fly, Noclip, Teleport tới player/chuột/click, Target Lock, ESP outline, Anti-AFK tự động — tất cả có thể toggle realtime.</p>
-      </div>
-      <div class="feat-card c-orange reveal">
-        <div class="scan-line"></div>
-        <div class="card-glow"></div>
-        <div class="feat-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 22V7a1 1 0 0 0-1-1H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5a1 1 0 0 0-1-1H2"/><rect x="14" y="2" width="8" height="8" rx="1"/></svg>
-        </div>
-        <div class="feat-title" data-i18n="f7-title">Hx Build</div>
-        <p class="feat-desc" data-i18n="f7-desc">Chọn, di chuyển, neo và hàn các khối trong workspace. Hỗ trợ nhóm khối, undo, outline vùng chọn trực quan.</p>
-      </div>
-      <div class="feat-card c-purple reveal">
-        <div class="scan-line"></div>
-        <div class="card-glow"></div>
-        <div class="feat-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg>
-        </div>
-        <div class="feat-title" data-i18n="f8-title">Config Manager</div>
-        <p class="feat-desc" data-i18n="f8-desc">Lưu/đọc cấu hình riêng theo từng game và global. Tự động áp dụng theme, phím tắt, kích thước UI khi mở lại.</p>
-      </div>
+      <div class="carousel-dots"></div>
     </div>
   </div>
 </section>
@@ -1257,18 +1044,21 @@ footer{
       <h2 class="sec-title" data-i18n-html="mod-title">Kiến Trúc <em>Modular</em></h2>
       <p class="sec-sub" data-i18n-html="mod-sub">Mỗi module hoạt động độc lập và có thể được load riêng lẻ qua <code style="color:var(--neon);font-family:'JetBrains Mono',monospace">loadstring(HttpGet(...))()</code></p>
     </div>
-    <div class="modules-list">
-      <div class="module-row reveal"><div><div class="module-name">ThuVienUI</div><div class="module-file">ThuVienUI.lua</div></div><div class="module-desc" data-i18n="m1-desc">UI library đầy đủ — tạo cửa sổ, tab, toggle, dropdown, slider, input, nút, danh sách, theme selector tích hợp</div><span class="module-tag tag-core">CORE</span></div>
-      <div class="module-row reveal"><div><div class="module-name">Animation</div><div class="module-file">Animation.lua</div></div><div class="module-desc" data-i18n="m2-desc">Engine tween: mở/đóng giao diện với icon shrink, hover chuột, nhấn chuột, kéo-thả cửa sổ, cache transparency</div><span class="module-tag tag-core">CORE</span></div>
-      <div class="module-row reveal"><div><div class="module-name">ChuDe</div><div class="module-file">ChuDe.lua</div></div><div class="module-desc" data-i18n="m3-desc">12 bộ theme màu sắc: Dark, Matrix, Ocean, Violet, Crimson, Gold, Sakura, Emerald, Cyberpunk, Ice, Sunset, Neon</div><span class="module-tag tag-util">UTIL</span></div>
-      <div class="module-row reveal"><div><div class="module-name">ThongBao</div><div class="module-file">ThongBao.lua</div></div><div class="module-desc" data-i18n="m4-desc">Hệ thống thông báo nổi — thông báo thường và thông báo lỗi với animation xuất hiện/biến mất mượt mà</div><span class="module-tag tag-util">UTIL</span></div>
-      <div class="module-row reveal"><div><div class="module-name">TimKiem</div><div class="module-file">TimKiem.lua</div></div><div class="module-desc" data-i18n="m5-desc">Tìm kiếm realtime trong UI, highlight nền + viền neon vàng, auto-scroll tới kết quả đầu tiên, cache descendants</div><span class="module-tag tag-util">UTIL</span></div>
-      <div class="module-row reveal"><div><div class="module-name">MenuConfigManager</div><div class="module-file">MenuConfigManager.lua</div></div><div class="module-desc" data-i18n="m6-desc">Quản lý config global + per-game, Potato Mode, FullBright, No Shadows, Remove Fog, Anti-AFK tự động</div><span class="module-tag tag-config">CONFIG</span></div>
-      <div class="module-row reveal"><div><div class="module-name">ETC_Logic</div><div class="module-file">ETC_Logic.lua</div></div><div class="module-desc" data-i18n="m7-desc">Fly, Noclip, Teleport (tới player / chuột / click), Target Lock, ESP outline player, Click Teleport với phím tắt</div><span class="module-tag tag-logic">LOGIC</span></div>
-      <div class="module-row reveal"><div><div class="module-name">AutoClick_Logic</div><div class="module-file">AutoClick_Logic.lua</div></div><div class="module-desc" data-i18n="m8-desc">Multi-point auto clicker kéo-thả, tối đa 20 điểm, tốc độ tuỳ chỉnh ms, hiệu ứng chớp sáng, hỗ trợ touch</div><span class="module-tag tag-logic">LOGIC</span></div>
-      <div class="module-row reveal"><div><div class="module-name">Transform_Logic</div><div class="module-file">Transform_Logic.lua</div></div><div class="module-desc" data-i18n="m9-desc">Biến hình nhân vật hoặc mô hình: chọn part, undo, outline vùng chọn, set mode, lưu/xoá phần đã transform</div><span class="module-tag tag-logic">LOGIC</span></div>
-      <div class="module-row reveal"><div><div class="module-name">Khoi_Logic</div><div class="module-file">Khoi_Logic.lua</div></div><div class="module-desc" data-i18n="m10-desc">Tạo, chọn, di chuyển, neo, hàn/tháo khối trong workspace. Hỗ trợ nhóm khối và event khi thay đổi</div><span class="module-tag tag-logic">LOGIC</span></div>
-      <div class="module-row reveal"><div><div class="module-name">NhanVat_Logic</div><div class="module-file">NhanVat_Logic.lua</div></div><div class="module-desc" data-i18n="m11-desc">Tạo/xoá dummy, chọn model từ workspace, mở menu tuỳ chỉnh nhân vật, toggle chế độ chọn mẫu</div><span class="module-tag tag-logic">LOGIC</span></div>
+    <div class="modules-carousel">
+      <div class="modules-list">
+        <div class="module-row reveal"><div><div class="module-name">ThuVienUI</div><div class="module-file">ThuVienUI.lua</div></div><div class="module-desc" data-i18n="m1-desc">UI library đầy đủ — tạo cửa sổ, tab, toggle, dropdown, slider, input, nút, danh sách, theme selector tích hợp</div><span class="module-tag tag-core">CORE</span></div>
+        <div class="module-row reveal"><div><div class="module-name">Animation</div><div class="module-file">Animation.lua</div></div><div class="module-desc" data-i18n="m2-desc">Engine tween: mở/đóng giao diện với icon shrink, hover chuột, nhấn chuột, kéo-thả cửa sổ, cache transparency</div><span class="module-tag tag-core">CORE</span></div>
+        <div class="module-row reveal"><div><div class="module-name">ChuDe</div><div class="module-file">ChuDe.lua</div></div><div class="module-desc" data-i18n="m3-desc">12 bộ theme màu sắc: Dark, Matrix, Ocean, Violet, Crimson, Gold, Sakura, Emerald, Cyberpunk, Ice, Sunset, Neon</div><span class="module-tag tag-util">UTIL</span></div>
+        <div class="module-row reveal"><div><div class="module-name">ThongBao</div><div class="module-file">ThongBao.lua</div></div><div class="module-desc" data-i18n="m4-desc">Hệ thống thông báo nổi — thông báo thường và thông báo lỗi với animation xuất hiện/biến mất mượt mà</div><span class="module-tag tag-util">UTIL</span></div>
+        <div class="module-row reveal"><div><div class="module-name">TimKiem</div><div class="module-file">TimKiem.lua</div></div><div class="module-desc" data-i18n="m5-desc">Tìm kiếm realtime trong UI, highlight nền + viền neon vàng, auto-scroll tới kết quả đầu tiên, cache descendants</div><span class="module-tag tag-util">UTIL</span></div>
+        <div class="module-row reveal"><div><div class="module-name">MenuConfigManager</div><div class="module-file">MenuConfigManager.lua</div></div><div class="module-desc" data-i18n="m6-desc">Quản lý config global + per-game, Potato Mode, FullBright, No Shadows, Remove Fog, Anti-AFK tự động</div><span class="module-tag tag-config">CONFIG</span></div>
+        <div class="module-row reveal"><div><div class="module-name">ETC_Logic</div><div class="module-file">ETC_Logic.lua</div></div><div class="module-desc" data-i18n="m7-desc">Fly, Noclip, Teleport (tới player / chuột / click), Target Lock, ESP outline player, Click Teleport với phím tắt</div><span class="module-tag tag-logic">LOGIC</span></div>
+        <div class="module-row reveal"><div><div class="module-name">AutoClick_Logic</div><div class="module-file">AutoClick_Logic.lua</div></div><div class="module-desc" data-i18n="m8-desc">Multi-point auto clicker kéo-thả, tối đa 20 điểm, tốc độ tuỳ chỉnh ms, hiệu ứng chớp sáng, hỗ trợ touch</div><span class="module-tag tag-logic">LOGIC</span></div>
+        <div class="module-row reveal"><div><div class="module-name">Transform_Logic</div><div class="module-file">Transform_Logic.lua</div></div><div class="module-desc" data-i18n="m9-desc">Biến hình nhân vật hoặc mô hình: chọn part, undo, outline vùng chọn, set mode, lưu/xoá phần đã transform</div><span class="module-tag tag-logic">LOGIC</span></div>
+        <div class="module-row reveal"><div><div class="module-name">Khoi_Logic</div><div class="module-file">Khoi_Logic.lua</div></div><div class="module-desc" data-i18n="m10-desc">Tạo, chọn, di chuyển, neo, hàn/tháo khối trong workspace. Hỗ trợ nhóm khối và event khi thay đổi</div><span class="module-tag tag-logic">LOGIC</span></div>
+        <div class="module-row reveal"><div><div class="module-name">NhanVat_Logic</div><div class="module-file">NhanVat_Logic.lua</div></div><div class="module-desc" data-i18n="m11-desc">Tạo/xoá dummy, chọn model từ workspace, mở menu tuỳ chỉnh nhân vật, toggle chế độ chọn mẫu</div><span class="module-tag tag-logic">LOGIC</span></div>
+      </div>
+      <div class="carousel-dots"></div>
     </div>
   </div>
 </section>
@@ -1280,19 +1070,22 @@ footer{
       <h2 class="sec-title" data-i18n-html="theme-title">12 Bộ <em>Giao Diện</em></h2>
       <p class="sec-sub" data-i18n="theme-sub">Chuyển đổi ngay trong UI — theme được lưu và áp dụng tự động lần sau.</p>
     </div>
-    <div class="themes-grid">
-      <div class="theme-card reveal"><div class="theme-preview" style="background:rgb(15,15,15)"><div class="theme-dot" style="background:#505050"></div><div class="theme-bar" style="background:#505050"></div><div class="theme-dot" style="background:#fff;box-shadow:0 0 10px #fff"></div></div><div class="theme-info"><div class="theme-name">DARK</div><div class="theme-neon" style="color:#fff">#ffffff neon</div></div></div>
-      <div class="theme-card reveal"><div class="theme-preview" style="background:rgb(8,18,10)"><div class="theme-dot" style="background:#143318"></div><div class="theme-bar" style="background:#143318"></div><div class="theme-dot" style="background:#00ff46;box-shadow:0 0 10px #00ff46"></div></div><div class="theme-info"><div class="theme-name">MATRIX</div><div class="theme-neon" style="color:#00ff46">#00ff46 neon</div></div></div>
-      <div class="theme-card reveal"><div class="theme-preview" style="background:rgb(8,15,22)"><div class="theme-dot" style="background:#143350"></div><div class="theme-bar" style="background:#143350"></div><div class="theme-dot" style="background:#00c8ff;box-shadow:0 0 10px #00c8ff"></div></div><div class="theme-info"><div class="theme-name">OCEAN</div><div class="theme-neon" style="color:#00c8ff">#00c8ff neon</div></div></div>
-      <div class="theme-card reveal"><div class="theme-preview" style="background:rgb(15,8,22)"><div class="theme-dot" style="background:#2a1040"></div><div class="theme-bar" style="background:#2a1040"></div><div class="theme-dot" style="background:#c864ff;box-shadow:0 0 10px #c864ff"></div></div><div class="theme-info"><div class="theme-name">VIOLET</div><div class="theme-neon" style="color:#c864ff">#c864ff neon</div></div></div>
-      <div class="theme-card reveal"><div class="theme-preview" style="background:rgb(20,8,8)"><div class="theme-dot" style="background:#501414"></div><div class="theme-bar" style="background:#501414"></div><div class="theme-dot" style="background:#ff3c3c;box-shadow:0 0 10px #ff3c3c"></div></div><div class="theme-info"><div class="theme-name">CRIMSON</div><div class="theme-neon" style="color:#ff3c3c">#ff3c3c neon</div></div></div>
-      <div class="theme-card reveal"><div class="theme-preview" style="background:rgb(20,16,6)"><div class="theme-dot" style="background:#503212"></div><div class="theme-bar" style="background:#503212"></div><div class="theme-dot" style="background:#ffc832;box-shadow:0 0 10px #ffc832"></div></div><div class="theme-info"><div class="theme-name">GOLD</div><div class="theme-neon" style="color:#ffc832">#ffc832 neon</div></div></div>
-      <div class="theme-card reveal"><div class="theme-preview" style="background:rgb(22,10,15)"><div class="theme-dot" style="background:#501826"></div><div class="theme-bar" style="background:#501826"></div><div class="theme-dot" style="background:#ff8cb9;box-shadow:0 0 10px #ff8cb9"></div></div><div class="theme-info"><div class="theme-name">SAKURA</div><div class="theme-neon" style="color:#ff8cb9">#ff8cb9 neon</div></div></div>
-      <div class="theme-card reveal"><div class="theme-preview" style="background:rgb(6,18,10)"><div class="theme-dot" style="background:#0e3216"></div><div class="theme-bar" style="background:#0e3216"></div><div class="theme-dot" style="background:#32ff78;box-shadow:0 0 10px #32ff78"></div></div><div class="theme-info"><div class="theme-name">EMERALD</div><div class="theme-neon" style="color:#32ff78">#32ff78 neon</div></div></div>
-      <div class="theme-card reveal"><div class="theme-preview" style="background:rgb(18,16,4)"><div class="theme-dot" style="background:#46400c"></div><div class="theme-bar" style="background:#46400c"></div><div class="theme-dot" style="background:#ffe600;box-shadow:0 0 10px #ffe600"></div></div><div class="theme-info"><div class="theme-name">CYBERPUNK</div><div class="theme-neon" style="color:#ffe600">#ffe600 neon</div></div></div>
-      <div class="theme-card reveal"><div class="theme-preview" style="background:rgb(10,16,22)"><div class="theme-dot" style="background:#1a3050"></div><div class="theme-bar" style="background:#1a3050"></div><div class="theme-dot" style="background:#91e4ff;box-shadow:0 0 10px #91e4ff"></div></div><div class="theme-info"><div class="theme-name">ICE</div><div class="theme-neon" style="color:#91e4ff">#91e4ff neon</div></div></div>
-      <div class="theme-card reveal"><div class="theme-preview" style="background:rgb(22,12,8)"><div class="theme-dot" style="background:#502014"></div><div class="theme-bar" style="background:#502014"></div><div class="theme-dot" style="background:#ff7337;box-shadow:0 0 10px #ff7337"></div></div><div class="theme-info"><div class="theme-name">SUNSET</div><div class="theme-neon" style="color:#ff7337">#ff7337 neon</div></div></div>
-      <div class="theme-card reveal"><div class="theme-preview" style="background:rgb(6,18,15)"><div class="theme-dot" style="background:#0c3228"></div><div class="theme-bar" style="background:#0c3228"></div><div class="theme-dot" style="background:#00ffc3;box-shadow:0 0 10px #00ffc3"></div></div><div class="theme-info"><div class="theme-name">NEON</div><div class="theme-neon" style="color:#00ffc3">#00ffc3 neon</div></div></div>
+    <div class="themes-carousel">
+      <div class="themes-grid">
+        <div class="theme-card reveal"><div class="theme-preview" style="background: rgb(15,15,15);"><div class="theme-dot" style="background: #505050;"></div><div class="theme-bar" style="background: #505050;"></div><div class="theme-dot" style="background: #fff; box-shadow: 0 0 10px #fff;"></div></div><div class="theme-info"><div class="theme-name">DARK</div><div class="theme-neon" style="color:#fff">#ffffff neon</div></div></div>
+        <div class="theme-card reveal"><div class="theme-preview" style="background: rgb(8,18,10);"><div class="theme-dot" style="background: #143318;"></div><div class="theme-bar" style="background: #143318;"></div><div class="theme-dot" style="background: #00ff46; box-shadow: 0 0 10px #00ff46;"></div></div><div class="theme-info"><div class="theme-name">MATRIX</div><div class="theme-neon" style="color:#00ff46">#00ff46 neon</div></div></div>
+        <div class="theme-card reveal"><div class="theme-preview" style="background: rgb(8,15,22);"><div class="theme-dot" style="background: #143350;"></div><div class="theme-bar" style="background: #143350;"></div><div class="theme-dot" style="background: #00c8ff; box-shadow: 0 0 10px #00c8ff;"></div></div><div class="theme-info"><div class="theme-name">OCEAN</div><div class="theme-neon" style="color:#00c8ff">#00c8ff neon</div></div></div>
+        <div class="theme-card reveal"><div class="theme-preview" style="background: rgb(15,8,22);"><div class="theme-dot" style="background: #2a1040;"></div><div class="theme-bar" style="background: #2a1040;"></div><div class="theme-dot" style="background: #c864ff; box-shadow: 0 0 10px #c864ff;"></div></div><div class="theme-info"><div class="theme-name">VIOLET</div><div class="theme-neon" style="color:#c864ff">#c864ff neon</div></div></div>
+        <div class="theme-card reveal"><div class="theme-preview" style="background: rgb(20,8,8);"><div class="theme-dot" style="background: #501414;"></div><div class="theme-bar" style="background: #501414;"></div><div class="theme-dot" style="background: #ff3c3c; box-shadow: 0 0 10px #ff3c3c;"></div></div><div class="theme-info"><div class="theme-name">CRIMSON</div><div class="theme-neon" style="color:#ff3c3c">#ff3c3c neon</div></div></div>
+        <div class="theme-card reveal"><div class="theme-preview" style="background: rgb(20,16,6);"><div class="theme-dot" style="background: #503212;"></div><div class="theme-bar" style="background: #503212;"></div><div class="theme-dot" style="background: #ffc832; box-shadow: 0 0 10px #ffc832;"></div></div><div class="theme-info"><div class="theme-name">GOLD</div><div class="theme-neon" style="color:#ffc832">#ffc832 neon</div></div></div>
+        <div class="theme-card reveal"><div class="theme-preview" style="background: rgb(22,10,15);"><div class="theme-dot" style="background: #501826;"></div><div class="theme-bar" style="background: #501826;"></div><div class="theme-dot" style="background: #ff8cb9; box-shadow: 0 0 10px #ff8cb9;"></div></div><div class="theme-info"><div class="theme-name">SAKURA</div><div class="theme-neon" style="color:#ff8cb9">#ff8cb9 neon</div></div></div>
+        <div class="theme-card reveal"><div class="theme-preview" style="background: rgb(6,18,10);"><div class="theme-dot" style="background: #0e3216;"></div><div class="theme-bar" style="background: #0e3216;"></div><div class="theme-dot" style="background: #32ff78; box-shadow: 0 0 10px #32ff78;"></div></div><div class="theme-info"><div class="theme-name">EMERALD</div><div class="theme-neon" style="color:#32ff78">#32ff78 neon</div></div></div>
+        <div class="theme-card reveal"><div class="theme-preview" style="background: rgb(18,16,4);"><div class="theme-dot" style="background: #46400c;"></div><div class="theme-bar" style="background: #46400c;"></div><div class="theme-dot" style="background: #ffe600; box-shadow: 0 0 10px #ffe600;"></div></div><div class="theme-info"><div class="theme-name">CYBERPUNK</div><div class="theme-neon" style="color:#ffe600">#ffe600 neon</div></div></div>
+        <div class="theme-card reveal"><div class="theme-preview" style="background: rgb(10,16,22);"><div class="theme-dot" style="background: #1a3050;"></div><div class="theme-bar" style="background: #1a3050;"></div><div class="theme-dot" style="background: #91e4ff; box-shadow: 0 0 10px #91e4ff;"></div></div><div class="theme-info"><div class="theme-name">ICE</div><div class="theme-neon" style="color:#91e4ff">#91e4ff neon</div></div></div>
+        <div class="theme-card reveal"><div class="theme-preview" style="background: rgb(22,12,8);"><div class="theme-dot" style="background: #502014;"></div><div class="theme-bar" style="background: #502014;"></div><div class="theme-dot" style="background: #ff7337; box-shadow: 0 0 10px #ff7337;"></div></div><div class="theme-info"><div class="theme-name">SUNSET</div><div class="theme-neon" style="color:#ff7337">#ff7337 neon</div></div></div>
+        <div class="theme-card reveal"><div class="theme-preview" style="background: rgb(6,18,15);"><div class="theme-dot" style="background: #0c3228;"></div><div class="theme-bar" style="background: #0c3228;"></div><div class="theme-dot" style="background: #00ffc3; box-shadow: 0 0 10px #00ffc3;"></div></div><div class="theme-info"><div class="theme-name">NEON</div><div class="theme-neon" style="color:#00ffc3">#00ffc3 neon</div></div></div>
+      </div>
+      <div class="carousel-dots"></div>
     </div>
   </div>
 </section>
@@ -1309,28 +1102,19 @@ footer{
         <div class="script-version">main_v1.lua</div>
         <div class="script-name">Transform</div>
         <p class="script-desc" data-i18n="s1-desc">Giao diện biến hình nhân vật cổ điển với danh sách bộ phận, toggle từng phần, undo, và lưu trạng thái tức thì.</p>
-        <div class="script-tags">
-          <span class="script-tag">Transform</span><span class="script-tag">Undo</span>
-          <span class="script-tag">Part Select</span><span class="script-tag">Save State</span>
-        </div>
+        <div class="script-tags"><span class="script-tag">Transform</span><span class="script-tag">Undo</span><span class="script-tag">Part Select</span><span class="script-tag">Save State</span></div>
       </div>
       <div class="script-card reveal">
         <div class="script-version">main_v2.lua</div>
         <div class="script-name">Transform v2</div>
         <p class="script-desc" data-i18n="s2-desc">Phiên bản nâng cấp dùng ThuVienUI đầy đủ — tab Nhân Vật, Khối, Settings. Hỗ trợ dummy, model chọn từ workspace, Hx Build.</p>
-        <div class="script-tags">
-          <span class="script-tag">ThuVienUI</span><span class="script-tag">Tabs</span>
-          <span class="script-tag">Hx Build</span><span class="script-tag">Dummy</span><span class="script-tag">Config Save</span>
-        </div>
+        <div class="script-tags"><span class="script-tag">ThuVienUI</span><span class="script-tag">Tabs</span><span class="script-tag">Hx Build</span><span class="script-tag">Dummy</span><span class="script-tag">Config Save</span></div>
       </div>
       <div class="script-card reveal">
         <div class="script-version">main_v3.lua</div>
         <div class="script-name">Something</div>
         <p class="script-desc" data-i18n="s3-desc">Script thử nghiệm tích hợp ETC module — Fly, Noclip, Teleport, Target Lock, ESP, Auto Clicker với giao diện ThuVienUI.</p>
-        <div class="script-tags">
-          <span class="script-tag">Testing</span><span class="script-tag">ETC</span>
-          <span class="script-tag">Auto Clicker</span><span class="script-tag">ESP</span><span class="script-tag">Fly</span>
-        </div>
+        <div class="script-tags"><span class="script-tag">Testing</span><span class="script-tag">ETC</span><span class="script-tag">Auto Clicker</span><span class="script-tag">ESP</span><span class="script-tag">Fly</span></div>
       </div>
     </div>
   </div>
@@ -1345,10 +1129,10 @@ footer{
     </div>
     <div class="usage-container reveal">
       <div class="tabs-nav">
-        <button class="tab-btn active" onclick="openTab('tab-loader',this)" data-i18n="tab-loader-btn">1. Hx Loader</button>
-        <button class="tab-btn" onclick="openTab('tab-ui',this)" data-i18n="tab-ui-btn">2. ThuVienUI</button>
-        <button class="tab-btn" onclick="openTab('tab-notify',this)" data-i18n="tab-notify-btn">3. ThongBao</button>
-        <button class="tab-btn" onclick="openTab('tab-logic',this)" data-i18n="tab-logic-btn">4. Config &amp; Logic</button>
+        <button class="tab-btn active" onclick="openTab('tab-loader',this)" data-i18n="tab-loader-btn">Hx Loader</button>
+        <button class="tab-btn" onclick="openTab('tab-ui',this)" data-i18n="tab-ui-btn">ThuVienUI</button>
+        <button class="tab-btn" onclick="openTab('tab-notify',this)" data-i18n="tab-notify-btn">ThongBao</button>
+        <button class="tab-btn" onclick="openTab('tab-logic',this)" data-i18n="tab-logic-btn">Config &amp; Logic</button>
       </div>
       <div id="tab-loader" class="tab-pane active">
         <h4 class="api-heading" data-i18n="loader-h1">Khởi chạy qua Hub trung tâm</h4>
@@ -1364,7 +1148,6 @@ footer{
         <div class="code-block">
           <div class="code-header"><div class="code-dots"><div class="code-dot d1"></div><div class="code-dot d2"></div><div class="code-dot d3"></div></div><span class="code-lang">LUA</span><button class="code-copy" onclick="copyCode(this)">COPY CODE</button></div>
           <div class="code-body"><pre><code><span class="c-kw">local</span> UI <span class="c-op">=</span> <span class="c-fn">loadstring</span>(<span class="c-fn">game</span>:<span class="c-fn">HttpGet</span>(<span class="c-str">"https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ThuVienUI.lua"</span>))()
-
 <span class="c-kw">local</span> Window <span class="c-op">=</span> UI:<span class="c-fn">TaoWindow</span>({ TieuDe <span class="c-op">=</span> <span class="c-str">"My Custom Script"</span> })
 <span class="c-kw">local</span> Tab1 <span class="c-op">=</span> Window:<span class="c-fn">TaoTab</span>(<span class="c-str">"Người Chơi"</span>)
 <span class="c-kw">local</span> Tab2 <span class="c-op">=</span> Window:<span class="c-fn">TaoTab</span>(<span class="c-str">"Cài Đặt"</span>)</code></pre></div>
@@ -1373,28 +1156,10 @@ footer{
         <p class="api-desc" data-i18n="ui-desc2">Gọi các hàm từ đối tượng Tab để sinh ra Button, Toggle, Slider, hoặc Dropdown. Các hàm đều có callback Event trả về giá trị realtime.</p>
         <div class="code-block">
           <div class="code-header"><div class="code-dots"><div class="code-dot d1"></div><div class="code-dot d2"></div><div class="code-dot d3"></div></div><span class="code-lang">LUA</span><button class="code-copy" onclick="copyCode(this)">COPY CODE</button></div>
-          <div class="code-body"><pre><code>Tab1:<span class="c-fn">TaoButton</span>({
-    Ten <span class="c-op">=</span> <span class="c-str">"Nhấn Để Dịch Chuyển"</span>,
-    SuKien <span class="c-op">=</span> <span class="c-kw">function</span>() <span class="c-fn">print</span>(<span class="c-str">"Đã click!"</span>) <span class="c-kw">end</span>
-})
-
-Tab1:<span class="c-fn">TaoToggle</span>({ 
-    Ten <span class="c-op">=</span> <span class="c-str">"Kích hoạt God Mode"</span>, 
-    SuKien <span class="c-op">=</span> <span class="c-kw">function</span>(TrangThai) <span class="c-fn">print</span>(<span class="c-str">"God Mode:"</span>, TrangThai) <span class="c-kw">end</span> 
-})
-
-Tab2:<span class="c-fn">TaoSlider</span>({
-    Ten <span class="c-op">=</span> <span class="c-str">"Tốc Độ Chạy (WalkSpeed)"</span>,
-    Min <span class="c-op">=</span> <span class="c-num">16</span>, Max <span class="c-op">=</span> <span class="c-num">100</span>, MacDinh <span class="c-op">=</span> <span class="c-num">16</span>,
-    SuKien <span class="c-op">=</span> <span class="c-kw">function</span>(GiaTri) <span class="c-fn">game.Players.LocalPlayer.Character.Humanoid.WalkSpeed</span> <span class="c-op">=</span> GiaTri <span class="c-kw">end</span>
-})
-
-Tab2:<span class="c-fn">TaoDropdown</span>({
-    Ten <span class="c-op">=</span> <span class="c-str">"Chọn Mục Tiêu"</span>,
-    DanhSach <span class="c-op">=</span> {<span class="c-str">"Mục Tiêu A"</span>, <span class="c-str">"Mục Tiêu B"</span>, <span class="c-str">"Mục Tiêu C"</span>},
-    MacDinh <span class="c-op">=</span> <span class="c-str">"Mục Tiêu A"</span>,
-    SuKien <span class="c-op">=</span> <span class="c-kw">function</span>(LuaChon) <span class="c-fn">print</span>(<span class="c-str">"Đang chọn:"</span>, LuaChon) <span class="c-kw">end</span>
-})</code></pre></div>
+          <div class="code-body"><pre><code>Tab1:<span class="c-fn">TaoButton</span>({ Ten <span class="c-op">=</span> <span class="c-str">"Nhấn Để Dịch Chuyển"</span>, SuKien <span class="c-op">=</span> <span class="c-kw">function</span>() <span class="c-fn">print</span>(<span class="c-str">"Đã click!"</span>) <span class="c-kw">end</span> })
+Tab1:<span class="c-fn">TaoToggle</span>({ Ten <span class="c-op">=</span> <span class="c-str">"Kích hoạt God Mode"</span>, SuKien <span class="c-op">=</span> <span class="c-kw">function</span>(TrangThai) <span class="c-fn">print</span>(<span class="c-str">"God Mode:"</span>, TrangThai) <span class="c-kw">end</span> })
+Tab2:<span class="c-fn">TaoSlider</span>({ Ten <span class="c-op">=</span> <span class="c-str">"Tốc Độ Chạy (WalkSpeed)"</span>, Min <span class="c-op">=</span> <span class="c-num">16</span>, Max <span class="c-op">=</span> <span class="c-num">100</span>, MacDinh <span class="c-op">=</span> <span class="c-num">16</span>, SuKien <span class="c-op">=</span> <span class="c-kw">function</span>(GiaTri) <span class="c-fn">game.Players.LocalPlayer.Character.Humanoid.WalkSpeed</span> <span class="c-op">=</span> GiaTri <span class="c-kw">end</span> })
+Tab2:<span class="c-fn">TaoDropdown</span>({ Ten <span class="c-op">=</span> <span class="c-str">"Chọn Mục Tiêu"</span>, DanhSach <span class="c-op">=</span> {<span class="c-str">"Mục Tiêu A"</span>, <span class="c-str">"Mục Tiêu B"</span>, <span class="c-str">"Mục Tiêu C"</span>}, MacDinh <span class="c-op">=</span> <span class="c-str">"Mục Tiêu A"</span>, SuKien <span class="c-op">=</span> <span class="c-kw">function</span>(LuaChon) <span class="c-fn">print</span>(<span class="c-str">"Đang chọn:"</span>, LuaChon) <span class="c-kw">end</span> })</code></pre></div>
         </div>
       </div>
       <div id="tab-notify" class="tab-pane">
@@ -1403,15 +1168,9 @@ Tab2:<span class="c-fn">TaoDropdown</span>({
         <div class="code-block">
           <div class="code-header"><div class="code-dots"><div class="code-dot d1"></div><div class="code-dot d2"></div><div class="code-dot d3"></div></div><span class="code-lang">LUA</span><button class="code-copy" onclick="copyCode(this)">COPY CODE</button></div>
           <div class="code-body"><pre><code><span class="c-kw">local</span> TB <span class="c-op">=</span> <span class="c-fn">loadstring</span>(<span class="c-fn">game</span>:<span class="c-fn">HttpGet</span>(<span class="c-str">"https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ThongBao.lua"</span>))()
-
 TB.<span class="c-fn">thongbao</span>(<span class="c-str">"Hx Script"</span>, <span class="c-str">"Tính năng đã bật thành công!"</span>, <span class="c-num">3</span>)
-
 TB.<span class="c-fn">thongbaoloi</span>(<span class="c-str">"Cảnh Báo Lỗi"</span>, <span class="c-str">"Mất kết nối máy chủ hoặc API tạch!"</span>)
-
-TB.<span class="c-fn">thongbaoxacnhan</span>(<span class="c-str">"Xác nhận hành động"</span>, <span class="c-str">"Bạn có chắc chắn muốn rời Server?"</span>, 
-    <span class="c-kw">function</span>() <span class="c-fn">game</span>:<span class="c-fn">Shutdown</span>() <span class="c-kw">end</span>, 
-    <span class="c-kw">function</span>() <span class="c-fn">print</span>(<span class="c-str">"Đã hủy!"</span>) <span class="c-kw">end</span>
-)</code></pre></div>
+TB.<span class="c-fn">thongbaoxacnhan</span>(<span class="c-str">"Xác nhận hành động"</span>, <span class="c-str">"Bạn có chắc chắn muốn rời Server?"</span>, <span class="c-kw">function</span>() <span class="c-fn">game</span>:<span class="c-fn">Shutdown</span>() <span class="c-kw">end</span>, <span class="c-kw">function</span>() <span class="c-fn">print</span>(<span class="c-str">"Đã hủy!"</span>) <span class="c-kw">end</span>)</code></pre></div>
         </div>
       </div>
       <div id="tab-logic" class="tab-pane">
@@ -1420,7 +1179,6 @@ TB.<span class="c-fn">thongbaoxacnhan</span>(<span class="c-str">"Xác nhận h�
         <div class="code-block">
           <div class="code-header"><div class="code-dots"><div class="code-dot d1"></div><div class="code-dot d2"></div><div class="code-dot d3"></div></div><span class="code-lang">LUA</span><button class="code-copy" onclick="copyCode(this)">COPY CODE</button></div>
           <div class="code-body"><pre><code><span class="c-kw">local</span> Config <span class="c-op">=</span> <span class="c-fn">loadstring</span>(<span class="c-fn">game</span>:<span class="c-fn">HttpGet</span>(<span class="c-str">"https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/MenuConfigManager.lua"</span>))()
-
 Config.<span class="c-fn">ReduceLags</span>(<span class="c-kw">true</span>)
 Config.<span class="c-fn">NoShadows</span>(<span class="c-kw">true</span>)
 Config.<span class="c-fn">RemoveFog</span>(<span class="c-kw">true</span>)
@@ -1431,7 +1189,6 @@ Config.<span class="c-fn">FullBright</span>(<span class="c-kw">true</span>)</cod
         <div class="code-block">
           <div class="code-header"><div class="code-dots"><div class="code-dot d1"></div><div class="code-dot d2"></div><div class="code-dot d3"></div></div><span class="code-lang">LUA</span><button class="code-copy" onclick="copyCode(this)">COPY CODE</button></div>
           <div class="code-body"><pre><code><span class="c-kw">local</span> Logic <span class="c-op">=</span> <span class="c-fn">loadstring</span>(<span class="c-fn">game</span>:<span class="c-fn">HttpGet</span>(<span class="c-str">"https://raw.githubusercontent.com/9311-nex4/Hx/main/Utilities/ETC_Logic.lua"</span>))()
-
 Logic.<span class="c-fn">ToggleFly</span>(<span class="c-kw">true</span>)
 Logic.<span class="c-fn">ToggleNoclip</span>(<span class="c-kw">true</span>)
 Logic.<span class="c-fn">SetClickTP</span>(<span class="c-kw">true</span>)</code></pre></div>
@@ -1448,16 +1205,7 @@ Logic.<span class="c-fn">SetClickTP</span>(<span class="c-kw">true</span>)</code
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
         <span data-i18n="disc-title">Disclaimer — Chỉ Dành Cho Mục Đích Giáo Dục</span>
       </div>
-      <p class="disclaimer-text" data-i18n-html="disc-text">
-        Repository này và toàn bộ nội dung được cung cấp <strong>chỉ cho mục đích học tập và nghiên cứu bảo mật</strong>.
-        Các script minh hoạ lập trình Lua, kỹ thuật UI và cơ chế game trong Roblox engine.
-        <br><br>
-        <strong>Tác giả không chịu trách nhiệm</strong> về cách người khác sử dụng code này. Mọi thiệt hại, ban tài khoản
-        hoặc đình chỉ phát sinh từ việc sử dụng các script này là hoàn toàn trách nhiệm của người dùng.
-        Sử dụng executor của bên thứ ba hoặc inject script vào game vi phạm Điều khoản Dịch vụ của Roblox.
-        <br><br>
-        Project này <strong>không chứa bất kỳ payload độc hại, stealer hay logger nào</strong>.
-      </p>
+      <p class="disclaimer-text" data-i18n-html="disc-text">Repository này và toàn bộ nội dung được cung cấp <strong>chỉ cho mục đích học tập và nghiên cứu bảo mật</strong>. Các script minh hoạ lập trình Lua, kỹ thuật UI và cơ chế game trong Roblox engine.<br><br><strong>Tác giả không chịu trách nhiệm</strong> về cách người khác sử dụng code này. Mọi thiệt hại, ban tài khoản hoặc đình chỉ phát sinh từ việc sử dụng các script này là hoàn toàn trách nhiệm của người dùng. Sử dụng executor của bên thứ ba hoặc inject script vào game vi phạm Điều khoản Dịch vụ của Roblox.<br><br>Project này <strong>không chứa bất kỳ payload độc hại, stealer hay logger nào</strong>.</p>
     </div>
   </div>
 </section>
@@ -1476,97 +1224,157 @@ Logic.<span class="c-fn">SetClickTP</span>(<span class="c-kw">true</span>)</code
 </footer>
 
 <script>
+'use strict';
+
+
+const isMouse = !('ontouchstart' in window) && window.matchMedia('(pointer:fine)').matches;
 const cursor = document.getElementById('cursor');
 const cursorRing = document.getElementById('cursor-ring');
-let mx = -200, my = -200, rx = -200, ry = -200;
-let pvx = 0, pvy = 0; 
+let mx = -200, my = -200;
 
-const TRAIL_COUNT = 8;
-const trails = [];
-for (let i = 0; i < TRAIL_COUNT; i++) {
-  const t = document.createElement('div');
-  t.className = 'cursor-trail';
-  const s = (1 - i / TRAIL_COUNT) * 7;
-  t.style.cssText = `width:${s}px;height:${s}px;opacity:0;z-index:${9997 - i};transition:opacity ${0.1 + i * 0.05}s;`;
-  document.body.appendChild(t);
-  trails.push({ el: t, x: -200, y: -200, lx: -200, ly: -200, size: s });
-}
+if (isMouse) {
+  let rx = -200, ry = -200, pvx = 0, pvy = 0;
+  const TRAIL_COUNT = 8, trails = [];
 
-let lastMx = -200, lastMy = -200;
-document.addEventListener('mousemove', e => {
-  pvx = e.clientX - mx;
-  pvy = e.clientY - my;
-  mx = e.clientX; my = e.clientY;
-  cursor.style.left = mx + 'px';
-  cursor.style.top = my + 'px';
-});
+  for (let i = 0; i < TRAIL_COUNT; i++) {
+    const t = document.createElement('div');
+    t.className = 'cursor-trail';
+    const s = (1 - i / TRAIL_COUNT) * 7;
+    t.style.cssText = `width:${s}px;height:${s}px;opacity:0;z-index:${9997 - i};transition:opacity ${0.1 + i * 0.05}s,background .2s,box-shadow .2s;transform:translate3d(-200px,-200px,0)`;
+    document.body.appendChild(t);
+    trails.push({ el: t, x: -200, y: -200, size: s });
+  }
 
-function lerpRing() {
-  const speed = 0.36;
-  rx += (mx - rx) * speed;
-  ry += (my - ry) * speed;
-  cursorRing.style.left = rx + 'px';
-  cursorRing.style.top = ry + 'px';
+  let isMouseDown = false, lastMoveTime = 0;
+  document.addEventListener('mousedown', () => { isMouseDown = true; }, { passive: true });
+  document.addEventListener('mouseup',   () => { isMouseDown = false; }, { passive: true });
+  document.addEventListener('mousemove', e => {
+    pvx = e.clientX - mx; pvy = e.clientY - my;
+    mx = e.clientX; my = e.clientY;
+    lastMoveTime = Date.now();
+    cursor.style.transform = `translate3d(${mx}px, ${my}px, 0) translate(-50%, -50%)`;
+  }, { passive: true });
 
-  let prevX = mx, prevY = my;
-  trails.forEach((t, i) => {
-    const fac = 0.28 - i * 0.025;
-    t.x += (prevX - t.x) * Math.max(fac, 0.05);
-    t.y += (prevY - t.y) * Math.max(fac, 0.05);
-    t.el.style.left = t.x + 'px';
-    t.el.style.top = t.y + 'px';
-    const vel = Math.hypot(pvx, pvy);
-    const op = Math.min(vel / 8, 1) * (1 - i / TRAIL_COUNT) * 0.6;
-    t.el.style.opacity = op;
-    prevX = t.x; prevY = t.y;
+  let lerpRafId;
+  function lerpRing() {
+    const isSBDrag = isMouseDown && (Date.now() - lastMoveTime > 60);
+    const hideOpacity = isSBDrag ? '0' : '';
+    if (cursor.style.opacity !== hideOpacity) {
+      cursor.style.opacity = hideOpacity;
+      cursorRing.style.opacity = hideOpacity;
+      trails.forEach(t => { t.el.style.opacity = isSBDrag ? '0' : ''; });
+    }
+
+    const speed = 0.36;
+    rx += (mx - rx) * speed; ry += (my - ry) * speed;
+    cursorRing.style.transform = `translate3d(${rx}px, ${ry}px, 0) translate(-50%, -50%)`;
+
+    let prevX = mx, prevY = my;
+    trails.forEach((t, i) => {
+      const fac = 0.28 - i * 0.025;
+      t.x += (prevX - t.x) * Math.max(fac, 0.05);
+      t.y += (prevY - t.y) * Math.max(fac, 0.05);
+      t.el.style.transform = `translate3d(${t.x}px, ${t.y}px, 0) translate(-50%, -50%)`;
+      const vel = Math.hypot(pvx, pvy);
+      if (!isSBDrag) t.el.style.opacity = Math.min(vel / 8, 1) * (1 - i / TRAIL_COUNT) * 0.6;
+      prevX = t.x; prevY = t.y;
+    });
+    lerpRafId = requestAnimationFrame(lerpRing);
+  }
+  lerpRafId = requestAnimationFrame(lerpRing);
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) cancelAnimationFrame(lerpRafId);
+    else lerpRafId = requestAnimationFrame(lerpRing);
   });
-
-  requestAnimationFrame(lerpRing);
+} else {
+  if (cursor) cursor.style.display = 'none';
+  if (cursorRing) cursorRing.style.display = 'none';
 }
-lerpRing();
+
 
 const canvas = document.getElementById('bg-canvas');
 const ctx = canvas.getContext('2d');
-let W, H;
-function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
-resize();
-window.addEventListener('resize', resize);
+let W, H, drawRafId;
 
-const COLORS = ['0,229,255','0,255,136','200,123,255','255,107,53'];
-const particles = [];
-for (let i = 0; i < 100; i++) {
-  particles.push({
-    x: Math.random() * 3000, y: Math.random() * 2000,
-    r: Math.random() * 1.6 + 0.3,
-    vx: (Math.random() - 0.5) * 0.25,
-    vy: (Math.random() - 0.5) * 0.25,
-    a: Math.random() * 0.45 + 0.07,
-    phase: Math.random() * Math.PI * 2,
-    color: COLORS[Math.floor(Math.random() * COLORS.length)]
-  });
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(resize, 150);
+}, { passive: true });
+
+const COLORS = ['0,229,255', '0,255,136', '200,123,255', '255,107,53'];
+let isHolding = false, holdX = -9999, holdY = -9999;
+let interactX = -9999, interactY = -9999;
+
+document.addEventListener('mousemove', e => { interactX = e.clientX; interactY = e.clientY; }, { passive: true });
+document.addEventListener('mousedown', e => { isHolding = true; holdX = e.clientX; holdY = e.clientY; }, { passive: true });
+document.addEventListener('mouseup', () => { isHolding = false; }, { passive: true });
+
+function spawnBurst(x, y, count = 18) {
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2;
+    const speed = Math.random() * 3 + 1;
+    sparks.push({
+      x, y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 1,
+      r: Math.random() * 2 + 0.8,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)]
+    });
+  }
 }
 
+document.addEventListener('touchstart', e => {
+  const t = e.touches[0];
+  interactX = t.clientX; interactY = t.clientY;
+  isHolding = true; holdX = t.clientX; holdY = t.clientY;
+  spawnBurst(t.clientX, t.clientY, 14);
+}, { passive: true });
+document.addEventListener('touchmove', e => {
+  const t = e.touches[0];
+  interactX = t.clientX; interactY = t.clientY;
+  holdX = t.clientX; holdY = t.clientY;
+}, { passive: true });
+document.addEventListener('touchend', () => { isHolding = false; }, { passive: true });
+document.addEventListener('click', e => { spawnBurst(e.clientX, e.clientY, 22); }, { passive: true });
+
+const particles = [];
+for (let i = 0; i < 100; i++) particles.push({ x: Math.random()*W, y: Math.random()*H, ox:0,oy:0, r:Math.random()*0.9+0.2, vx:(Math.random()-0.5)*0.12, vy:(Math.random()-0.5)*0.12, a:Math.random()*0.35+0.05, phase:Math.random()*Math.PI*2, color:COLORS[Math.floor(Math.random()*COLORS.length)], layer:0 });
+for (let i = 0; i < 120; i++) particles.push({ x: Math.random()*W, y: Math.random()*H, ox:0,oy:0, r:Math.random()*1.6+0.5, vx:(Math.random()-0.5)*0.22, vy:(Math.random()-0.5)*0.22, a:Math.random()*0.5+0.1, phase:Math.random()*Math.PI*2, color:COLORS[Math.floor(Math.random()*COLORS.length)], layer:1 });
+for (let i = 0; i < 60; i++) particles.push({ x: Math.random()*W, y: Math.random()*H, ox:0,oy:0, r:Math.random()*2.6+1.2, vx:(Math.random()-0.5)*0.32, vy:(Math.random()-0.5)*0.32, a:Math.random()*0.6+0.25, phase:Math.random()*Math.PI*2, color:COLORS[Math.floor(Math.random()*COLORS.length)], layer:2 });
+
+const sparks = [];
+const ripples = [];
+let rippleTimer = 0;
 const meteors = [];
 function spawnMeteor() {
   meteors.push({
-    x: Math.random() * W * 1.5,
-    y: -10,
-    vx: (Math.random() - 0.5) * 2 - 2,
-    vy: Math.random() * 3 + 1.5,
-    life: 1,
-    len: Math.random() * 80 + 40,
+    x: Math.random() * W * 1.5, y: -10,
+    vx: (Math.random() - 0.5) * 2 - 2, vy: Math.random() * 3 + 1.5,
+    life: 1, len: Math.random() * 80 + 40,
     color: COLORS[Math.floor(Math.random() * COLORS.length)]
   });
 }
-setInterval(spawnMeteor, 2800);
+let meteorInterval;
+function startMeteors() { spawnMeteor(); meteorInterval = setInterval(spawnMeteor, 2400); }
+function stopMeteors() { clearInterval(meteorInterval); }
+startMeteors();
 
-let frame = 0;
+let frame = 0, isPageVisible = true;
 function drawParticles() {
+  if (!isPageVisible) { drawRafId = requestAnimationFrame(drawParticles); return; }
   frame++;
   ctx.clearRect(0, 0, W, H);
 
-  ctx.save();
-  ctx.globalAlpha = 0.04;
+  ctx.save(); ctx.globalAlpha = 0.045;
   const grad = ctx.createRadialGradient(W * 0.3, H * 0.2, 0, W * 0.3, H * 0.2, W * 0.55);
   grad.addColorStop(0, '#00e5ff'); grad.addColorStop(1, 'transparent');
   ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
@@ -1575,104 +1383,162 @@ function drawParticles() {
   ctx.fillStyle = grad2; ctx.fillRect(0, 0, W, H);
   ctx.restore();
 
+  if (isHolding) {
+    rippleTimer++;
+    if (rippleTimer % 28 === 0) ripples.push({ x: interactX, y: interactY, r: 0, life: 1 });
+  } else rippleTimer = 0;
+
+  for (let i = ripples.length - 1; i >= 0; i--) {
+    const rp = ripples[i];
+    rp.r += 4; rp.life -= 0.028;
+    if (rp.life <= 0) { ripples.splice(i, 1); continue; }
+    ctx.save(); ctx.globalAlpha = rp.life * 0.38;
+    ctx.strokeStyle = 'rgba(0,229,255,1)'; ctx.shadowColor = 'rgba(0,229,255,0.5)'; ctx.shadowBlur = 6; ctx.lineWidth = 1.3;
+    ctx.beginPath(); ctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2); ctx.stroke();
+    ctx.restore();
+  }
+
   for (let i = meteors.length - 1; i >= 0; i--) {
     const m = meteors[i];
-    ctx.save();
-    ctx.globalAlpha = m.life * 0.7;
+    ctx.save(); ctx.globalAlpha = m.life * 0.72;
     const g = ctx.createLinearGradient(m.x, m.y, m.x - m.vx * m.len / m.vy, m.y - m.len);
-    g.addColorStop(0, `rgba(${m.color},0.9)`);
-    g.addColorStop(1, `rgba(${m.color},0)`);
-    ctx.strokeStyle = g;
-    ctx.lineWidth = 1.2;
-    ctx.beginPath();
-    ctx.moveTo(m.x, m.y);
-    ctx.lineTo(m.x - m.vx * m.len / m.vy * 2, m.y - m.len);
-    ctx.stroke();
+    g.addColorStop(0, `rgba(${m.color},0.9)`); g.addColorStop(1, `rgba(${m.color},0)`);
+    ctx.strokeStyle = g; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(m.x, m.y); ctx.lineTo(m.x - m.vx * m.len / m.vy * 2, m.y - m.len); ctx.stroke();
     ctx.restore();
-    m.x += m.vx; m.y += m.vy; m.life -= 0.014;
+    m.x += m.vx; m.y += m.vy; m.life -= 0.013;
     if (m.life <= 0 || m.y > H + 20) meteors.splice(i, 1);
   }
 
+  const REPEL_R = 130, REPEL_FORCE = 2.8, ATTRACT_R = 200, ATTRACT_FORCE = 1.4;
+  const LINE_R = 130, LINE_R_SQ = LINE_R * LINE_R, CURSOR_LINE_R = 220, CURSOR_LINE_R_SQ = CURSOR_LINE_R * CURSOR_LINE_R;
+
   particles.forEach(p => {
-    const px = p.x % W, py = p.y % H;
-    const pulse = Math.sin(frame * 0.018 + p.phase) * 0.3 + 0.7;
-    ctx.beginPath();
-    ctx.arc(px, py, p.r * pulse, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(${p.color},${p.a * pulse})`;
-    ctx.fill();
+    p.x = ((p.x + W) % W); p.y = ((p.y + H) % H);
+    const pulse = Math.sin(frame * 0.02 + p.phase) * 0.35 + 0.65;
+    const dxi = p.x - interactX, dyi = p.y - interactY;
+    const di = Math.sqrt(dxi * dxi + dyi * dyi) || 1;
+    if (isHolding && di < ATTRACT_R) {
+      const f = (1 - di / ATTRACT_R) * ATTRACT_FORCE;
+      p.vx -= (dxi / di) * f * 0.04; p.vy -= (dyi / di) * f * 0.04;
+    } else if (!isHolding && di < REPEL_R) {
+      const f = (1 - di / REPEL_R) * REPEL_FORCE;
+      p.vx += (dxi / di) * f * 0.03; p.vy += (dyi / di) * f * 0.03;
+    }
+    p.vx *= 0.97; p.vy *= 0.97;
     p.x += p.vx; p.y += p.vy;
+
+    ctx.save();
+    if (p.layer === 2) { ctx.shadowColor = `rgba(${p.color},0.8)`; ctx.shadowBlur = 8; }
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r * pulse, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${p.color},${p.a * pulse})`; ctx.fill();
+    ctx.restore();
   });
 
   for (let i = 0; i < particles.length; i++) {
+    const a = particles[i];
     for (let j = i + 1; j < particles.length; j++) {
-      const ax = particles[i].x % W, ay = particles[i].y % H;
-      const bx = particles[j].x % W, by = particles[j].y % H;
-      const dist = Math.hypot(ax - bx, ay - by);
-      if (dist < 130) {
-        ctx.beginPath();
-        ctx.moveTo(ax, ay);
-        ctx.lineTo(bx, by);
-        ctx.strokeStyle = `rgba(0,229,255,${0.07 * (1 - dist / 130)})`;
-        ctx.lineWidth = 0.5;
-        ctx.stroke();
+      const b = particles[j];
+      const dx = a.x - b.x, dy = a.y - b.y, dSq = dx * dx + dy * dy;
+      if (dSq < LINE_R_SQ) {
+        const dist = Math.sqrt(dSq);
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+        ctx.strokeStyle = `rgba(0,229,255,${0.09 * (1 - dist / LINE_R)})`; ctx.lineWidth = 0.5; ctx.stroke();
       }
     }
   }
 
+  const lineColor = isHolding ? '0,255,136' : '0,229,255';
   particles.forEach(p => {
-    const px = p.x % W, py = p.y % H;
-    const dist = Math.hypot(px - mx, py - my);
-    if (dist < 200) {
-      ctx.beginPath();
-      ctx.moveTo(px, py);
-      ctx.lineTo(mx, my);
-      ctx.strokeStyle = `rgba(0,229,255,${0.07 * (1 - dist / 200)})`;
-      ctx.lineWidth = 0.5;
-      ctx.stroke();
+    const dx = p.x - interactX, dy = p.y - interactY, dSq = dx * dx + dy * dy;
+    if (dSq < CURSOR_LINE_R_SQ) {
+      const dist = Math.sqrt(dSq);
+      ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(interactX, interactY);
+      ctx.strokeStyle = `rgba(${lineColor},${(isHolding ? 0.16 : 0.08) * (1 - dist / CURSOR_LINE_R)})`;
+      ctx.lineWidth = isHolding ? 0.8 : 0.5; ctx.stroke();
     }
   });
 
-  requestAnimationFrame(drawParticles);
-}
-drawParticles();
+  for (let i = sparks.length - 1; i >= 0; i--) {
+    const s = sparks[i];
+    s.x += s.vx; s.y += s.vy; s.vx *= 0.92; s.vy *= 0.92; s.life -= 0.025;
+    if (s.life <= 0) { sparks.splice(i, 1); continue; }
+    ctx.save(); ctx.globalAlpha = s.life;
+    ctx.shadowColor = `rgba(${s.color},1)`; ctx.shadowBlur = 6;
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r * s.life, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${s.color},1)`; ctx.fill();
+    ctx.restore();
+  }
 
-const progressBar = document.getElementById('progress-bar');
+  drawRafId = requestAnimationFrame(drawParticles);
+}
+drawRafId = requestAnimationFrame(drawParticles);
+
+document.addEventListener('visibilitychange', () => {
+  isPageVisible = !document.hidden;
+  if (isPageVisible) {
+    if (_musicPlaying && _audioCtx && _audioCtx.state === 'suspended') _audioCtx.resume();
+    startMeteors();
+    drawRafId = requestAnimationFrame(drawParticles);
+  } else {
+    stopMeteors();
+    cancelAnimationFrame(drawRafId);
+    if (_audioCtx && _audioCtx.state === 'running') _audioCtx.suspend();
+  }
+});
+
+
 const nav = document.getElementById('main-nav');
 const heroTitle = document.querySelector('.hero-title');
 const heroDesc = document.querySelector('.hero-desc');
 const heroEyebrow = document.querySelector('.hero-eyebrow');
 const sections = document.querySelectorAll('section[id]');
 const navLinks = document.querySelectorAll('.nav-links a');
+let ticking = false;
 
 window.addEventListener('scroll', () => {
-  const sy = window.scrollY;
-  const maxScroll = document.body.scrollHeight - window.innerHeight;
-  progressBar.style.width = (sy / maxScroll * 100) + '%';
-  nav.classList.toggle('scrolled', sy > 50);
-  let cur = '';
-  sections.forEach(s => { if (sy >= s.offsetTop - 120) cur = s.id; });
-  navLinks.forEach(a => a.classList.toggle('active-link', a.getAttribute('href') === `#${cur}`));
-  if (sy < window.innerHeight && heroTitle) {
-    heroTitle.style.transform = `translateY(${sy * 0.15}px)`;
-    if (heroDesc) heroDesc.style.transform = `translateY(${sy * 0.08}px)`;
-    if (heroEyebrow) heroEyebrow.style.transform = `translateY(${sy * 0.05}px)`;
+  if (!ticking) {
+    requestAnimationFrame(() => {
+      const sy = window.scrollY;
+      nav.classList.toggle('scrolled', sy > 50);
+      let cur = '';
+      sections.forEach(s => { if (sy >= s.offsetTop - 120) cur = s.id; });
+      navLinks.forEach(a => { a.classList.toggle('active-link', a.getAttribute('href') === `#${cur}`); });
+      if (sy < window.innerHeight) {
+        if (heroTitle) heroTitle.style.transform = `translateY(${sy * 0.15}px)`;
+        if (heroDesc) heroDesc.style.transform = `translateY(${sy * 0.08}px)`;
+        if (heroEyebrow) heroEyebrow.style.transform = `translateY(${sy * 0.05}px)`;
+      }
+      ticking = false;
+    });
+    ticking = true;
   }
 }, { passive: true });
 
+
 const reveals = document.querySelectorAll('.reveal');
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach((e, i) => {
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    const el = e.target;
     if (e.isIntersecting) {
-      const delay = parseInt(e.target.dataset.delay || 0) + i * 55;
-      setTimeout(() => e.target.classList.add('visible'), delay);
-      observer.unobserve(e.target);
+      el.classList.remove('hide-up');
+      el.style.transitionDelay = el.dataset.delay;
+      el.classList.add('visible');
+      setTimeout(() => { el.dataset.delay = '0s'; }, 900);
+    } else {
+      const rect = e.boundingClientRect;
+      el.classList.remove('visible');
+      if (rect.top < 0) el.classList.add('hide-up');
+      else el.classList.remove('hide-up');
     }
   });
-}, { threshold: 0.06 });
+}, { threshold: 0.08, rootMargin: "0px 0px -40px 0px" });
+
 reveals.forEach((el, i) => {
-  el.dataset.delay = (i % 8) * 40;
-  observer.observe(el);
+  el.dataset.delay = `${(i % 6) * 0.06}s`;
+  revealObserver.observe(el);
 });
+
 
 function easeOutQuart(t) { return 1 - Math.pow(1 - t, 4); }
 const statNums = document.querySelectorAll('.stat-num[data-target]');
@@ -1688,8 +1554,7 @@ const statsObserver = new IntersectionObserver(entries => {
         const start = performance.now();
         function step(now) {
           const t = Math.min((now - start) / dur, 1);
-          const val = Math.round(easeOutQuart(t) * target);
-          el.textContent = val + suffix;
+          el.textContent = Math.round(easeOutQuart(t) * target) + suffix;
           if (t < 1) requestAnimationFrame(step);
         }
         requestAnimationFrame(step);
@@ -1700,66 +1565,49 @@ const statsObserver = new IntersectionObserver(entries => {
 const heroStats = document.querySelector('.hero-stats');
 if (heroStats) statsObserver.observe(heroStats);
 
+
 function copyCode(btn) {
   const code = btn.closest('.code-block').querySelector('code').textContent.trim();
   const done = () => {
     const orig = btn.textContent;
-    btn.textContent = 'COPIED ✓';
-    btn.style.color = '#00ff88';
-    btn.style.borderColor = '#00ff88';
+    btn.textContent = 'COPIED ✓'; btn.style.color = '#00ff88'; btn.style.borderColor = '#00ff88';
     setTimeout(() => { btn.textContent = orig; btn.style.color = ''; btn.style.borderColor = ''; }, 1800);
   };
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(code).then(done).catch(() => {
-      const ta = document.createElement('textarea');
-      ta.value = code; ta.style.position = 'fixed'; ta.style.opacity = '0';
-      document.body.appendChild(ta); ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-      done();
-    });
-  } else {
+  function fallbackCopy() {
     const ta = document.createElement('textarea');
-    ta.value = code; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    ta.value = code; ta.style.cssText = 'position:fixed;opacity:0';
     document.body.appendChild(ta); ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
+    document.execCommand('copy'); document.body.removeChild(ta);
     done();
   }
+  if (navigator.clipboard) navigator.clipboard.writeText(code).then(done).catch(fallbackCopy);
+  else fallbackCopy();
 }
 
-function openTab(tabId, btn) {
-  document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-  document.getElementById(tabId).classList.add('active');
-  btn.classList.add('active');
-}
 
 function setupCardTilt(selector, rotMax, yLift) {
   document.querySelectorAll(selector).forEach(card => {
     const glow = card.querySelector('.card-glow');
+    let baseRect = null;
+    card.addEventListener('mouseenter', () => { baseRect = card.getBoundingClientRect(); });
     card.addEventListener('mousemove', e => {
+      if (!baseRect) return;
       const rect = card.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width;
-      const y = (e.clientY - rect.top) / rect.height;
+      const scaleX = card.offsetWidth / rect.width, scaleY = card.offsetHeight / rect.height;
+      const rawX = (e.clientX - rect.left) * scaleX, rawY = (e.clientY - rect.top) * scaleY;
+      const x = rawX / card.offsetWidth, y = rawY / card.offsetHeight;
       const nx = x - 0.5, ny = y - 0.5;
       card.style.transform = `translateY(-${yLift}px) rotateX(${-ny * rotMax}deg) rotateY(${nx * rotMax}deg)`;
       card.style.transition = 'transform .08s, background .3s, box-shadow .3s';
       if (glow) {
-        const colorMap = {
-          'c-cyan':   '0,229,255',
-          'c-green':  '0,255,136',
-          'c-orange': '255,107,53',
-          'c-purple': '200,123,255',
-        };
+        const colorMap = { 'c-cyan':'0,229,255','c-green':'0,255,136','c-orange':'255,107,53','c-purple':'200,123,255' };
         const cardColor = Object.keys(colorMap).find(cls => card.classList.contains(cls));
-        const glowColor = colorMap[cardColor] || '0,229,255';
-        glow.style.background = `radial-gradient(circle 200px at ${x*100}% ${y*100}%, rgba(${glowColor},0.1), transparent 70%)`;
+        glow.style.background = `radial-gradient(circle 200px at ${x*100}% ${y*100}%, rgba(${colorMap[cardColor]||'0,229,255'},0.1), transparent 70%)`;
       }
     });
     card.addEventListener('mouseleave', () => {
-      card.style.transform = '';
-      card.style.transition = 'transform .6s cubic-bezier(0.16,1,0.3,1), background .35s, box-shadow .35s';
+      baseRect = null;
+      card.style.transform = ''; card.style.transition = 'transform .6s cubic-bezier(0.16,1,0.3,1), background .35s, box-shadow .35s';
       if (glow) glow.style.background = '';
     });
   });
@@ -1768,15 +1616,15 @@ setupCardTilt('.feat-card', 7, 3);
 setupCardTilt('.script-card', 5, 3);
 setupCardTilt('.theme-card', 10, 8);
 
+
 document.querySelectorAll('.btn').forEach(btn => {
   btn.addEventListener('click', e => {
     const ripple = document.createElement('span');
     const rect = btn.getBoundingClientRect();
-    const size = Math.max(rect.width, rect.height) * 2;
-    ripple.style.cssText = `position:absolute;border-radius:50%;width:${size}px;height:${size}px;
-      left:${e.clientX - rect.left - size/2}px;top:${e.clientY - rect.top - size/2}px;
-      background:rgba(255,255,255,0.2);transform:scale(0);pointer-events:none;
-      animation:ripple-out .5s ease forwards;`;
+    const scaleX = btn.offsetWidth / rect.width, scaleY = btn.offsetHeight / rect.height;
+    const x = (e.clientX - rect.left) * scaleX, y = (e.clientY - rect.top) * scaleY;
+    const size = Math.max(btn.offsetWidth, btn.offsetHeight) * 2;
+    ripple.style.cssText = `position:absolute;border-radius:50%;width:${size}px;height:${size}px;left:${x - size/2}px;top:${y - size/2}px;background:rgba(255,255,255,0.2);transform:scale(0);pointer-events:none;animation:ripple-out 0.5s ease forwards;`;
     btn.appendChild(ripple);
     setTimeout(() => ripple.remove(), 550);
   });
@@ -1785,22 +1633,12 @@ document.querySelectorAll('.btn').forEach(btn => {
 document.querySelectorAll('.btn, .nav-badge').forEach(el => {
   el.addEventListener('mousemove', e => {
     const rect = el.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const dx = (e.clientX - cx) * 0.2;
-    const dy = (e.clientY - cy) * 0.2;
-    el.style.transform = `translate(${dx}px, ${dy}px)`;
+    const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
+    el.style.transform = `translate(${(e.clientX - cx) * 0.2}px, ${(e.clientY - cy) * 0.2}px)`;
   });
-  el.addEventListener('mouseleave', () => {
-    el.style.transform = '';
-    el.style.transition = 'transform .4s cubic-bezier(0.16,1,0.3,1), box-shadow .25s, background .25s';
-  });
-  el.addEventListener('mouseenter', () => {
-    el.style.transition = 'transform .1s, box-shadow .25s, background .25s';
-  });
+  el.addEventListener('mouseleave', () => { el.style.transform = ''; el.style.transition = 'transform .4s cubic-bezier(0.16,1,0.3,1), box-shadow .25s, background .25s'; });
+  el.addEventListener('mouseenter', () => { el.style.transition = 'transform .1s, box-shadow .25s, background .25s'; });
 });
-
-
 
 document.querySelectorAll('.module-row').forEach(row => {
   const tag = row.querySelector('.module-tag');
@@ -1814,92 +1652,55 @@ document.querySelectorAll('.module-row').forEach(row => {
     const x = (e.clientX - rect.left) / rect.width;
     row.style.background = `linear-gradient(90deg, rgba(${color},0.05) 0%, rgba(${color},0.02) ${x*100}%, transparent 100%), var(--bg3)`;
   });
-  row.addEventListener('mouseleave', () => {
-    row.style.background = '';
-  });
+  row.addEventListener('mouseleave', () => { row.style.background = ''; });
 });
 
 
 const _bgMusic = document.getElementById('bg-music');
 const _musicBtn = document.getElementById('music-btn');
 const _volSlider = document.getElementById('vol-slider');
-const _volLabel  = document.getElementById('vol-label');
-let _musicPlaying = false;
-let _autoplayDone = false;
-let _audioCtx = null, _gainNode = null;
+const _volLabel = document.getElementById('vol-label');
+let _musicPlaying = false, _autoplayDone = false, _audioCtx = null, _gainNode = null;
 
 function _initAudioCtx() {
-  if (_audioCtx) {
-    if (_audioCtx.state === 'suspended') _audioCtx.resume();
-    return;
-  }
+  if (_audioCtx) { if (_audioCtx.state === 'suspended') _audioCtx.resume(); return; }
   try {
     _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const src = _audioCtx.createMediaElementSource(_bgMusic);
     _gainNode = _audioCtx.createGain();
-    src.connect(_gainNode);
-    _gainNode.connect(_audioCtx.destination);
+    src.connect(_gainNode); _gainNode.connect(_audioCtx.destination);
     _gainNode.gain.value = parseInt(_volSlider.value) / 100;
   } catch(e) {}
 }
-
 function _applyVolume(pct) {
   const ratio = pct / 100;
-  if (_gainNode) {
-    _gainNode.gain.value = ratio;
-    _bgMusic.volume = 1;
-  } else {
-    _bgMusic.volume = Math.min(ratio, 1);
-  }
-  const fillPct = (pct / 200 * 100).toFixed(1);
-  _volSlider.style.setProperty('--pct', fillPct + '%');
+  if (_gainNode) { _gainNode.gain.value = ratio; _bgMusic.volume = 1; }
+  else _bgMusic.volume = Math.min(ratio, 1);
+  _volSlider.style.setProperty('--pct', (pct / 200 * 100).toFixed(1) + '%');
   _volLabel.textContent = 'VOL ' + pct + '%';
 }
-
 function setVolume(val) { _applyVolume(parseInt(val)); }
-
 function startMusic() {
   if (_musicPlaying) return;
   _initAudioCtx();
-  _bgMusic.play().then(() => {
-    _musicBtn.classList.add('playing');
-    _musicPlaying = true;
-  }).catch(() => {});
+  _bgMusic.play().then(() => { _musicBtn.classList.add('playing'); _musicPlaying = true; }).catch(() => {});
 }
-
-// Chrome chỉ chấp nhận các event này cho AudioContext + audio.play()
-// mousemove / scroll / wheel KHÔNG phải user gesture trong Chrome
-function _onFirstGesture() {
-  if (_autoplayDone) return;
-  _autoplayDone = true;
-  startMusic();
-}
-['click','pointerdown','touchstart','keydown']
-  .forEach(e => document.addEventListener(e, _onFirstGesture, { once: true }));
-
+function _onFirstGesture() { if (_autoplayDone) return; _autoplayDone = true; startMusic(); }
+['click', 'pointerdown', 'touchstart', 'keydown'].forEach(e => document.addEventListener(e, _onFirstGesture, { once: true }));
 function toggleMusic() {
-  if (_musicPlaying) {
-    _bgMusic.pause();
-    _musicBtn.classList.remove('playing');
-    _musicPlaying = false;
-    _autoplayDone = false;
-  } else {
-    _autoplayDone = true;
-    startMusic();
-  }
+  if (_musicPlaying) { _bgMusic.pause(); _musicBtn.classList.remove('playing'); _musicPlaying = false; _autoplayDone = false; }
+  else { _autoplayDone = true; startMusic(); }
 }
-
 _applyVolume(70);
+
 
 const translations = {
   vi: {
     'nav-features':'FEATURES','nav-modules':'MODULES','nav-themes':'THEMES','nav-scripts':'SCRIPTS','nav-usage':'USAGE',
     'hero-eyebrow':'open source · roblox lua library',
     'hero-desc':'Thư viện UI & tiện ích modular mã nguồn mở cho Roblox. Animation mượt mà, 12 theme màu sắc, tối ưu hiệu năng, và hệ thống script đầy đủ.',
-    'btn-github':'XEM GITHUB','btn-usage':'CÁCH SỬ DỤNG',
-    'stat-themes':'UI Themes','stat-scripts':'Main Scripts','stat-modules':'Logic Modules','stat-license':'License',
-    'feat-tag':'// features','feat-title':'Tất Cả Trong <em>Một</em>',
-    'feat-sub':'Từ UI library đến các module logic phức tạp — mọi thứ đã được module hoá và sẵn sàng dùng.',
+    'btn-github':'XEM GITHUB','btn-usage':'CÁCH SỬ DỤNG','stat-themes':'UI Themes','stat-scripts':'Main Scripts','stat-modules':'Logic Modules','stat-license':'License',
+    'feat-tag':'// features','feat-title':'Tất Cả Trong <em>Một</em>','feat-sub':'Từ UI library đến các module logic phức tạp — mọi thứ đã được module hoá và sẵn sàng dùng.',
     'f1-title':'Custom UI Library','f1-desc':'Tab system, toggle, dropdown, slider, input, danh sách cuộn — tất cả với animation tween mượt mà và đầy đủ theme hỗ trợ.',
     'f2-title':'Potato Mode','f2-desc':'Tắt particle, shadow, texture, fog, PostEffect và hàng loạt hiệu ứng đồ hoạ theo batch — giảm lag đáng kể mà không cần restart.',
     'f3-title':'Animation Engine','f3-desc':'Hệ thống tween đa lớp: mở/đóng UI với icon shrink, hover, drag-to-move, click feedback — mọi trạng thái đều có hiệu ứng.',
@@ -1921,28 +1722,20 @@ const translations = {
     'm9-desc':'Biến hình nhân vật hoặc mô hình: chọn part, undo, outline vùng chọn, set mode, lưu/xoá phần đã transform',
     'm10-desc':'Tạo, chọn, di chuyển, neo, hàn/tháo khối trong workspace. Hỗ trợ nhóm khối và event khi thay đổi',
     'm11-desc':'Tạo/xoá dummy, chọn model từ workspace, mở menu tuỳ chỉnh nhân vật, toggle chế độ chọn mẫu',
-    'theme-tag':'// themes','theme-title':'12 Bộ <em>Giao Diện</em>',
-    'theme-sub':'Chuyển đổi ngay trong UI — theme được lưu và áp dụng tự động lần sau.',
-    'scr-tag':'// main scripts','scr-title':'Scripts <em>Có Sẵn</em>',
-    'scr-sub':'Được chọn qua Hx Loader — chỉ cần click, script sẽ tự tải và chạy.',
+    'theme-tag':'// themes','theme-title':'12 Bộ <em>Giao Diện</em>','theme-sub':'Chuyển đổi ngay trong UI — theme được lưu và áp dụng tự động lần sau.',
+    'scr-tag':'// main scripts','scr-title':'Scripts <em>Có Sẵn</em>','scr-sub':'Được chọn qua Hx Loader — chỉ cần click, script sẽ tự tải và chạy.',
     's1-desc':'Giao diện biến hình nhân vật cổ điển với danh sách bộ phận, toggle từng phần, undo, và lưu trạng thái tức thì.',
     's2-desc':'Phiên bản nâng cấp dùng ThuVienUI đầy đủ — tab Nhân Vật, Khối, Settings. Hỗ trợ dummy, model chọn từ workspace, Hx Build.',
     's3-desc':'Script thử nghiệm tích hợp ETC module — Fly, Noclip, Teleport, Target Lock, ESP, Auto Clicker với giao diện ThuVienUI.',
-    'use-tag':'// how to use','use-title':'Tài Liệu <em>Sử Dụng</em>',
-    'use-sub':'Toàn bộ API được chia theo từng Module để dễ dàng tra cứu và tích hợp vào dự án của bạn.',
-    'tab-loader-btn':'1. Hx Loader','tab-ui-btn':'2. ThuVienUI','tab-notify-btn':'3. ThongBao','tab-logic-btn':'4. Config & Logic',
+    'use-tag':'// how to use','use-title':'Tài Liệu <em>Sử Dụng</em>','use-sub':'Toàn bộ API được chia theo từng Module để dễ dàng tra cứu và tích hợp vào dự án của bạn.',
+    'tab-loader-btn':'Hx Loader','tab-ui-btn':'ThuVienUI','tab-notify-btn':'ThongBao','tab-logic-btn':'Config & Logic',
     'loader-h1':'Khởi chạy qua Hub trung tâm',
     'loader-desc':'Chỉ cần dùng Executor (Delta, Fluxus, Evon,...) thực thi đoạn mã dưới đây. Một Menu UI sẽ hiện ra cho phép chọn các Script đã được viết sẵn trong thư viện ChaosSystem.',
-    'ui-h1':'Khởi tạo Cửa sổ & Tab',
-    'ui-desc1':'Load trực tiếp module `ThuVienUI.lua`. Sử dụng `TaoWindow` để dựng khung UI, sau đó gọi `TaoTab` để thêm các trang nội dung độc lập.',
-    'ui-h2':'Thêm các Elements điều khiển',
-    'ui-desc2':'Gọi các hàm từ đối tượng Tab để sinh ra Button, Toggle, Slider, hoặc Dropdown. Các hàm đều có callback Event trả về giá trị realtime.',
-    'not-h1':'Gọi hộp thoại Thông báo',
-    'not-desc':'Module `ThongBao.lua` xử lý các Notify nổi mượt mà trên màn hình người dùng. Rất hữu ích để báo cáo trạng thái chức năng.',
-    'log-h1':'Tối ưu Client với ConfigManager',
-    'log-desc1':'Loại bỏ bóng đổ, sương mù và kích hoạt FullBright để tăng FPS cho máy yếu.',
-    'log-h2':'Gọi Utils Logic phổ biến',
-    'log-desc2':'Module `ETC_Logic.lua` chứa sẵn các Script thông dụng cho dân Exploit như Fly, Noclip hay Click TP.',
+    'ui-h1':'Khởi tạo Cửa sổ & Tab','ui-desc1':'Load trực tiếp module `ThuVienUI.lua`. Sử dụng `TaoWindow` để dựng khung UI, sau đó gọi `TaoTab` để thêm các trang nội dung độc lập.',
+    'ui-h2':'Thêm các Elements điều khiển','ui-desc2':'Gọi các hàm từ đối tượng Tab để sinh ra Button, Toggle, Slider, hoặc Dropdown. Các hàm đều có callback Event trả về giá trị realtime.',
+    'not-h1':'Gọi hộp thoại Thông báo','not-desc':'Module `ThongBao.lua` xử lý các Notify nổi mượt mà trên màn hình người dùng. Rất hữu ích để báo cáo trạng thái chức năng.',
+    'log-h1':'Tối ưu Client với ConfigManager','log-desc1':'Loại bỏ bóng đổ, sương mù và kích hoạt FullBright để tăng FPS cho máy yếu.',
+    'log-h2':'Gọi Utils Logic phổ biến','log-desc2':'Module `ETC_Logic.lua` chứa sẵn các Script thông dụng cho dân Exploit như Fly, Noclip hay Click TP.',
     'disc-title':'Disclaimer — Chỉ Dành Cho Mục Đích Giáo Dục',
     'disc-text':'Repository này và toàn bộ nội dung được cung cấp <strong>chỉ cho mục đích học tập và nghiên cứu bảo mật</strong>. Các script minh hoạ lập trình Lua, kỹ thuật UI và cơ chế game trong Roblox engine.<br><br><strong>Tác giả không chịu trách nhiệm</strong> về cách người khác sử dụng code này. Mọi thiệt hại, ban tài khoản hoặc đình chỉ phát sinh từ việc sử dụng các script này là hoàn toàn trách nhiệm của người dùng. Sử dụng executor của bên thứ ba hoặc inject script vào game vi phạm Điều khoản Dịch vụ của Roblox.<br><br>Project này <strong>không chứa bất kỳ payload độc hại, stealer hay logger nào</strong>.',
     'footer-copy':'© 2025 · MIT License · Made with Lua & Love'
@@ -1951,10 +1744,8 @@ const translations = {
     'nav-features':'FEATURES','nav-modules':'MODULES','nav-themes':'THEMES','nav-scripts':'SCRIPTS','nav-usage':'USAGE',
     'hero-eyebrow':'open source · roblox lua library',
     'hero-desc':'Open source modular UI library & utilities for Roblox. Smooth animations, 12 color themes, performance optimized, and a complete script system.',
-    'btn-github':'VIEW GITHUB','btn-usage':'HOW TO USE',
-    'stat-themes':'UI Themes','stat-scripts':'Main Scripts','stat-modules':'Logic Modules','stat-license':'License',
-    'feat-tag':'// features','feat-title':'Everything In <em>One</em>',
-    'feat-sub':'From UI library to complex logic modules — everything is modularized and ready to use.',
+    'btn-github':'VIEW GITHUB','btn-usage':'HOW TO USE','stat-themes':'UI Themes','stat-scripts':'Main Scripts','stat-modules':'Logic Modules','stat-license':'License',
+    'feat-tag':'// features','feat-title':'Everything In <em>One</em>','feat-sub':'From UI library to complex logic modules — everything is modularized and ready to use.',
     'f1-title':'Custom UI Library','f1-desc':'Tab system, toggles, dropdowns, sliders, inputs, scrollable lists — all with smooth tween animations and full theme support.',
     'f2-title':'Potato Mode','f2-desc':'Batch-disable particles, shadows, textures, fog, PostEffects and visual layers — significantly reduces lag without needing a restart.',
     'f3-title':'Animation Engine','f3-desc':'Multi-layer tween system: open/close UI with icon shrink, hover, drag-to-move, click feedback — every state has an effect.',
@@ -1976,28 +1767,20 @@ const translations = {
     'm9-desc':'Transform character or model: select parts, undo, selection outline, set mode, save/clear transformed parts',
     'm10-desc':'Create, select, move, anchor, weld/unweld parts in workspace. Supports part groups and change events',
     'm11-desc':'Create/delete dummies, select model from workspace, open character customization menu, toggle model selection mode',
-    'theme-tag':'// themes','theme-title':'12 <em>Color Themes</em>',
-    'theme-sub':'Switch instantly in the UI — themes are saved and auto-applied next time.',
-    'scr-tag':'// main scripts','scr-title':'Available <em>Scripts</em>',
-    'scr-sub':'Selected via Hx Loader — just click and the script will load and run automatically.',
+    'theme-tag':'// themes','theme-title':'12 <em>Color Themes</em>','theme-sub':'Switch instantly in the UI — themes are saved and auto-applied next time.',
+    'scr-tag':'// main scripts','scr-title':'Available <em>Scripts</em>','scr-sub':'Selected via Hx Loader — just click and the script will load and run automatically.',
     's1-desc':'Classic character transform UI with part list, per-part toggle, undo, and instant state saving.',
     's2-desc':'Upgraded version using full ThuVienUI — Character, Blocks, Settings tabs. Supports dummy, workspace model selection, Hx Build.',
     's3-desc':'Experimental script integrating the ETC module — Fly, Noclip, Teleport, Target Lock, ESP, Auto Clicker with ThuVienUI.',
-    'use-tag':'// how to use','use-title':'Documentation <em>Guide</em>',
-    'use-sub':'The entire API is divided into individual Modules for easy reference and integration into your projects.',
-    'tab-loader-btn':'1. Main Loader','tab-ui-btn':'2. ThuVienUI','tab-notify-btn':'3. ThongBao','tab-logic-btn':'4. Config & Logic',
+    'use-tag':'// how to use','use-title':'Documentation <em>Guide</em>','use-sub':'The entire API is divided into individual Modules for easy reference and integration into your projects.',
+    'tab-loader-btn':'Main Loader','tab-ui-btn':'ThuVienUI','tab-notify-btn':'ThongBao','tab-logic-btn':'Config & Logic',
     'loader-h1':'Launch via Master Hub',
     'loader-desc':'Simply execute the code below in any Executor (Delta, Fluxus, Evon,...). A UI Menu will appear allowing you to select pre-written scripts from the ChaosSystem library.',
-    'ui-h1':'Initialize Window & Tabs',
-    'ui-desc1':'Require the `ThuVienUI.lua` module directly. Use `TaoWindow` to build the UI frame, then call `TaoTab` to add independent content pages.',
-    'ui-h2':'Add UI Elements',
-    'ui-desc2':'Call functions from the Tab object to generate Buttons, Toggles, Sliders, or Dropdowns. Each function has an Event callback returning real-time values.',
-    'not-h1':'Trigger Notifications',
-    'not-desc':'The `ThongBao.lua` module handles smooth floating Notifications on the user\'s screen. Extremely useful for reporting feature states.',
-    'log-h1':'Optimize Client with ConfigManager',
-    'log-desc1':'Remove shadows, fog, and enable FullBright to drastically boost FPS for low-end devices.',
-    'log-h2':'Call Common Logic Utils',
-    'log-desc2':'The `ETC_Logic.lua` module contains standard Scripts used by Exploit developers like Fly, Noclip, and Click TP.',
+    'ui-h1':'Initialize Window & Tabs','ui-desc1':'Require the `ThuVienUI.lua` module directly. Use `TaoWindow` to build the UI frame, then call `TaoTab` to add independent content pages.',
+    'ui-h2':'Add UI Elements','ui-desc2':'Call functions from the Tab object to generate Buttons, Toggles, Sliders, or Dropdowns. Each function has an Event callback returning real-time values.',
+    'not-h1':'Trigger Notifications','not-desc':'The `ThongBao.lua` module handles smooth floating Notifications on the user\'s screen. Extremely useful for reporting feature states.',
+    'log-h1':'Optimize Client with ConfigManager','log-desc1':'Remove shadows, fog, and enable FullBright to drastically boost FPS for low-end devices.',
+    'log-h2':'Call Common Logic Utils','log-desc2':'The `ETC_Logic.lua` module contains standard Scripts used by Exploit developers like Fly, Noclip, and Click TP.',
     'disc-title':'Disclaimer — For Educational Purposes Only',
     'disc-text':'This repository and all its content is provided <strong>for educational and security research purposes only</strong>. The scripts demonstrate Lua programming, UI techniques, and game mechanics within the Roblox engine.<br><br><strong>The author bears no responsibility</strong> for how others use this code. Any damage, account bans or suspensions resulting from the use of these scripts are entirely the user\'s responsibility. Using third-party executors or injecting scripts into games violates Roblox\'s Terms of Service.<br><br>This project <strong>contains no malicious payloads, stealers or loggers of any kind</strong>.',
     'footer-copy':'© 2025 · MIT License · Made with Lua & Love'
@@ -2011,24 +1794,128 @@ function setLang(lang) {
   btn.classList.toggle('is-vi', lang === 'vi');
   btn.classList.toggle('is-en', lang === 'en');
   document.documentElement.lang = lang;
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
-    if (translations[lang][key] !== undefined) el.textContent = translations[lang][key];
-  });
-  document.querySelectorAll('[data-i18n-html]').forEach(el => {
-    const key = el.getAttribute('data-i18n-html');
-    if (translations[lang][key] !== undefined) el.innerHTML = translations[lang][key];
-  });
+  const data = translations[lang];
+  document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.getAttribute('data-i18n'); if (data[key]) el.textContent = data[key]; });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => { const key = el.getAttribute('data-i18n-html'); if (data[key]) el.innerHTML = data[key]; });
 }
 function toggleLang() { setLang(currentLang === 'vi' ? 'en' : 'vi'); }
 setLang('vi');
 
+
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.addEventListener('keydown', e => {
-  if (e.key === 'F12') { e.preventDefault(); return false; }
-  if (e.ctrlKey && e.shiftKey && ['I','J','C','U'].includes(e.key.toUpperCase())) { e.preventDefault(); return false; }
-  if (e.ctrlKey && e.key.toUpperCase() === 'U') { e.preventDefault(); return false; }
+  if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C','U'].includes(e.key.toUpperCase())) || (e.ctrlKey && e.key.toUpperCase() === 'U')) {
+    e.preventDefault();
+    return false;
+  }
 });
+
+
+function initSeamlessCarousel(containerSel, gridSel, cardSel) {
+  const container = document.querySelector(containerSel);
+  if (!container) return;
+  const grid = container.querySelector(gridSel);
+  const cards = grid.querySelectorAll(cardSel);
+  if (cards.length === 0) return;
+  let dotsContainer = container.querySelector('.carousel-dots');
+  const origCount = cards.length;
+  let current = 0, autoTimer, looping = false;
+  const mediaQuery = window.matchMedia('(max-width: 768px)');
+  let active = false;
+
+  function destroy() {
+    if (!active) return;
+    clearInterval(autoTimer);
+    grid.style.transform = '';
+    if (dotsContainer) dotsContainer.innerHTML = '';
+    const allCards = grid.querySelectorAll(cardSel);
+    for (let i = origCount; i < allCards.length; i++) allCards[i].remove();
+    active = false;
+  }
+  function build() {
+    if (active) return;
+    active = true;
+    Array.from(cards).forEach(card => grid.appendChild(card.cloneNode(true)));
+    if (dotsContainer) {
+      dotsContainer.innerHTML = '';
+      for (let i = 0; i < origCount; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'carousel-dot';
+        if (i === 0) dot.classList.add('active');
+        dot.addEventListener('click', () => goTo(i));
+        dotsContainer.appendChild(dot);
+      }
+    }
+    grid.style.transition = 'transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94)';
+
+    function update() {
+      grid.style.transform = `translateX(-${current * 100}%)`;
+      if (dotsContainer) {
+        dotsContainer.querySelectorAll('.carousel-dot').forEach((d, i) => d.classList.toggle('active', i === current % origCount));
+      }
+    }
+    function goTo(index) { current = index; update(); resetTimer(); }
+    function next() {
+      if (looping) return;
+      current++;
+      update();
+      if (current === origCount) {
+        looping = true;
+        setTimeout(() => {
+          grid.style.transition = 'none';
+          current = 0; grid.style.transform = 'translateX(0)';
+          requestAnimationFrame(() => requestAnimationFrame(() => { grid.style.transition = 'transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94)'; looping = false; }));
+        }, 520);
+      }
+      resetTimer();
+    }
+    function prev() {
+      if (looping) return;
+      if (current === 0) {
+        looping = true;
+        grid.style.transition = 'none';
+        current = origCount; grid.style.transform = `translateX(-${origCount * 100}%)`;
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          grid.style.transition = 'transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94)';
+          current = origCount - 1; update();
+          setTimeout(() => { looping = false; }, 520);
+        }));
+      } else { current--; update(); }
+      resetTimer();
+    }
+    function resetTimer() { clearInterval(autoTimer); autoTimer = setInterval(next, 3140); }
+    let startX = 0, startY = 0, isScrolling = false;
+    container.addEventListener('touchstart', e => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; isScrolling = false; }, { passive: false });
+    container.addEventListener('touchmove', e => { if (!isScrolling && Math.abs(e.touches[0].clientX - startX) > Math.abs(e.touches[0].clientY - startY) + 5) { if (e.cancelable) e.preventDefault(); } else isScrolling = true; }, { passive: false });
+    container.addEventListener('touchend', e => { if (isScrolling) return; const diff = startX - e.changedTouches[0].clientX; if (diff > 40) next(); else if (diff < -40) prev(); }, { passive: false });
+    update();
+    autoTimer = setInterval(next, 3140);
+  }
+  mediaQuery.addEventListener('change', e => e.matches ? build() : destroy());
+  if (mediaQuery.matches) build();
+}
+initSeamlessCarousel('.features-carousel', '.features-grid', '.feat-card');
+initSeamlessCarousel('.modules-carousel', '.modules-list', '.module-row');
+initSeamlessCarousel('.themes-carousel', '.themes-grid', '.theme-card');
+
+
+function activateTab(paneId, btnEl, paneSel, btnSel) {
+  document.querySelectorAll(paneSel).forEach(el => el.classList.remove('active'));
+  document.querySelectorAll(btnSel).forEach(el => el.classList.remove('active'));
+  document.getElementById(paneId).classList.add('active');
+  btnEl.classList.add('active');
+}
+function openTab(tabId, btn) { activateTab(tabId, btn, '.tab-pane', '.tab-btn'); }
+function switchScript(paneId, btn) { activateTab(paneId, btn, '.sc-pane', '.sc-btn'); }
+
+
+(function() {
+  const observer = new IntersectionObserver((entries) => {
+    if (window.innerWidth > 768) return;
+    entries.forEach(entry => { entry.target.classList.toggle('m-hover', entry.isIntersecting); });
+  }, { rootMargin: "-40% 0px -40% 0px", threshold: 0 });
+  document.querySelectorAll('.feat-card, .module-row, .theme-card, .script-card').forEach(el => observer.observe(el));
+})();
 </script>
 </body>
 </html>
