@@ -1,4 +1,4 @@
-# Hx Script / ChaosSystem
+# Hx Script
 
 A modular, open-source utility and UI library for Roblox. This project includes custom UI components, rendering optimization (Potato Mode), and various logic testing scripts.
 
